@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>X Likes Viewer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <h1 id="title">X いいねビューア</h1>
+      <div class="controls">
+        <input id="jsonFile" type="file" accept=".json" />
+        
+        <!-- 🔹 検索ボックス＋✗追加 -->
+        <div class="search-wrapper">
+          <input id="searchInput" type="search" placeholder="本文・ユーザー名で検索" />
+          <!--<span id="clearSearch">✗</span>-->
+        </div>
+        <button id="searchBtn" type="button">検索</button>
+        
+        <input id="tagInput" type="text" placeholder="#タグ or 単語" />
+        <select id="langSelect">
+          <option value="ja">日本語</option>
+          <option value="en">English</option>
+          <option value="zh">简体中文</option>
+          <option value="ko">한국어</option>
+        </select>
+        <button id="themeToggle" type="button" title="テーマ切替">🌗</button>
+
+        <!-- 🔹 動画自動再生トグル 
+        <label id="videoToggleLabel">
+          動画サムネ再生
+          <input type="checkbox" id="videoToggle" />
+        </label>-->
+      </div>
+    </div>
+
+    <div class="header-bottom">
+      <div class="date-range">
+        <label>開始: <input id="startDate" type="date" /></label>
+        <label>終了: <input id="endDate" type="date" /></label>
+      </div>
+
+      <div class="sort-area">
+        <select id="sortSelect">
+          <option value="newest">新しい順</option>
+          <option value="oldest">古い順</option>
+          <option value="likes">いいね数順</option>
+        </select>
+        <button id="applyFilter" type="button">適用</button>
+        <button id="clearFilter" type="button">解除</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="gallery" aria-live="polite"></main>
+
+  <!-- modal -->
+  <div id="modal" class="hidden" role="dialog" aria-modal="true">
+    <button id="closeModal" class="modal-btn close" type="button">✕</button>
+    <button id="prevBtn" class="modal-btn left" type="button">◀</button>
+    <div id="modalInner">
+      <img id="modalImg" alt="">
+      <video id="modalVideo" controls style="display:none"></video>
+      <div id="modalText" style="display:none"></div>
+    </div>
+    <button id="nextBtn" class="modal-btn right" type="button">▶</button>
+    <div id="modalCounter" aria-hidden="true"></div>
+  </div>
+
+  <!-- defer を付けて DOM 完了後に実行されるように -->
+  <script src="script.js" defer></script>
+</body>
+</html>

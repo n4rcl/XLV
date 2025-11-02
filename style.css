@@ -1,0 +1,366 @@
+/* X いいねビューア v21 - 軽量化版 */
+
+:root{
+  --bg: #f5f7fa;
+  --card: #fff;
+  --text: #0f1720;
+  --muted: #6b7280;
+  --border: rgba(0,0,0,0.06);
+}
+body.dark {
+  --bg: #0a1628;
+  --card: #15202b;
+  --text: #e6eef6;
+  --muted: #8899a6;
+  --border: rgba(255,255,255,0.1);
+}
+body.amoled {
+  --bg: #000;
+  --card: #1a1a1a;
+  --text: #e6eef6;
+  --muted: #93a4b5;
+  --border: rgba(255,255,255,0.15);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Header */
+header{
+  position:sticky;
+  top:0;
+  background:var(--card);
+  z-index:60;
+  padding:10px;
+  border-bottom:1px solid var(--border);
+  transition:transform 0.3s ease;
+}
+.hide-header{transform:translateY(-100%)}
+.header-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:nowrap; /* 折り返しを防止 */
+}
+#title{
+  margin:0;
+  font-size:18px;
+  font-weight:700; /* 太字 */
+  white-space:nowrap;
+  flex-shrink:0;
+  text-align:center; /* 中央揃え */
+}
+.controls{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.controls input[type="search"],.controls input[type="text"],.controls select,.controls input[type="file"]{
+  padding:6px 8px;
+  border-radius:8px;
+  border:1px solid rgba(0,0,0,0.08);
+  background:transparent;
+  color:var(--text);
+}
+.header-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:12px;flex-wrap:wrap}
+.date-range label{font-size:13px;color:var(--muted);margin-right:8px}
+.sort-area{display:flex;gap:8px;align-items:center}
+
+/* Gallery */
+#gallery{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  padding:12px;
+}
+
+/* Card */
+.card{
+  background:var(--card);
+  border-radius:10px;
+  overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+  display:flex;
+  flex-direction:column;
+  cursor:pointer;
+  transition:transform .12s ease;
+  color:#fff;
+}
+.card:hover{transform:translateY(-4px)}
+
+/* Thumbnail */
+.thumb{
+  position:relative;
+  width:100%;
+  aspect-ratio:1/1;
+  overflow:hidden;
+  background:#111;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.thumb img,.thumb video{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+  display:block;
+}
+/* 🔧 画像読み込み高速化: デコード最適化 */
+.thumb img{
+  image-rendering:-webkit-optimize-contrast;
+  image-rendering:crisp-edges;
+}
+.thumb .count,.thumb .video-icon{
+  position:absolute;
+  top:8px;
+  right:8px;
+  background:rgba(0,0,0,0.6);
+  color:#fff;
+  padding:4px 6px;
+  border-radius:6px;
+  font-size:11px; /* 少し小さく */
+  z-index:4;
+  pointer-events:none;
+  white-space:nowrap; /* 時間表記を折り返さない */
+  font-family:monospace; /* 等幅フォント */
+}
+
+/* Info */
+.info{padding:10px;display:flex;flex-direction:column;gap:8px}
+.meta{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#b0b0b0}
+.preview{font-size:13px;color:#fff;max-height:3.6em;overflow:hidden}
+
+/* Text-only card */
+.text-only-card{
+  aspect-ratio:1/1.28;
+  background:var(--card);
+  border-radius:10px;
+  overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+  cursor:pointer;
+  transition:transform .12s ease;
+  display:flex;
+  flex-direction:column;
+  padding:12px;
+  justify-content:space-between;
+}
+.text-only-card:hover{transform:translateY(-4px)}
+
+.text-card-user{
+  font-size:13px;
+  font-weight:500;
+  color:#fff;
+  margin-bottom:4px;
+}
+body:not(.dark):not(.amoled) .text-card-user{color:#0f1720}
+
+.text-card-stats{
+  font-size:12px;
+  color:#b0b0b0;
+  margin-bottom:8px;
+}
+body:not(.dark):not(.amoled) .text-card-stats{color:#6b7280}
+
+.text-card-content{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  white-space:pre-wrap;
+  word-break:break-word;
+  font-size:0.9rem;
+  line-height:1.4;
+  color:#fff;
+  overflow:hidden;
+  padding:8px 0;
+}
+body:not(.dark):not(.amoled) .text-card-content{color:#0f1720}
+.text-card-content.long-text{font-size:0.75rem;line-height:1.3}
+
+.text-card-footer{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:11px;
+  color:#b0b0b0;
+  margin-top:8px;
+  gap:8px;
+  flex-wrap:wrap;
+}
+body:not(.dark):not(.amoled) .text-card-footer{color:#6b7280}
+.no-media-label{opacity:0.5;font-size:10px}
+.text-card-link{color:#1d9bf0!important;text-decoration:none;font-size:11px}
+.text-card-link:hover{text-decoration:underline}
+
+/* Modal */
+#modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.9);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:1;
+  visibility:visible;
+  transition:opacity 0.3s ease,visibility 0.3s ease;
+  z-index:9999;
+  color:#fff;
+}
+#modal.hidden{opacity:0;visibility:hidden}
+
+#modalText{
+  color:#fff;
+  padding:20px;
+  max-width:90%;
+  max-height:90%;
+  overflow-y:auto;
+  white-space:pre-wrap;
+  line-height:1.6;
+}
+
+#modal img,#modal video{
+  max-width:95%;
+  max-height:95%;
+  border-radius:8px;
+  background:#000;
+  cursor:zoom-out;
+  transition:transform 0.2s ease;
+}
+
+#modalImg{
+  touch-action:none;
+  transition:transform 0.15s ease;
+}
+
+#prevBtn,#nextBtn,#closeModal{
+  position:absolute;
+  background:rgba(255,255,255,0.2);
+  color:#fff;
+  font-size:28px;
+  padding:6px 12px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  z-index:10001;
+  user-select:none;
+  transition:background 0.2s;
+}
+#prevBtn:hover,#nextBtn:hover,#closeModal:hover{background:rgba(255,255,255,0.35)}
+#prevBtn{left:30px;top:50%;transform:translateY(-50%)}
+#nextBtn{right:30px;top:50%;transform:translateY(-50%)}
+#closeModal{top:40px;right:40px;transform:none;font-size:26px}
+
+#modalInner{position:relative;z-index:10000}
+#modalCounter{
+  position:absolute;
+  bottom:16px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,0.5);
+  color:#fff;
+  font-size:14px;
+  padding:4px 10px;
+  border-radius:12px;
+  letter-spacing:0.5px;
+  z-index:130;
+  pointer-events:none;
+}
+.modal-btn{pointer-events:auto;z-index:200}
+
+/* Cache select */
+.cache-select-theme,.cache-select-theme option{
+  background:var(--card)!important;
+  color:var(--text)!important;
+  border-color:var(--border)!important;
+}
+
+/* PC */
+@media (min-width:769px){
+  #modal img,#modal video{
+    max-width:85vw!important;
+    max-height:85vh!important;
+    object-fit:contain;
+  }
+}
+
+@media (min-width:768px){
+  main#gallery{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:16px;
+    padding:20px;
+  }
+}
+
+/* Mobile */
+@media (max-width:768px){
+  .header-top{
+    flex-direction:row; /* 横並びを維持 */
+    flex-wrap:wrap; /* 狭い時だけ折り返し */
+  }
+  
+  #title{
+    font-size:16px; /* モバイルで少し小さく */
+  }
+  
+  #gallery{
+    grid-template-columns:repeat(2,1fr);
+    gap:8px;
+    padding:8px;
+  }
+  
+  #prevBtn,#nextBtn{display:none!important}
+  
+  #closeModal{
+    position:absolute!important;
+    top:16px!important;
+    right:16px!important;
+    background:none!important;
+    border:none!important;
+    color:#fff!important;
+    font-size:32px!important;
+    font-weight:300!important;
+    line-height:1!important;
+    padding:0!important;
+    width:auto!important;
+    height:auto!important;
+    z-index:10002!important;
+    text-shadow:0 2px 8px rgba(0,0,0,0.8);
+    transform:none!important;
+  }
+  #closeModal:active{opacity:0.7}
+  
+  #modalCounter{
+    position:absolute;
+    bottom:12px;
+    left:50%;
+    transform:translateX(-50%);
+    color:#fff;
+    background:rgba(0,0,0,0.5);
+    padding:3px 6px;
+    border-radius:6px;
+    font-size:12px;
+  }
+}
+
+@media (max-width:520px){
+  #gallery{gap:8px;padding:8px}
+  .controls{gap:6px}
+  .thumb .count,.thumb .video-icon{font-size:11px;padding:3px 5px}
+}
+
+/* Light mode text color fix */
+body:not(.dark):not(.amoled) .card,
+body:not(.dark):not(.amoled) .card *{
+  color:#0f1720!important;
+}
