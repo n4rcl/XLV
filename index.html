@@ -127,8 +127,13 @@ body.dark #langSelect option,
 body.dark #sortSelect option,
 body.amoled #langSelect option,
 body.amoled #sortSelect option {
-  background: rgba(255,255,255,0.1);
+  background: var(--card);
   color: var(--text);
+}
+
+body.dark .date-range input[type="date"],
+body.amoled .date-range input[type="date"] {
+  color-scheme: dark;
 }
 
 /* 英語選択時の言語セレクトボックス幅調整 */
@@ -219,7 +224,7 @@ body.amoled .merge-row button:hover {
   max-height: 0;
   padding: 0 12px;
   overflow: hidden;
-  margin-top: 2;
+  margin-top: 0;
 }
 
 /* JSON結合セクション */
@@ -371,6 +376,7 @@ body.amoled .merge-content {
   cursor: pointer;
   transition: transform .12s ease;
   color: #fff;
+  aspect-ratio: 1/1.6;
 }
 
 .card:hover {
@@ -388,6 +394,7 @@ body.amoled .merge-content {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  min-height: 0;
 }
 
 .thumb img,
@@ -437,6 +444,8 @@ body:not(.dark):not(.amoled) .thumb .video-icon {
   justify-content: space-between;
   padding: 10px;
   gap: 8px;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .meta {
@@ -592,7 +601,7 @@ body.amoled .text-card-footer {
 
 /* Text-only card */
 .text-only-card {
-  aspect-ratio: 1/1.5;
+  aspect-ratio: 1/1.6;
   background: var(--card);
   border-radius: 10px;
   overflow: hidden;
