@@ -457,6 +457,19 @@ body:not(.dark):not(.amoled) .thumb .video-icon {
   flex-shrink: 0;
 }
 
+.meta > div:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.meta > div:last-child {
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
 .preview {
   font-size: 13px;
   color: #fff;
