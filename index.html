@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>X Likes Viewer</title>
   <style>
-/* X いいねビューア v21 - 整理版 */
+/* XLV css v21 */
 
 :root {
   --bg: #f5f7fa;
@@ -1032,7 +1032,7 @@ body.amoled .text-card-footer {
   </div>
 
   <script>
-/* X いいねビューア v41 - 整理版 */
+/* XLV js v41 */
 
 (() => {
   // DOM要素
@@ -2173,7 +2173,7 @@ body.amoled .text-card-footer {
         tweetCount: ' posts'
       },
       zh: { 
-        title: '𝕏 点赞查看',
+        title: '𝕏 点赞查看器',
         search: '搜索 内容/用户名',
         searchBtn: '搜索',
         apply: '应用',
@@ -2334,5 +2334,76 @@ body.amoled .text-card-footer {
   }
 })();
   </script>
+  
+  <footer id="license-footer" vocab="http://schema.org/" typeof="CreativeWork"
+        style="text-align:center;padding:16px 8px;margin-top:32px;
+               font-size:12.5px;line-height:1.6;color:var(--muted);
+               border-top:1px solid var(--border);background:var(--card);
+               transition:color .3s,background .3s;">
+  <span style="white-space:nowrap;">
+    © 2025 <span property="creator" typeof="Person"><span property="name">n4rcole</span></span> ·
+    <span property="name">X Likes Viewer</span> ·
+    <a id="license-link" rel="license" property="license"
+       href="https://creativecommons.org/licenses/by-sa/4.0/"
+       target="_blank" rel="noopener noreferrer"
+       style="color:#1d9bf0;text-decoration:none;">
+       CC&nbsp;BY-SA&nbsp;4.0
+    </a>
+    <a href="https://creativecommons.org/licenses/by-sa/4.0/"
+       target="_blank" rel="noopener noreferrer"
+       style="display:inline-block;vertical-align:middle;margin-left:4px;">
+      <img src="https://licensebuttons.net/l/by-sa/4.0/80x15.png"
+           alt="CC BY-SA 4.0"
+           width="80" height="15"
+           style="opacity:.8;vertical-align:middle;transition:opacity .2s;">
+    </a>
+  </span>
+</footer>
+
+<script>
+(() => {
+  const phrases = {
+    ja: { work: 'この作品は', under: 'の下に提供されています。' },
+    en: { work: 'This work is licensed under', under: '.' },
+    zh: { work: '本作品采用', under: '授权。' },
+    ko: { work: '이 작품은', under: '하에 제공됩니다.' }
+  };
+
+  const link = document.getElementById('license-link');
+  const footer = document.getElementById('license-footer');
+
+  function updateLang(lang) {
+    const t = phrases[lang] || phrases.ja;
+    link.title = `${t.work} CC BY-SA 4.0 ${t.under}`;
+  }
+
+  const savedLang = localStorage.getItem('xviewer_lang') || 'ja';
+  updateLang(savedLang);
+
+  const langSelect = document.getElementById('langSelect');
+  if (langSelect) {
+    langSelect.addEventListener('change', e => updateLang(e.target.value));
+  }
+})();
+</script>
+
+<!-- 構造化データ (JSON-LD) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CreativeWork",
+  "name": "X Likes Viewer",
+  "author": {
+    "@type": "Person",
+    "name": "n4rcole"
+  },
+  "datePublished": "2025-11-08",
+  "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "copyrightYear": "2025"
+}
+</script>
+</body>
+</html>
+  
 </body>
 </html>
