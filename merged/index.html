@@ -1,0 +1,2316 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>X Likes Viewer</title>
+  <style>
+/* X いいねビューア v21 - 整理版 */
+
+:root {
+  --bg: #f5f7fa;
+  --card: #fff;
+  --text: #0f1720;
+  --muted: #6b7280;
+  --border: rgba(0,0,0,0.06);
+}
+
+body.dark {
+  --bg: #0a1628;
+  --card: #15202b;
+  --text: #e6eef6;
+  --muted: #8899a6;
+  --border: rgba(255,255,255,0.1);
+}
+
+body.amoled {
+  --bg: #000;
+  --card: #1a1a1a;
+  --text: #e6eef6;
+  --muted: #93a4b5;
+  --border: rgba(255,255,255,0.15);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Header */
+header {
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  z-index: 60;
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+  transition: transform 0.3s ease;
+}
+
+.hide-header {
+  transform: translateY(-100%);
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: nowrap;
+}
+
+#title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* 共通入力フィールドスタイル */
+.controls input[type="search"],
+.controls input[type="text"],
+.controls input[type="date"],
+.controls input[type="file"],
+.controls select,
+#langSelect,
+#sortSelect {
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: var(--card);
+  color: var(--text);
+}
+
+#langSelect option,
+#sortSelect option {
+  background: var(--card);
+  color: var(--text);
+}
+
+/* ダークテーマ時の入力フィールド */
+body.dark .controls input[type="search"],
+body.dark .controls input[type="text"],
+body.dark .controls input[type="date"],
+body.dark .controls input[type="file"],
+body.dark .controls select,
+body.dark #langSelect,
+body.dark #sortSelect,
+body.amoled .controls input[type="search"],
+body.amoled .controls input[type="text"],
+body.amoled .controls input[type="date"],
+body.amoled .controls input[type="file"],
+body.amoled .controls select,
+body.amoled #langSelect,
+body.amoled #sortSelect {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--text);
+}
+
+body.dark #langSelect option,
+body.dark #sortSelect option,
+body.amoled #langSelect option,
+body.amoled #sortSelect option {
+  background: rgba(255,255,255,0.1);
+  color: var(--text);
+}
+
+/* 英語選択時の言語セレクトボックス幅調整 */
+#langSelect[data-selected="en"] {
+  max-width: 90px;
+  font-size: 12px;
+}
+
+/* 共通ボタンスタイル */
+button,
+.controls button,
+.sort-area button,
+.merge-row button {
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+
+button:hover,
+.controls button:hover,
+.sort-area button:hover,
+.merge-row button:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+/* ダークテーマ時のボタン */
+body.dark button,
+body.dark .controls button,
+body.dark .sort-area button,
+body.dark .merge-row button,
+body.amoled button,
+body.amoled .controls button,
+body.amoled .sort-area button,
+body.amoled .merge-row button {
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.1);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+body.dark button:hover,
+body.dark .controls button:hover,
+body.dark .sort-area button:hover,
+body.dark .merge-row button:hover,
+body.amoled button:hover,
+body.amoled .controls button:hover,
+body.amoled .sort-area button:hover,
+body.amoled .merge-row button:hover {
+  background: rgba(255,255,255,0.18);
+}
+
+.header-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.date-range label {
+  font-size: 13px;
+  color: var(--muted);
+  margin-right: 8px;
+}
+
+.sort-area {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* JSON結合パネル */
+.json-merge-panel {
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  background: var(--card);
+  max-height: 500px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.json-merge-panel.hidden {
+  max-height: 0;
+  padding: 0 12px;
+  overflow: hidden;
+  margin-top: 2;
+}
+
+/* JSON結合セクション */
+.json-merge-section {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.json-merge-section summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+  user-select: none;
+  padding: 4px 0;
+  position: relative;
+  display: inline-block;
+  list-style: none;
+}
+
+.json-merge-section summary::-webkit-details-marker {
+  display: none;
+}
+
+.json-merge-section summary:hover {
+  color: var(--muted);
+}
+
+.merge-help-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+  text-align: center;
+  border-radius: 50%;
+  background: rgba(100,150,200,0.2);
+  color: #5b8ec6;
+  font-size: 11px;
+  font-weight: bold;
+  margin-left: 6px;
+  cursor: help;
+  position: relative;
+}
+
+body.dark .merge-help-icon,
+body.amoled .merge-help-icon {
+  background: rgba(100,150,200,0.3);
+  color: #7ba8d8;
+}
+
+.merge-help-icon:hover + .merge-help-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.merge-help-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  width: 280px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-5px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+  pointer-events: none;
+}
+
+body.dark .merge-help-tooltip,
+body.amoled .merge-help-tooltip {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.merge-content {
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(0,0,0,0.02);
+  border-radius: 6px;
+}
+
+body.dark .merge-content,
+body.amoled .merge-content {
+  background: rgba(255,255,255,0.05);
+}
+
+.merge-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.merge-row label {
+  font-size: 13px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.merge-row input[type="file"] {
+  font-size: 12px;
+}
+
+.merge-status {
+  margin-top: 8px;
+  font-size: 12px;
+  padding: 6px;
+  border-radius: 4px;
+  min-height: 20px;
+}
+
+.merge-status.success {
+  color: #10b981;
+  background: rgba(16,185,129,0.1);
+}
+
+.merge-status.error {
+  color: #ef4444;
+  background: rgba(239,68,68,0.1);
+}
+
+/* Gallery */
+#gallery {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 12px;
+  padding: 12px;
+}
+
+/* Card */
+.card {
+  background: var(--card);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform .12s ease;
+  color: #fff;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+/* Thumbnail */
+.thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1/1;
+  overflow: hidden;
+  background: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.thumb img,
+.thumb video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.thumb img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.thumb .count,
+.thumb .video-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  z-index: 4;
+  pointer-events: none;
+  white-space: nowrap;
+  font-family: monospace;
+}
+
+/* ライトモード時のアイコン視認性改善 */
+body:not(.dark):not(.amoled) .thumb .count,
+body:not(.dark):not(.amoled) .thumb .video-icon {
+  background: rgba(0,0,0,0.5);
+  color: #fff !important;
+  font-weight: 500;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+/* Info */
+.info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-between;
+  padding: 10px;
+  gap: 8px;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #b0b0b0;
+  flex-shrink: 0;
+}
+
+.preview {
+  font-size: 13px;
+  color: #fff;
+  max-height: 3.6em;
+  overflow: hidden;
+  flex-grow: 1;
+}
+
+.card-date {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 8px;
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+
+.card-date a {
+  margin-left: auto !important;
+  color: #1d9bf0 !important;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.card-date a:hover {
+  text-decoration: underline;
+}
+
+.media-type-label {
+  opacity: 0.5;
+  font-size: 10px;
+}
+
+/* ライトモード時のテキストカラー */
+body:not(.dark):not(.amoled) .card,
+body:not(.dark):not(.amoled) .card * {
+  color: #0f1720 !important;
+}
+
+body:not(.dark):not(.amoled) .card a,
+body:not(.dark):not(.amoled) .text-card-link,
+body:not(.dark):not(.amoled) .card-date a {
+  color: #1d9bf0 !important;
+}
+
+body:not(.dark):not(.amoled) .text-card-user {
+  color: #0f1720;
+}
+
+body:not(.dark):not(.amoled) .text-card-stats,
+body:not(.dark):not(.amoled) .text-card-footer,
+body:not(.dark):not(.amoled) .card-date {
+  color: #6b7280;
+}
+
+body:not(.dark):not(.amoled) .text-card-content {
+  color: #0f1720;
+}
+
+/* ダーク&AMOLEDモード時の統一色 */
+body.dark .card-date,
+body.dark .text-card-footer,
+body.amoled .card-date,
+body.amoled .text-card-footer {
+  color: rgba(255,255,255,0.65);
+}
+
+.card-date {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.card-date a {
+  margin-left: auto !important;
+  color: #1d9bf0 !important;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.card-date a:hover {
+  text-decoration: underline;
+}
+
+/* スマホ表示時: メディア付きカードのリンクを右下に配置 */
+@media (max-width:768px) {
+  .card .info {
+    position: relative;
+    padding-bottom: 28px;
+  }
+  
+  .card .card-date {
+    flex-wrap: nowrap;
+    position: static;
+    margin-bottom: 0;
+  }
+  
+  .card .card-date > span:first-child {
+    white-space: nowrap;
+  }
+  
+  .card .media-type-label {
+    position: absolute;
+    bottom: 12px;
+    left: 10px;
+    margin: 0;
+  }
+  
+  .card .card-date a {
+    position: absolute;
+    bottom: 12px;
+    right: 10px;
+    margin: 0;
+  }
+  
+  /* テキストのみカードは変更なし */
+  .text-only-card .text-card-footer {
+    position: static;
+  }
+  
+  .text-only-card .text-card-footer a {
+    position: static;
+  }
+  
+  .text-only-card .text-card-footer .media-type-label {
+    position: static;
+  }
+}
+
+/* Text-only card */
+.text-only-card {
+  aspect-ratio: 1/1.5;
+  background: var(--card);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  cursor: pointer;
+  transition: transform .12s ease;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  justify-content: space-between;
+}
+
+.text-only-card:hover {
+  transform: translateY(-4px);
+}
+
+.text-card-user {
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.text-card-stats {
+  font-size: 12px;
+  color: #b0b0b0;
+  margin-bottom: 8px;
+}
+
+.text-card-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #fff;
+  overflow: hidden;
+  padding: 8px 0;
+}
+
+.text-card-content.long-text {
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.text-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 8px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.no-media-label {
+  opacity: 0.5;
+  font-size: 10px;
+}
+
+.text-card-link {
+  color: #1d9bf0 !important;
+  text-decoration: none;
+  font-size: 11px;
+}
+
+.text-card-link:hover {
+  text-decoration: underline;
+}
+
+/* ライトモード時のテキストカラー */
+body:not(.dark):not(.amoled) .card,
+body:not(.dark):not(.amoled) .card * {
+  color: #0f1720 !important;
+}
+
+body:not(.dark):not(.amoled) .card a,
+body:not(.dark):not(.amoled) .text-card-link,
+body:not(.dark):not(.amoled) .card-date a {
+  color: #1d9bf0 !important;
+}
+
+body:not(.dark):not(.amoled) .text-card-user {
+  color: #0f1720;
+}
+
+body:not(.dark):not(.amoled) .text-card-stats,
+body:not(.dark):not(.amoled) .text-card-footer,
+body:not(.dark):not(.amoled) .card-date {
+  color: #6b7280;
+}
+
+body:not(.dark):not(.amoled) .text-card-content {
+  color: #0f1720;
+}
+
+/* ダーク&AMOLEDモード時の統一色 */
+body.dark .card-date,
+body.dark .text-card-footer,
+body.amoled .card-date,
+body.amoled .text-card-footer {
+  color: rgba(255,255,255,0.65);
+}
+
+/* Modal */
+#modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 9999;
+  color: #fff;
+  padding: 0;
+}
+
+#modal.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+#modalInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin: 0 auto;
+  width: 100%;
+  position: relative;
+  z-index: 10000;
+}
+
+#modalText {
+  color: #fff;
+  padding: 20px;
+  max-width: 90%;
+  max-height: 90%;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+#modalImg,
+#modalVideo {
+  display: block;
+  margin: 0 auto;
+  max-width: 95%;
+  max-height: 95vh;
+  height: auto;
+  object-fit: contain;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: #000;
+  cursor: zoom-out;
+  touch-action: none;
+  transition: transform 0.15s ease;
+}
+
+#prevBtn,
+#nextBtn,
+#closeModal {
+  position: absolute;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  font-size: 28px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 10001;
+  user-select: none;
+  transition: background 0.2s;
+}
+
+#prevBtn:hover,
+#nextBtn:hover,
+#closeModal:hover {
+  background: rgba(255,255,255,0.35);
+}
+
+#prevBtn {
+  left: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#nextBtn {
+  right: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#closeModal {
+  top: 40px;
+  right: 40px;
+  transform: none;
+  font-size: 26px;
+}
+
+#modalCounter {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  letter-spacing: 0.5px;
+  z-index: 130;
+  pointer-events: none;
+}
+
+.modal-btn {
+  pointer-events: auto;
+  z-index: 200;
+}
+
+/* Cache select */
+.cache-select-theme,
+.cache-select-theme option {
+  background: var(--card) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+/* PC */
+@media (min-width:769px) {
+  #modal img,
+  #modal video {
+    max-width: 85vw !important;
+    max-height: 85vh !important;
+    object-fit: contain;
+  }
+}
+
+@media (min-width:768px) {
+  main#gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    padding: 20px;
+  }
+}
+
+/* Mobile */
+@media (max-width:768px) {
+  .header-top {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  #title {
+    font-size: 16px;
+  }
+  
+  #gallery {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 8px;
+  }
+  
+  #prevBtn,
+  #nextBtn {
+    display: none !important;
+  }
+  
+  #closeModal {
+    position: absolute !important;
+    top: 16px !important;
+    right: 16px !important;
+    background: none !important;
+    border: none !important;
+    color: #fff !important;
+    font-size: 32px !important;
+    font-weight: 300 !important;
+    line-height: 1 !important;
+    padding: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    z-index: 10002 !important;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    transform: none !important;
+  }
+  
+  #closeModal:active {
+    opacity: 0.7;
+  }
+  
+  #modalCounter {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    background: rgba(0,0,0,0.5);
+    padding: 3px 6px;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  
+  #modalInner {
+    padding: 0;
+    width: 100vw;
+  }
+  
+  #modalImg,
+  #modalVideo {
+    width: 100%;
+  }
+}
+
+@media (max-width:520px) {
+  #gallery {
+    gap: 8px;
+    padding: 8px;
+  }
+  
+  .controls {
+    gap: 6px;
+  }
+  
+  .thumb .count,
+  .thumb .video-icon {
+    font-size: 11px;
+    padding: 3px 5px;
+  }
+}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <h1 id="title">X いいねビューア</h1>
+      <div class="controls">
+        <input id="jsonFile" type="file" accept=".json" />
+        <input id="searchInput" type="search" placeholder="本文・ユーザー名で検索" style="max-width:180px" />
+        <button id="searchBtn" type="button">検索</button>
+        <select id="langSelect">
+          <option value="ja">日本語</option>
+          <option value="en">English</option>
+          <option value="zh">简体中文</option>
+          <option value="ko">한국어</option>
+        </select>
+        <button id="themeToggle" type="button" title="テーマ切替">🌗</button>
+        <span id="tweetCount" style="font-size:13px;color:var(--muted);white-space:nowrap;margin-left:4px"></span>
+      </div>
+    </div>
+
+    <div class="header-bottom">
+      <div class="date-range">
+        <label>開始: <input id="startDate" type="date" /></label>
+        <label>終了: <input id="endDate" type="date" /></label>
+      </div>
+
+      <div class="sort-area">
+        <select id="sortSelect">
+          <option value="newest">新しい順</option>
+          <option value="oldest">古い順</option>
+          <option value="likes">いいね数順</option>
+        </select>
+        <button id="applyFilter" type="button">適用</button>
+        <button id="clearFilter" type="button">解除</button>
+        <span id="jsonMergeToggle" style="cursor:pointer;font-size:14px;color:var(--muted);user-select:none;margin-left:8px" title="JSON結合">﹀</span>
+      </div>
+    </div>
+    
+    <div id="jsonMergePanel" class="json-merge-panel hidden">
+      <details class="json-merge-section">
+        <summary>
+          JSONの結合
+          <span class="merge-help-icon" title="">?</span>
+          <div class="merge-help-tooltip">
+            初回のエクスポートからいいねが増えた場合､お手元のJSONを基準とし追加分のみ後から選択することで単一のJSONに結合できます。これにより再度全てのデータを読み込む手間が不要となります。
+          </div>
+        </summary>
+        <div class="merge-content">
+          <div class="merge-row">
+            <label>基準JSON: <input id="mergeBase" type="file" accept=".json" /></label>
+            <label>追加JSON: <input id="mergeAdd" type="file" accept=".json" /></label>
+          </div>
+          <div class="merge-row" style="margin-top:8px;">
+            <label>ファイル名: <input id="mergeFileName" type="text" placeholder="merged" style="width:150px;" /></label>
+            <button id="executeMerge" type="button">結合実行</button>
+          </div>
+          <div id="mergeStatus" class="merge-status"></div>
+        </div>
+      </details>
+    </div>
+  </header>
+
+  <main id="gallery" aria-live="polite"></main>
+
+  <div id="modal" class="hidden" role="dialog" aria-modal="true">
+    <button id="closeModal" class="modal-btn close" type="button">✕</button>
+    <button id="prevBtn" class="modal-btn left" type="button">◀</button>
+    <div id="modalInner">
+      <img id="modalImg" alt="">
+      <video id="modalVideo" controls style="display:none"></video>
+      <div id="modalText" style="display:none"></div>
+    </div>
+    <button id="nextBtn" class="modal-btn right" type="button">▶</button>
+    <div id="modalCounter" aria-hidden="true"></div>
+  </div>
+
+  <script>
+/* X いいねビューア v41 - 整理版 */
+
+(() => {
+  // DOM要素
+  const fileInput = document.getElementById('jsonFile');
+  const gallery = document.getElementById('gallery');
+  const searchInput = document.getElementById('searchInput');
+  const langSelect = document.getElementById('langSelect');
+  const themeToggle = document.getElementById('themeToggle');
+  const startDateEl = document.getElementById('startDate');
+  const endDateEl = document.getElementById('endDate');
+  const sortSelect = document.getElementById('sortSelect');
+  const applyBtn = document.getElementById('applyFilter');
+  const clearBtn = document.getElementById('clearFilter');
+  const tweetCount = document.getElementById('tweetCount');
+  const jsonMergeToggle = document.getElementById('jsonMergeToggle');
+  const jsonMergePanel = document.getElementById('jsonMergePanel');
+  
+  // JSONマージ用要素
+  const mergeBaseInput = document.getElementById('mergeBase');
+  const mergeAddInput = document.getElementById('mergeAdd');
+  const mergeFileNameInput = document.getElementById('mergeFileName');
+  const executeMergeBtn = document.getElementById('executeMerge');
+  const mergeStatus = document.getElementById('mergeStatus');
+
+  // モーダル
+  const modal = document.getElementById('modal');
+  const modalImg = document.getElementById('modalImg');
+  const modalVideo = document.getElementById('modalVideo');
+  const modalText = document.getElementById('modalText');
+  const closeModal = document.getElementById('closeModal');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const modalCounter = document.getElementById('modalCounter');
+
+  // 状態管理
+  let allTweets = [];
+  let viewTweets = [];
+  let modalList = [];
+  let modalIndex = 0;
+
+  // キャッシュ管理
+  const CACHE_LIST_KEY = 'xviewer_json_list';
+  const CACHE_CURRENT_KEY = 'xviewer_current_cache_id';
+  let jsonCacheList = [];
+
+  // Intersection Observer
+  let videoObserver = null;
+  let videoPlayTimeout = new Map();
+
+  // 初期化
+  (function init() {
+    const theme = localStorage.getItem('xviewer_theme') || 'light';
+    if (theme === 'dark') document.body.classList.add('dark');
+    else if (theme === 'amoled') document.body.classList.add('amoled');
+    
+    const savedLang = localStorage.getItem('xviewer_lang') || 'ja';
+    langSelect.value = savedLang;
+    
+    // 英語選択時の属性設定
+    if (savedLang === 'en') {
+      langSelect.setAttribute('data-selected', 'en');
+    }
+    
+    applyLanguage(savedLang);
+    
+    // Intersection Observer初期化
+    if ('IntersectionObserver' in window) {
+      videoObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          const video = entry.target;
+          if (entry.isIntersecting) {
+            const timeout = setTimeout(() => {
+              if (video.paused && entry.isIntersecting) video.play().catch(() => {});
+              videoPlayTimeout.delete(video);
+            }, 300);
+            videoPlayTimeout.set(video, timeout);
+          } else {
+            const timeout = videoPlayTimeout.get(video);
+            if (timeout) {
+              clearTimeout(timeout);
+              videoPlayTimeout.delete(video);
+            }
+            video.pause();
+            if (entry.intersectionRatio === 0) {
+              video.removeAttribute('src');
+              video.load();
+            }
+          }
+        });
+      }, { threshold: 0.25, rootMargin: '50px' });
+    }
+    
+    loadCacheList();
+    const currentId = localStorage.getItem(CACHE_CURRENT_KEY);
+    if (currentId) loadCachedJsonById(currentId);
+  })();
+
+  // ヘルパー関数
+  function stripSpaces(u) {
+    if (!u) return null;
+    return String(u).replace(/\uFEFF/g, '').trim();
+  }
+
+  function tryOrigFromThumb(u) {
+    if (!u) return u;
+    return /name=thumb/i.test(u) ? u.replace(/name=thumb/i, 'name=orig') : u;
+  }
+
+  function isImage(u) { 
+    return /\.(jpe?g|png|gif|webp)(\?|$)/i.test(u) || /pbs\.twimg\.com/i.test(u); 
+  }
+  
+  function isVideo(u) { 
+    return /\.(mp4|webm|mov)(\?|$)/i.test(u) || /video/i.test(u); 
+  }
+
+  function extractTweetsFromJson(data) {
+    if (!data) return [];
+    if (data.globalObjects?.tweets) return Object.values(data.globalObjects.tweets);
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data.tweets)) return data.tweets;
+    const found = [];
+    (function walk(o) {
+      if (!o || typeof o !== 'object') return;
+      if ((o.created_at || o.date) && (o.full_text || o.text)) { 
+        found.push(o); 
+        return; 
+      }
+      for (const k in o) {
+        if (Object.prototype.hasOwnProperty.call(o, k)) walk(o[k]);
+      }
+    })(data);
+    return found;
+  }
+
+  function gatherMedia(tweet) {
+    const src = tweet.media || tweet.extended_entities?.media || tweet.entities?.media || null;
+    let arr = [];
+    if (Array.isArray(src) && src.length) {
+      arr = src.map(m => {
+        const type = (m.type || '').toLowerCase();
+        const thumb = stripSpaces(m.thumbnail || m.thumb);
+        let full = stripSpaces(m.original || m.original_url || m.url);
+        if ((type === 'video' || type === 'animated_gif') && m.original) {
+          full = stripSpaces(m.original);
+        }
+        if (!full && thumb) full = tryOrigFromThumb(thumb);
+        
+        let duration = 0;
+        if (type === 'video' || type === 'animated_gif') {
+          if (m.video_info?.duration_millis) {
+            duration = Math.floor(m.video_info.duration_millis / 1000);
+          } else if (m.duration) {
+            duration = Math.floor(m.duration);
+          }
+        }
+        
+        return { type, full, thumb, duration };
+      }).filter(Boolean);
+    } else {
+      const p = (tweet.full_text || tweet.text || '').match(/https?:\/\/pbs\.twimg\.com\/[^\s"']+/ig) || [];
+      arr = p.map(u => ({ 
+        type: isVideo(u) ? 'video' : 'photo', 
+        full: tryOrigFromThumb(stripSpaces(u)), 
+        thumb: stripSpaces(u), 
+        duration: 0 
+      }));
+    }
+    return arr.filter(m => m.full || m.thumb);
+  }
+
+  function extractFirstLink(text) {
+    const m = (text || '').match(/https?:\/\/[^\s]+/);
+    return m ? m[0] : '';
+  }
+
+  // キャッシュ管理
+  function loadCacheList() {
+    try {
+      const stored = localStorage.getItem(CACHE_LIST_KEY);
+      if (stored) {
+        jsonCacheList = JSON.parse(stored);
+        updateCacheDropdown();
+      }
+    } catch (err) {
+      console.warn('キャッシュ読み込みエラー:', err);
+      jsonCacheList = [];
+    }
+  }
+
+  function saveCacheList() {
+    try {
+      localStorage.setItem(CACHE_LIST_KEY, JSON.stringify(jsonCacheList));
+    } catch (err) {
+      console.warn('キャッシュ保存エラー:', err);
+    }
+  }
+
+  function loadCachedJsonById(id) {
+    try {
+      const cacheItem = jsonCacheList.find(item => item.id === id);
+      if (!cacheItem) return;
+
+      const extracted = extractTweetsFromJson(cacheItem.data);
+      if (!extracted.length) return;
+
+      allTweets = extracted.map(raw => ({
+        id: raw.id_str || raw.id || '',
+        created_at: raw.created_at || raw.date || '',
+        full_text: raw.full_text || raw.text || '',
+        name: raw.name || raw.user?.name || '',
+        screen_name: raw.screen_name || raw.user?.screen_name || raw.user?.screen_name_str || '',
+        profile_image_url: stripSpaces(raw.profile_image_url || raw.user?.profile_image_url),
+        url: raw.url || extractFirstLink(raw.full_text || raw.text || '') || '',
+        favorite_count: Number(raw.favorite_count || raw.favorite_count_str || raw.favourite_count || 0),
+        retweet_count: Number(raw.retweet_count || raw.retweet_count_str || 0),
+        views_count: Number(raw.views_count || raw.views || 0),
+        media: gatherMedia(raw)
+      }));
+      
+      localStorage.setItem(CACHE_CURRENT_KEY, id);
+      applyFiltersAndRender();
+      updateCacheDropdown();
+      console.log('✅ キャッシュ復元:', cacheItem.name);
+    } catch (err) {
+      console.warn('キャッシュ読み込みエラー:', err);
+    }
+  }
+
+  function saveJsonToCache(data, filename) {
+    try {
+      const id = 'cache_' + Date.now();
+      const name = filename || `JSON_${new Date().toLocaleString('ja-JP')}`;
+      jsonCacheList.push({ id, name, timestamp: Date.now(), data });
+      if (jsonCacheList.length > 10) {
+        jsonCacheList.sort((a, b) => b.timestamp - a.timestamp);
+        jsonCacheList = jsonCacheList.slice(0, 10);
+      }
+      saveCacheList();
+      localStorage.setItem(CACHE_CURRENT_KEY, id);
+      updateCacheDropdown();
+      console.log('✅ キャッシュ保存:', name);
+    } catch (err) {
+      console.warn('キャッシュ保存エラー:', err);
+    }
+  }
+
+  function updateCacheDropdown() {
+    const lang = window.currentLanguage || { cacheSelect: '履歴を選択', deleteCache: '現在の履歴を削除' };
+    const currentId = localStorage.getItem(CACHE_CURRENT_KEY);
+    const container = document.querySelector('.cache-dropdown-container');
+    
+    if (!container) {
+      createCacheDropdown();
+      return;
+    }
+
+    const select = container.querySelector('select');
+    if (!select) return;
+
+    select.innerHTML = `<option value="">${lang.cacheSelect}</option>`;
+    jsonCacheList.sort((a, b) => b.timestamp - a.timestamp).forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.id;
+      option.textContent = item.name;
+      if (item.id === currentId) option.selected = true;
+      select.appendChild(option);
+    });
+
+    const deleteBtn = container.querySelector('.delete-cache-btn');
+    if (deleteBtn) {
+      deleteBtn.style.display = currentId ? 'inline-block' : 'none';
+      deleteBtn.title = lang.deleteCache;
+    }
+  }
+
+  function createCacheDropdown() {
+    const lang = window.currentLanguage || { cacheSelect: '履歴を選択', deleteCache: '現在の履歴を削除' };
+    const container = document.createElement('div');
+    container.className = 'cache-dropdown-container';
+    container.style.cssText = 'display:flex;gap:6px;align-items:center';
+
+    const select = document.createElement('select');
+    select.id = 'cacheSelect';
+    select.className = 'cache-select-theme';
+    select.style.cssText = 'padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);min-width:150px';
+    select.innerHTML = `<option value="">${lang.cacheSelect}</option>`;
+
+    const currentId = localStorage.getItem(CACHE_CURRENT_KEY);
+    jsonCacheList.sort((a, b) => b.timestamp - a.timestamp).forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.id;
+      option.textContent = item.name;
+      if (item.id === currentId) option.selected = true;
+      select.appendChild(option);
+    });
+
+    select.addEventListener('change', (e) => {
+      if (e.target.value) loadCachedJsonById(e.target.value);
+    });
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-cache-btn';
+    deleteBtn.textContent = '🗑️';
+    deleteBtn.title = lang.deleteCache;
+    deleteBtn.style.cssText = 'padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;display:' + (currentId ? 'inline-block' : 'none');
+
+    deleteBtn.addEventListener('click', () => {
+      const id = select.value;
+      if (!id) return;
+      
+      const confirmMsg = lang.cacheSelect.includes('history') ? 'Delete this history?' 
+                       : lang.cacheSelect.includes('历史') ? '删除此历史记录?'
+                       : lang.cacheSelect.includes('기록') ? '이 기록을 삭제하시겠습니까?'
+                       : 'この履歴を削除しますか?';
+      
+      if (confirm(confirmMsg)) {
+        jsonCacheList = jsonCacheList.filter(item => item.id !== id);
+        saveCacheList();
+        if (localStorage.getItem(CACHE_CURRENT_KEY) === id) {
+          localStorage.removeItem(CACHE_CURRENT_KEY);
+          allTweets = [];
+          viewTweets = [];
+          renderGallery();
+        }
+        updateCacheDropdown();
+      }
+    });
+
+    container.appendChild(select);
+    container.appendChild(deleteBtn);
+
+    const controls = document.querySelector('.controls');
+    if (controls && fileInput) {
+      fileInput.parentNode.insertBefore(container, fileInput.nextSibling);
+    }
+  }
+
+  // ファイル読み込み
+  fileInput.addEventListener('change', e => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      let txt = ev.target.result;
+      if (txt?.charCodeAt(0) === 0xFEFF) txt = txt.slice(1);
+      try {
+        const parsed = JSON.parse(txt);
+        const extracted = extractTweetsFromJson(parsed);
+        if (!extracted.length) { 
+          alert('ツイートデータが見つかりませんでした'); 
+          return; 
+        }
+        
+        saveJsonToCache(parsed, f.name);
+        
+        allTweets = extracted.map(raw => ({
+          id: raw.id_str || raw.id || '',
+          created_at: raw.created_at || raw.date || '',
+          full_text: raw.full_text || raw.text || '',
+          name: raw.name || raw.user?.name || '',
+          screen_name: raw.screen_name || raw.user?.screen_name || raw.user?.screen_name_str || '',
+          profile_image_url: stripSpaces(raw.profile_image_url || raw.user?.profile_image_url),
+          url: raw.url || extractFirstLink(raw.full_text || raw.text || '') || '',
+          favorite_count: Number(raw.favorite_count || raw.favorite_count_str || raw.favourite_count || 0),
+          retweet_count: Number(raw.retweet_count || raw.retweet_count_str || 0),
+          views_count: Number(raw.views_count || raw.views || 0),
+          media: gatherMedia(raw)
+        }));
+        applyFiltersAndRender();
+      } catch (err) {
+        console.error(err);
+        alert('JSON解析エラー: ' + (err?.message || err));
+      }
+    };
+    r.onerror = () => alert('ファイル読み込みエラー');
+    r.readAsText(f, 'UTF-8');
+  });
+
+  // 高度な検索
+  function advancedSearch(query, haystack) {
+    const minusTerms = [];
+    const minusMatches = query.match(/-(\S+)/g);
+    if (minusMatches) {
+      minusMatches.forEach(term => minusTerms.push(term.substring(1).toLowerCase()));
+    }
+    
+    for (const term of minusTerms) {
+      if (haystack.includes(term)) return false;
+    }
+    
+    let cleanQuery = query.replace(/-\S+/g, '').trim();
+    if (!cleanQuery) return true;
+    
+    if (/\sOR\s/i.test(cleanQuery) || /\|/.test(cleanQuery)) {
+      const orTerms = cleanQuery.split(/\sOR\s|\|/i).map(t => t.trim().toLowerCase());
+      return orTerms.some(term => {
+        if (/\sAND\s/i.test(term) || /\s&\s/.test(term)) {
+          const andTerms = term.split(/\sAND\s|\s&\s/i).map(t => t.trim());
+          return andTerms.every(t => haystack.includes(t));
+        }
+        return haystack.includes(term);
+      });
+    }
+    
+    if (/\sAND\s/i.test(cleanQuery) || /\s&\s/.test(cleanQuery)) {
+      const andTerms = cleanQuery.split(/\sAND\s|\s&\s/i).map(t => t.trim().toLowerCase());
+      return andTerms.every(term => haystack.includes(term));
+    }
+    
+    const terms = cleanQuery.split(/\s+/).filter(Boolean);
+    return terms.every(term => haystack.toLowerCase().includes(term.toLowerCase()));
+  }
+
+  // フィルタリング
+  function applyFiltersAndRender() {
+    const q = searchInput.value.trim();
+    const start = startDateEl.value ? new Date(startDateEl.value) : null;
+    const end = endDateEl.value ? new Date(endDateEl.value + 'T23:59:59') : null;
+
+    viewTweets = allTweets.filter(t => {
+      const dt = t.created_at ? new Date(t.created_at) : null;
+      if (start && (!dt || dt < start)) return false;
+      if (end && (!dt || dt > end)) return false;
+      
+      if (q) {
+        const hay = ((t.full_text || '') + ' ' + (t.name || '') + ' ' + (t.screen_name || '')).toLowerCase();
+        if (!advancedSearch(q, hay)) return false;
+      }
+      
+      return true;
+    });
+
+    const s = sortSelect.value;
+    if (s === 'newest') {
+      viewTweets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    } else if (s === 'oldest') {
+      viewTweets.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    } else if (s === 'likes') {
+      viewTweets.sort((a, b) => (b.favorite_count || 0) - (a.favorite_count || 0));
+    }
+
+    updateTweetCount();
+    renderGallery();
+  }
+
+  // ツイート件数表示
+  function updateTweetCount() {
+    const lang = window.currentLanguage || {
+      tweetCount: '件の投稿'
+    };
+    if (tweetCount) {
+      tweetCount.textContent = `${viewTweets.length}${lang.tweetCount}`;
+    }
+  }
+
+  // レンダリング
+  function renderGallery() {
+    const lang = window.currentLanguage || {
+      noResults: '表示する投稿がありません。',
+      noText: '(本文なし)',
+      imageCount: '枚',
+      openTweet: '投稿を開く'
+    };
+    
+    gallery.innerHTML = '';
+    if (!viewTweets.length) { 
+      gallery.innerHTML = `<div style="padding:18px;color:var(--muted)">${lang.noResults}</div>`; 
+      return; 
+    }
+    
+    viewTweets.forEach((t) => {
+      const card = document.createElement('article');
+      card.className = 'card';
+
+      if (!t.media?.length) {
+        // テキストのみ
+        card.classList.add('text-only-card');
+        
+        const userInfo = document.createElement('div');
+        userInfo.className = 'text-card-user';
+        userInfo.textContent = `${t.name || ''} (@${t.screen_name || ''})`;
+        
+        const stats = document.createElement('div');
+        stats.className = 'text-card-stats';
+        stats.innerHTML = `❤ ${t.favorite_count || 0}　🔁 ${t.retweet_count || 0}`;
+        
+        const textContent = document.createElement('div');
+        textContent.className = 'text-card-content';
+        const fullText = t.full_text || lang.noText;
+        if (fullText.length > 140) textContent.classList.add('long-text');
+        textContent.textContent = fullText;
+        
+        const footer = document.createElement('div');
+        footer.className = 'text-card-footer';
+        
+        const dateSpan = document.createElement('span');
+        dateSpan.textContent = t.created_at || '';
+        
+        const noMediaLabel = document.createElement('span');
+        noMediaLabel.className = 'no-media-label';
+        noMediaLabel.textContent = 'No Media';
+        
+        const linkSpan = document.createElement('span');
+        if (t.url || (t.screen_name && t.id)) {
+          const tweetLink = document.createElement('a');
+          tweetLink.href = t.url || `https://twitter.com/${t.screen_name}/status/${t.id}`;
+          tweetLink.target = '_blank';
+          tweetLink.rel = 'noopener noreferrer';
+          tweetLink.textContent = lang.openTweet;
+          tweetLink.className = 'text-card-link';
+          tweetLink.addEventListener('click', e => e.stopPropagation());
+          linkSpan.appendChild(tweetLink);
+        }
+        
+        footer.append(dateSpan, noMediaLabel, linkSpan);
+        card.append(userInfo, stats, textContent, footer);
+        card.addEventListener('click', () => openModalWithText(fullText));
+        gallery.appendChild(card);
+        return;
+      }
+
+      // メディアあり
+      const thumb = document.createElement('div');
+      thumb.className = 'thumb';
+      
+      const first = t.media[0];
+
+      if (first && (first.type === 'video' || first.type === 'animated_gif' || isVideo(first.full || first.thumb))) {
+        const v = document.createElement('video');
+        const srcUrl = (first.full || first.thumb || '').trim();
+        v.dataset.src = srcUrl;
+        v.src = srcUrl;
+        v.muted = true;
+        v.loop = true;
+        v.playsInline = true;
+        v.loading = 'lazy';
+        v.preload = 'none';
+        if (first.thumb) v.poster = first.thumb;
+        if (videoObserver) videoObserver.observe(v);
+        thumb.appendChild(v);
+
+        const icon = document.createElement('div');
+        icon.className = 'video-icon';
+        
+        let iconText = (first.type === 'animated_gif' || /gif/i.test(first.type)) ? 'GIF' : '🎥';
+        if (first.duration && first.duration > 0 && first.type !== 'animated_gif' && !/gif/i.test(first.type)) {
+          const minutes = Math.floor(first.duration / 60);
+          const seconds = first.duration % 60;
+          const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+          iconText += ` ${timeStr}`;
+        }
+        
+        icon.textContent = iconText;
+        thumb.appendChild(icon);
+      } else {
+        const img = document.createElement('img');
+        img.src = (first.thumb || first.full || '').trim();
+        img.alt = (t.full_text || '').slice(0, 120);
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        thumb.appendChild(img);
+      }
+
+      if (t.media.length > 1) {
+        const count = document.createElement('div');
+        count.className = 'count';
+        count.textContent = `${t.media.length}${lang.imageCount}`;
+        thumb.appendChild(count);
+      }
+
+      thumb.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const arr = t.media.map(m => (m.full || m.thumb || '').trim()).filter(Boolean);
+        openModalWithMedia(arr);
+      });
+
+      const info = document.createElement('div');
+      info.className = 'info';
+      
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      const left = document.createElement('div');
+      left.textContent = `${t.name || ''} (@${t.screen_name || ''})`;
+      const right = document.createElement('div');
+      right.innerHTML = `❤ ${t.favorite_count || 0}　🔁 ${t.retweet_count || 0}`;
+      meta.append(left, right);
+
+      const preview = document.createElement('div');
+      preview.className = 'preview';
+      preview.textContent = (t.full_text || '').slice(0, 180);
+
+      const date = document.createElement('div');
+      date.className = 'card-date';
+      
+      const dateText = document.createElement('span');
+      dateText.textContent = t.created_at || '';
+      dateText.style.whiteSpace = 'nowrap';
+      
+      // メディアタイプ表示
+      const mediaTypeSpan = document.createElement('span');
+      mediaTypeSpan.className = 'media-type-label';
+      if (t.media && t.media.length > 0) {
+        let mediaTypes = [];
+        let gifCount = 0;
+        let mp4Count = 0;
+        let jpgCount = 0;
+        
+        t.media.forEach(m => {
+          if (m.type === 'animated_gif' || /gif/i.test(m.full || m.thumb)) {
+            gifCount++;
+          } else if (m.type === 'video' || /mp4|webm|mov/i.test(m.full || m.thumb)) {
+            mp4Count++;
+          } else {
+            jpgCount++;
+          }
+        });
+        
+        if (jpgCount > 0) mediaTypes.push('JPG');
+        if (gifCount > 0) mediaTypes.push('GIF');
+        if (mp4Count > 0) mediaTypes.push('MP4');
+        
+        const typeText = mediaTypes.join('/');
+        const countText = t.media.length > 1 ? `/${t.media.length}${lang.imageCount}` : '';
+        mediaTypeSpan.textContent = typeText + countText;
+      }
+      
+      const linkWrapper = document.createElement('span');
+      if (t.url || (t.screen_name && t.id)) {
+        const tweetLink = document.createElement('a');
+        tweetLink.href = t.url || `https://twitter.com/${t.screen_name}/status/${t.id}`;
+        tweetLink.target = '_blank';
+        tweetLink.rel = 'noopener noreferrer';
+        tweetLink.textContent = lang.openTweet;
+        tweetLink.addEventListener('click', e => e.stopPropagation());
+        linkWrapper.appendChild(tweetLink);
+      }
+      
+      date.append(dateText, mediaTypeSpan, linkWrapper);
+      info.append(meta, preview, date);
+      card.append(thumb, info);
+
+      card.addEventListener('click', () => {
+        const arr = t.media.map(m => (m.full || m.thumb || '').trim()).filter(Boolean);
+        openModalWithMedia(arr);
+      });
+
+      gallery.appendChild(card);
+    });
+  }
+
+  // モーダル
+  function openModalWithMedia(list) {
+    modalText.style.display = 'none';
+    modalImg.style.display = 'none';
+    modalVideo.style.display = 'none';
+    modalList = list;
+    window.modalList = list;
+    modalIndex = 0;
+    window.modalIndex = 0;
+    showModalAt(modalIndex);
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    modalCounter.textContent = `${modalIndex + 1} / ${modalList.length}`;
+    updateModalNavVisibility();
+  }
+
+  function openModalWithText(text) {
+    modalList = [];
+    window.modalList = [];
+    modalIndex = 0;
+    window.modalIndex = 0;
+    modalImg.style.display = 'none';
+    modalVideo.style.display = 'none';
+    modalText.style.display = 'block';
+    modalText.textContent = text;
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    modalCounter.textContent = '';
+    updateModalNavVisibility();
+  }
+
+  function showModalAt(i) {
+    if (!modalList.length) return;
+    modalIndex = (i + modalList.length) % modalList.length;
+    window.modalIndex = modalIndex;
+    const url = modalList[modalIndex];
+    if (isVideo(url)) {
+      modalImg.style.display = 'none';
+      modalVideo.style.display = 'block';
+      modalVideo.src = url;
+      modalVideo.play().catch(() => {});
+    } else {
+      modalVideo.pause();
+      modalVideo.src = '';
+      modalVideo.style.display = 'none';
+      modalImg.style.display = 'block';
+      modalImg.src = url;
+      modalImg.style.transform = 'translate(0,0) scale(1)';
+    }
+    modalCounter.textContent = `${modalIndex + 1} / ${modalList.length}`;
+  }
+  
+  window.showModalAt = showModalAt;
+
+  function updateModalNavVisibility() {
+    const visible = modalList.length > 1;
+    prevBtn.style.display = visible ? 'inline-block' : 'none';
+    nextBtn.style.display = visible ? 'inline-block' : 'none';
+  }
+
+  closeModal.addEventListener('click', () => {
+    modal.classList.add('hidden');
+    modalVideo.pause();
+    modalVideo.src = '';
+    document.body.style.overflow = '';
+    modalImg.style.transform = 'translate(0,0) scale(1)';
+    modalText.textContent = '';
+  });
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modalImg || e.target === modalVideo || e.target === modalText || 
+        e.target.closest('#modalInner') || e.target.closest('.modal-btn')) return;
+    closeModal.click();
+  });
+
+  prevBtn.addEventListener('click', () => showModalAt(modalIndex - 1));
+  nextBtn.addEventListener('click', () => showModalAt(modalIndex + 1));
+  
+  document.addEventListener('keydown', (e) => {
+    if (modal.classList.contains('hidden')) return;
+    if (e.key === 'ArrowLeft') showModalAt(modalIndex - 1);
+    if (e.key === 'ArrowRight') showModalAt(modalIndex + 1);
+    if (e.key === 'Escape') closeModal.click();
+  });
+
+  // タッチスワイプ
+  (function() {
+    let startX = null;
+    modal.addEventListener('touchstart', e => {
+      if (e.touches?.[0]) startX = e.touches[0].clientX;
+    }, { passive: true });
+    
+    modal.addEventListener('touchend', e => {
+      if (startX === null) return;
+      const endX = e.changedTouches?.[0]?.clientX;
+      if (!endX) { startX = null; return; }
+      const dx = endX - startX;
+      if (dx > 40) showModalAt(modalIndex - 1);
+      else if (dx < -40) showModalAt(modalIndex + 1);
+      startX = null;
+    }, { passive: true });
+
+    // ピンチズーム
+    let mz_scale = 1, mz_originX = 0, mz_originY = 0, lastTouchDist = 0;
+    let mz_isDragging = false, mz_lastX = 0, mz_lastY = 0;
+
+    function getDistance(touches) {
+      const [a, b] = touches;
+      return Math.hypot(a.pageX - b.pageX, a.pageY - b.pageY);
+    }
+
+    modalImg.addEventListener('touchstart', e => {
+      if (e.touches.length === 2) {
+        lastTouchDist = getDistance(e.touches);
+      } else if (e.touches.length === 1 && mz_scale > 1) {
+        mz_isDragging = true;
+        mz_lastX = e.touches[0].pageX - mz_originX;
+        mz_lastY = e.touches[0].pageY - mz_originY;
+      }
+    }, { passive: true });
+
+    modalImg.addEventListener('touchmove', e => {
+      if (e.touches.length === 2) {
+        const newDist = getDistance(e.touches);
+        if (lastTouchDist > 0) {
+          const delta = newDist / lastTouchDist;
+          mz_scale = Math.min(Math.max(mz_scale * delta, 1), 4);
+          modalImg.style.transform = `translate(${mz_originX}px, ${mz_originY}px) scale(${mz_scale})`;
+        }
+        lastTouchDist = newDist;
+      } else if (e.touches.length === 1 && mz_isDragging) {
+        mz_originX = e.touches[0].pageX - mz_lastX;
+        mz_originY = e.touches[0].pageY - mz_lastY;
+        modalImg.style.transform = `translate(${mz_originX}px, ${mz_originY}px) scale(${mz_scale})`;
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    modalImg.addEventListener('touchend', () => {
+      if (mz_scale <= 1.01) {
+        mz_scale = 1; 
+        mz_originX = 0; 
+        mz_originY = 0;
+        modalImg.style.transform = 'translate(0,0) scale(1)';
+      }
+      mz_isDragging = false;
+    }, { passive: true });
+  })();
+
+  // ズーム&パン
+  (function() {
+    let scale = 1, originX = 0, originY = 0, lastTapTime = 0, tapTimeout = null;
+    let panStartX = 0, panStartY = 0, initialTouchX = 0, initialTouchY = 0;
+    let touchStartTime = 0, hasMoved = false, isPanning = false;
+
+    modalImg.style.transition = 'transform 0.25s ease';
+
+    modalImg.addEventListener('touchstart', e => {
+      if (e.touches.length !== 1) return;
+      const now = Date.now();
+      const touch = e.touches[0];
+      initialTouchX = touch.clientX;
+      initialTouchY = touch.clientY;
+      touchStartTime = now;
+      hasMoved = false;
+      isPanning = false;
+
+      const rect = modalImg.getBoundingClientRect();
+      const tapX = touch.clientX - rect.left - rect.width / 2;
+      const tapY = touch.clientY - rect.top - rect.height / 2;
+
+      if (now - lastTapTime < 500) {
+        clearTimeout(tapTimeout);
+        if (scale === 1) {
+          scale = 2;
+          originX = -tapX * (scale - 1);
+          originY = -tapY * (scale - 1);
+        } else {
+          scale = 1;
+          originX = 0;
+          originY = 0;
+        }
+        modalImg.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+        lastTapTime = 0;
+      } else {
+        lastTapTime = now;
+        panStartX = touch.clientX - originX;
+        panStartY = touch.clientY - originY;
+        
+        if (scale > 1) {
+          tapTimeout = setTimeout(() => {
+            const touchDuration = Date.now() - touchStartTime;
+            if (!hasMoved && !isPanning && touchDuration < 300 && scale > 1) {
+              scale = 1;
+              originX = 0;
+              originY = 0;
+              modalImg.style.transform = 'translate(0, 0) scale(1)';
+            }
+          }, 500);
+        }
+      }
+    }, { passive: true });
+
+    modalImg.addEventListener('touchmove', e => {
+      if (e.touches.length !== 1) return;
+      const touch = e.touches[0];
+      const moveDistX = Math.abs(touch.clientX - initialTouchX);
+      const moveDistY = Math.abs(touch.clientY - initialTouchY);
+      
+      if (moveDistX > 5 || moveDistY > 5) {
+        hasMoved = true;
+        clearTimeout(tapTimeout);
+      }
+      
+      if (scale > 1 && hasMoved) {
+        isPanning = true;
+        originX = touch.clientX - panStartX;
+        originY = touch.clientY - panStartY;
+        modalImg.style.transition = 'none';
+        modalImg.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, { passive: false });
+
+    modalImg.addEventListener('touchend', () => {
+      const touchDuration = Date.now() - touchStartTime;
+      if (touchDuration >= 300 || hasMoved || isPanning) clearTimeout(tapTimeout);
+      modalImg.style.transition = 'transform 0.25s ease';
+      setTimeout(() => isPanning = false, 100);
+    }, { passive: true });
+
+    // PC: マウスドラッグ
+    let mouseDown = false, mouseStartX = 0, mouseStartY = 0;
+    modalImg.addEventListener('mousedown', e => {
+      if (scale <= 1) return;
+      mouseDown = true;
+      mouseStartX = e.clientX - originX;
+      mouseStartY = e.clientY - originY;
+      modalImg.style.transition = 'none';
+      e.preventDefault();
+    });
+    
+    window.addEventListener('mousemove', e => {
+      if (!mouseDown) return;
+      originX = e.clientX - mouseStartX;
+      originY = e.clientY - mouseStartY;
+      modalImg.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+    });
+    
+    window.addEventListener('mouseup', () => {
+      mouseDown = false;
+      modalImg.style.transition = 'transform 0.25s ease';
+    });
+
+    // PC: ダブルクリック
+    modalImg.addEventListener('dblclick', (e) => {
+      if (scale === 1) {
+        scale = 2;
+        const rect = modalImg.getBoundingClientRect();
+        const clickX = e.clientX - rect.left - rect.width / 2;
+        const clickY = e.clientY - rect.top - rect.height / 2;
+        originX = -clickX * (scale - 1);
+        originY = -clickY * (scale - 1);
+      } else {
+        scale = 1;
+        originX = 0;
+        originY = 0;
+      }
+      modalImg.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+    });
+
+    closeModal.addEventListener('click', () => {
+      scale = 1;
+      originX = 0;
+      originY = 0;
+      modalImg.style.transform = 'translate(0, 0) scale(1)';
+      clearTimeout(tapTimeout);
+      lastTapTime = 0;
+      isPanning = false;
+    });
+  })();
+
+  // UIイベント
+  applyBtn.addEventListener('click', applyFiltersAndRender);
+  
+  clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    startDateEl.value = '';
+    endDateEl.value = '';
+    sortSelect.value = 'newest';
+    applyFiltersAndRender();
+  });
+  
+  searchInput.addEventListener('keypress', e => {
+    if (e.key === 'Enter') applyFiltersAndRender();
+  });
+  
+  startDateEl.addEventListener('change', applyFiltersAndRender);
+  endDateEl.addEventListener('change', applyFiltersAndRender);
+  sortSelect.addEventListener('change', applyFiltersAndRender);
+
+  // JSON結合パネルトグル
+  if (jsonMergeToggle && jsonMergePanel) {
+    jsonMergeToggle.addEventListener('click', () => {
+      jsonMergePanel.classList.toggle('hidden');
+      jsonMergeToggle.textContent = jsonMergePanel.classList.contains('hidden') ? '﹀' : '︿';
+    });
+  }
+
+  // JSONマージ機能
+  let mergeBaseData = null;
+  let mergeAddData = null;
+  
+  mergeBaseInput.addEventListener('change', e => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      try {
+        let txt = ev.target.result;
+        if (txt?.charCodeAt(0) === 0xFEFF) txt = txt.slice(1);
+        mergeBaseData = JSON.parse(txt);
+        updateMergeStatus('基準JSONを読み込みました', 'success');
+      } catch (err) {
+        updateMergeStatus('基準JSON解析エラー: ' + err.message, 'error');
+        mergeBaseData = null;
+      }
+    };
+    r.readAsText(f, 'UTF-8');
+  });
+  
+  mergeAddInput.addEventListener('change', e => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      try {
+        let txt = ev.target.result;
+        if (txt?.charCodeAt(0) === 0xFEFF) txt = txt.slice(1);
+        mergeAddData = JSON.parse(txt);
+        updateMergeStatus('追加JSONを読み込みました', 'success');
+      } catch (err) {
+        updateMergeStatus('追加JSON解析エラー: ' + err.message, 'error');
+        mergeAddData = null;
+      }
+    };
+    r.readAsText(f, 'UTF-8');
+  });
+  
+  executeMergeBtn.addEventListener('click', () => {
+    if (!mergeBaseData || !mergeAddData) {
+      updateMergeStatus('両方のJSONファイルを選択してください', 'error');
+      return;
+    }
+    
+    try {
+      let baseArray = Array.isArray(mergeBaseData) ? mergeBaseData : 
+                     mergeBaseData.globalObjects?.tweets ? Object.values(mergeBaseData.globalObjects.tweets) : [];
+      let addArray = Array.isArray(mergeAddData) ? mergeAddData :
+                    mergeAddData.globalObjects?.tweets ? Object.values(mergeAddData.globalObjects.tweets) : [];
+      
+      if (!baseArray.length || !addArray.length) {
+        updateMergeStatus('有効なツイートデータが見つかりません', 'error');
+        return;
+      }
+      
+      const mergedArray = [...baseArray, ...addArray];
+      const mergedJson = JSON.stringify(mergedArray, null, 2);
+      
+      const customName = mergeFileNameInput.value.trim();
+      const fileName = customName ? `${customName}.json` : `merged_${Date.now()}.json`;
+      
+      const blob = new Blob([mergedJson], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      updateMergeStatus(`✔ 結合完了 (基準:${baseArray.length}件 + 追加:${addArray.length}件 = 合計:${mergedArray.length}件)`, 'success');
+      
+      mergeBaseInput.value = '';
+      mergeAddInput.value = '';
+      mergeFileNameInput.value = '';
+      mergeBaseData = null;
+      mergeAddData = null;
+      
+    } catch (err) {
+      updateMergeStatus('結合エラー: ' + err.message, 'error');
+    }
+  });
+  
+  function updateMergeStatus(msg, type) {
+    mergeStatus.textContent = msg;
+    mergeStatus.className = 'merge-status ' + type;
+  }
+
+  // テーマ切り替え
+  themeToggle.addEventListener('click', () => {
+    const current = document.body.classList.contains('amoled') ? 'amoled' 
+                  : document.body.classList.contains('dark') ? 'dark' 
+                  : 'light';
+    
+    document.body.classList.remove('dark', 'amoled');
+    
+    let next;
+    if (current === 'light') {
+      next = 'dark';
+      document.body.classList.add('dark');
+    } else if (current === 'dark') {
+      next = 'amoled';
+      document.body.classList.add('amoled');
+    } else {
+      next = 'light';
+    }
+    
+    localStorage.setItem('xviewer_theme', next);
+  });
+  
+  langSelect.addEventListener('change', () => {
+    const v = langSelect.value;
+    localStorage.setItem('xviewer_lang', v);
+    
+    // 英語選択時の属性設定
+    if (v === 'en') {
+      langSelect.setAttribute('data-selected', 'en');
+    } else {
+      langSelect.removeAttribute('data-selected');
+    }
+    
+    applyLanguage(v);
+    if (viewTweets.length > 0) {
+      renderGallery();
+    }
+  });
+
+  function applyLanguage(v) {
+    const dict = {
+      ja: { 
+        title: '𝕏 いいねビューア',
+        search: '本文・ユーザー名で検索',
+        searchBtn: '検索',
+        apply: '適用',
+        clear: '解除',
+        newest: '新しい順',
+        oldest: '古い順',
+        likes: 'いいね数順',
+        openTweet: '投稿を開く',
+        noResults: '表示する投稿がありません。',
+        noText: '(本文なし)',
+        imageCount: '枚',
+        startLabel: '開始:',
+        endLabel: '終了:',
+        cacheSelect: '履歴を選択',
+        deleteCache: '現在の履歴を削除',
+        jsonMerge: 'JSONの結合',
+        mergeBase: '基準JSON:',
+        mergeAdd: '追加JSON:',
+        mergeFileName: 'ファイル名:',
+        mergeExecute: '結合実行',
+        tweetCount: '件の投稿'
+      },
+      en: { 
+        title: '𝕏 Likes Viewer',
+        search: 'Search text/user',
+        searchBtn: 'Search',
+        apply: 'Apply',
+        clear: 'Clear',
+        newest: 'Newest',
+        oldest: 'Oldest',
+        likes: 'Most Liked',
+        openTweet: 'Open Tweet',
+        noResults: 'No posts to display.',
+        noText: '(No text)',
+        imageCount: 'images',
+        startLabel: 'Start:',
+        endLabel: 'End:',
+        cacheSelect: 'Select history',
+        deleteCache: 'Delete current history',
+        jsonMerge: 'Merge JSON',
+        mergeBase: 'Base JSON:',
+        mergeAdd: 'Additional JSON:',
+        mergeFileName: 'File name:',
+        mergeExecute: 'Merge',
+        tweetCount: ' posts'
+      },
+      zh: { 
+        title: '𝕏 点赞查看',
+        search: '搜索 内容/用户名',
+        searchBtn: '搜索',
+        apply: '应用',
+        clear: '清除',
+        newest: '最新',
+        oldest: '最旧',
+        likes: '最多赞',
+        openTweet: '打开推文',
+        noResults: '没有要显示的帖子。',
+        noText: '(无文本)',
+        imageCount: '张',
+        startLabel: '开始:',
+        endLabel: '结束:',
+        cacheSelect: '选择历史',
+        deleteCache: '删除当前历史',
+        jsonMerge: '合并JSON',
+        mergeBase: '基准JSON:',
+        mergeAdd: '追加JSON:',
+        mergeFileName: '文件名:',
+        mergeExecute: '执行合并',
+        tweetCount: '条帖子'
+      },
+      ko: { 
+        title: '𝕏 좋아요 뷰어',
+        search: '텍스트/사용자 검색',
+        searchBtn: '검색',
+        apply: '적용',
+        clear: '해제',
+        newest: '최신순',
+        oldest: '오래된순',
+        likes: '좋아요순',
+        openTweet: '트윗 열기',
+        noResults: '표시할 게시물이 없습니다.',
+        noText: '(텍스트 없음)',
+        imageCount: '개',
+        startLabel: '시작:',
+        endLabel: '종료:',
+        cacheSelect: '기록 선택',
+        deleteCache: '현재 기록 삭제',
+        jsonMerge: 'JSON 병합',
+        mergeBase: '기준JSON:',
+        mergeAdd: '추가JSON:',
+        mergeFileName: '파일 이름:',
+        mergeExecute: '병합 실행',
+        tweetCount: '개 게시물'
+      }
+    };
+
+    const mergeHelpTexts = {
+      ja: "初回のエクスポートからいいねが増えた場合､お手元のJSONを基準とし追加分のみ後から選択することで単一のJSONに結合できます。これにより再度全てのデータを読み込む手間が不要となります。",
+      en: "If you've gained more likes since your first export, you can select your original JSON as the base and only choose the new one to merge them into a single file. This avoids having to reload all data again.",
+      zh: "如果在第一次导出后点赞数量增加，可以以手头的JSON为基础，仅选择新增的部分进行合并，从而生成一个单一的JSON文件。这样就不必重新加载所有数据。",
+      ko: "처음 내보낸 이후 좋아요가 늘어난 경우, 기존 JSON을 기준으로 추가된 부분만 선택해 하나의 JSON으로 결합할 수 있습니다. 이를 통해 모든 데이터를 다시 불러올 필요가 없습니다。"
+    };
+
+    const u = dict[v] || dict.ja;
+
+    document.getElementById('title').textContent = u.title;
+    searchInput.placeholder = u.search;
+    document.getElementById('searchBtn').textContent = u.searchBtn;
+    applyBtn.textContent = u.apply;
+    clearBtn.textContent = u.clear;
+
+    const options = sortSelect.querySelectorAll('option');
+    if (options[0]) options[0].textContent = u.newest;
+    if (options[1]) options[1].textContent = u.oldest;
+    if (options[2]) options[2].textContent = u.likes;
+
+    const dateLabels = document.querySelectorAll('.date-range label');
+    if (dateLabels[0]) dateLabels[0].childNodes[0].textContent = u.startLabel + ' ';
+    if (dateLabels[1]) dateLabels[1].childNodes[0].textContent = u.endLabel + ' ';
+
+    const cacheSelect = document.getElementById('cacheSelect');
+    if (cacheSelect?.options[0]) cacheSelect.options[0].textContent = u.cacheSelect;
+
+    const deleteBtn = document.querySelector('.delete-cache-btn');
+    if (deleteBtn) deleteBtn.title = u.deleteCache;
+
+    const summary = document.querySelector('.json-merge-section summary');
+    if (summary) summary.childNodes[0].textContent = `> ${u.jsonMerge}`;
+
+    const baseInput = document.getElementById('mergeBase');
+    if (baseInput) {
+      const lbl = baseInput.closest('label');
+      if (lbl) lbl.childNodes[0].textContent = u.mergeBase + " ";
+    }
+
+    const addInput = document.getElementById('mergeAdd');
+    if (addInput) {
+      const lbl = addInput.closest('label');
+      if (lbl) lbl.childNodes[0].textContent = u.mergeAdd + " ";
+    }
+
+    const fileNameInput = document.getElementById('mergeFileName');
+    if (fileNameInput) {
+      const lbl = fileNameInput.closest('label');
+      if (lbl) lbl.childNodes[0].textContent = u.mergeFileName + " ";
+    }
+
+    const execBtn = document.getElementById('executeMerge');
+    if (execBtn) execBtn.textContent = u.mergeExecute;
+
+    const mergeHelp = document.querySelector('.merge-help-tooltip');
+    if (mergeHelp && mergeHelpTexts[v]) mergeHelp.textContent = mergeHelpTexts[v];
+
+    window.currentLanguage = u;
+  }
+
+  // グローバル公開
+  window.applyFiltersAndRender = applyFiltersAndRender;
+  window.modalList = [];
+  window.modalIndex = 0;
+})();
+
+// ヘッダー自動非表示
+(() => {
+  let lastScroll = 0;
+  const header = document.querySelector('header');
+  window.addEventListener('scroll', () => {
+    const current = window.scrollY;
+    if (current > lastScroll && current > 80) {
+      header.classList.add('hide-header');
+    } else if (current < lastScroll - 10) {
+      header.classList.remove('hide-header');
+    }
+    lastScroll = current;
+  });
+})();
+
+// PC: ホイールで画像切り替え
+(() => {
+  const modal = document.getElementById('modal');
+  const modalImg = document.getElementById('modalImg');
+  const modalVideo = document.getElementById('modalVideo');
+
+  if (!modal || !modalImg || !modalVideo) return;
+  modalVideo.volume = 0.1;
+
+  if (window.matchMedia("(min-width: 769px)").matches) {
+    let wheelLock = false;
+    
+    function handleWheel(e) {
+      if (wheelLock || modal.classList.contains('hidden') || !window.modalList || window.modalList.length <= 1) return;
+      
+      e.preventDefault();
+      e.stopPropagation();
+      wheelLock = true;
+      
+      const currentIndex = window.modalIndex || 0;
+      if (e.deltaY > 0) window.showModalAt(currentIndex + 1);
+      else if (e.deltaY < 0) window.showModalAt(currentIndex - 1);
+      
+      setTimeout(() => wheelLock = false, 300);
+    }
+    
+    modalImg.addEventListener('wheel', handleWheel, { passive: false });
+    modalVideo.addEventListener('wheel', handleWheel, { passive: false });
+  }
+})();
+  </script>
+</body>
+</html>
