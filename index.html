@@ -1565,14 +1565,14 @@ body.amoled .text-card-footer {
         const v = document.createElement('video');
         const srcUrl = (first.full || first.thumb || '').trim();
         v.dataset.src = srcUrl;
-        v.src = srcUrl;
         v.muted = true;
         v.loop = true;
         v.playsInline = true;
         v.loading = 'lazy';
         v.preload = 'none';
         if (first.thumb) v.poster = first.thumb;
-        if (videoObserver) videoObserver.observe(v);
+        // サムネイルでは自動再生しない
+        // if (videoObserver) videoObserver.observe(v);
         thumb.appendChild(v);
 
         const icon = document.createElement('div');
@@ -1721,10 +1721,26 @@ body.amoled .text-card-footer {
     window.modalIndex = modalIndex;
     const url = modalList[modalIndex];
     if (isVideo(url)) {
-      modalImg.style.display = 'none';
-      modalVideo.style.display = 'block';
-      modalVideo.src = url;
-      modalVideo.play().catch(() => {});
+  modalImg.style.display = 'none';
+  modalVideo.style.display = 'block';
+  modalVideo.src = url;
+  
+  // GIFの場合のみループ再生
+  const isGif = modalList.some((m, i) => {
+    if (i === modalIndex) {
+      const tweet = viewTweets.find(t => 
+        t.media && t.media.some(media => 
+          (media.full === url || media.thumb === url) && 
+          (media.type === 'animated_gif' || /gif/i.test(media.type))
+        )
+      );
+      return !!tweet;
+    }
+    return false;
+  });
+  
+  modalVideo.loop = isGif;
+  modalVideo.play().catch(() => {});
     } else {
       modalVideo.pause();
       modalVideo.src = '';
