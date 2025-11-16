@@ -30,6 +30,119 @@ body.amoled {
   --muted: #93a4b5;
   --border: rgba(255,255,255,0.15);
 }
+/* テキストモードボタン */
+#textModeToggle {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.15s ease, color 0.15s ease;  /* transitionを最小限に */
+}
+
+#textModeToggle:hover {
+  background: var(--bg);
+  transform: scale(1.05);
+}
+
+#textModeToggle.active {
+  background: #1da1f2;
+  color: white;
+  border-color: #1da1f2;
+}
+
+/* リスト表示モード */
+#gallery.list-mode {
+  display: flex !important;
+  flex-direction: column !important;
+  grid-template-columns: unset !important;
+  gap: 0 !important;
+  max-width: 600px !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  transition: none !important;  /* transitionを完全に削除 */
+}
+
+#gallery.list-mode .card {
+  display: flex !important;
+  flex-direction: column !important;
+  aspect-ratio: unset !important;
+  border-radius: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  padding: 8px 16px !important;
+  cursor: pointer;
+  min-height: unset !important;
+  height: auto !important;
+  justify-content: flex-start !important;
+  box-shadow: none !important;
+  transform: none !important;
+  width: 100% !important;
+  max-width: none !important;
+  transition: background 0.1s ease !important;  /* hoverのみ最小限のtransition */
+}
+
+#gallery.list-mode .card:hover {
+  background: var(--bg);
+  transform: none !important;
+}
+
+#gallery.list-mode .list-mode-card .tweet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+#gallery.list-mode .list-mode-card .tweet-username {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+#gallery.list-mode .list-mode-card .tweet-date {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+#gallery.list-mode .list-mode-card .tweet-text {
+  font-size: 15px;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0 0 4px 0;
+  color: var(--text);
+}
+
+#gallery.list-mode .list-mode-card .tweet-stats {
+  display: flex;
+  gap: 16px;
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0;
+  padding: 0;
+  line-height: 1.2;
+}
+
+#gallery.list-mode .list-mode-card .tweet-stats span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+@media (max-width: 768px) {
+  #gallery.list-mode {
+    max-width: 100% !important;
+  }
+
+  #gallery.list-mode .card {
+    padding: 8px 12px !important;
+  }
+}
+
 
 * {
   box-sizing: border-box;
@@ -970,6 +1083,7 @@ body.amoled .text-card-footer {
           <option value="zh">简体中文</option>
           <option value="ko">한국어</option>
         </select>
+        <button id="textModeToggle" type="button" title="テキストのみ表示">📄</button>
         <button id="themeToggle" type="button" title="テーマ切替">🌗</button>
         <span id="tweetCount" style="font-size:13px;color:var(--muted);white-space:nowrap;margin-left:4px"></span>
       </div>
@@ -1041,6 +1155,7 @@ body.amoled .text-card-footer {
   const searchInput = document.getElementById('searchInput');
   const langSelect = document.getElementById('langSelect');
   const themeToggle = document.getElementById('themeToggle');
+  const textModeToggle = document.getElementById('textModeToggle');
   const startDateEl = document.getElementById('startDate');
   const endDateEl = document.getElementById('endDate');
   const sortSelect = document.getElementById('sortSelect');
@@ -1509,7 +1624,57 @@ body.amoled .text-card-footer {
       card.className = 'card';
 
       if (!t.media?.length) {
-        // テキストのみ
+        // リスト表示モードかチェック
+        if (gallery.classList.contains('list-mode')) {
+          card.classList.add('list-mode-card');
+
+          const header = document.createElement('div');
+          header.className = 'tweet-header';
+
+          const username = document.createElement('span');
+          username.className = 'tweet-username';
+          username.textContent = `${t.name || ''} @${t.screen_name || ''}`;
+
+          const date = document.createElement('span');
+          date.className = 'tweet-date';
+          const dateObj = t.created_at ? new Date(t.created_at) : new Date();
+          date.textContent = dateObj.toLocaleDateString('ja-JP');
+
+          header.append(username, date);
+
+          const textDiv = document.createElement('div');
+          textDiv.className = 'tweet-text';
+          const fullTextContent = t.full_text || lang.noText;
+          textDiv.textContent = fullTextContent.length > 280 ? fullTextContent.substring(0, 280) + '...' : fullTextContent;
+
+          const statsDiv = document.createElement('div');
+          statsDiv.className = 'tweet-stats';
+          statsDiv.innerHTML = `<span>❤️ ${(t.favorite_count || 0).toLocaleString()}</span><span>🔁 ${(t.retweet_count || 0).toLocaleString()}</span>`;
+
+          // Make statsDiv a flex container
+          statsDiv.style.cssText = 'display:flex;justify-content:space-between;align-items:center;width:100%';
+
+          // Add "Open post" link to statsDiv
+          if (t.url || (t.screen_name && t.id)) {
+            const tweetLink = document.createElement('a');
+            tweetLink.href = t.url || `https://twitter.com/${t.screen_name}/status/${t.id}`;
+            tweetLink.target = '_blank';
+            tweetLink.rel = 'noopener noreferrer';
+            tweetLink.textContent = lang.openTweet;
+            tweetLink.style.cssText = 'color:#1d9bf0;text-decoration:none;font-size:13px;margin-left:auto';
+            tweetLink.addEventListener('click', e => e.stopPropagation());
+            tweetLink.addEventListener('mouseover', function() { this.style.textDecoration = 'underline'; });
+            tweetLink.addEventListener('mouseout', function() { this.style.textDecoration = 'none'; });
+            statsDiv.appendChild(tweetLink);
+          }
+
+          card.append(header, textDiv, statsDiv);
+          card.addEventListener('click', () => openModalWithText(fullTextContent));
+          gallery.appendChild(card);
+          return;
+        } else {
+          // 既存のグリッド表示処理
+          // テキストのみ
         card.classList.add('text-only-card');
         
         const userInfo = document.createElement('div');
@@ -1553,6 +1718,8 @@ body.amoled .text-card-footer {
         card.addEventListener('click', () => openModalWithText(fullText));
         gallery.appendChild(card);
         return;
+          return;
+        }
       }
 
       // メディアあり
@@ -2119,6 +2286,42 @@ body.amoled .text-card-footer {
     }
     
     localStorage.setItem('xviewer_theme', next);
+  });
+
+  // テキストモードトグル（軽量化版）
+  textModeToggle.addEventListener('click', () => {
+    const isActive = textModeToggle.classList.contains('active');
+    const currentSearch = searchInput.value.trim();
+
+    if (!isActive) {
+      // テキストモードをON
+      textModeToggle.classList.add('active');
+
+      // 検索条件が既に-t.coの場合は再描画をスキップ
+      if (currentSearch !== '-t.co') {
+        searchInput.value = '-t.co';
+        // requestAnimationFrameで描画を最適化
+        requestAnimationFrame(() => {
+          gallery.classList.add('list-mode');
+          applyFiltersAndRender();
+        });
+      } else {
+        // 検索条件が同じなら、CSSクラスの切替のみ（超高速）
+        gallery.classList.add('list-mode');
+      }
+    } else {
+      // テキストモードをOFF
+      textModeToggle.classList.remove('active');
+      gallery.classList.remove('list-mode');
+
+      // 検索条件をクリア
+      if (currentSearch === '-t.co') {
+        searchInput.value = '';
+        requestAnimationFrame(() => {
+          applyFiltersAndRender();
+        });
+      }
+    }
   });
   
   langSelect.addEventListener('change', () => {
