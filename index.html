@@ -1067,7 +1067,72 @@ body.amoled .text-card-footer {
     padding: 3px 5px;
   }
 }
-  </style>
+  
+/* =========================================
+   スマホ表示・レイアウト修正 (v4)
+   ========================================= */
+
+/* 1. 横スクロール（スワイプ）防止 */
+/* width: 100% と overflow-x: hidden で横揺れを防ぐ */
+/* overflow-y は指定せず、windowスクロール（デフォルト）を維持する */
+html, body {
+  width: 100%;
+  margin: 0; /* 念のため */
+  padding: 0;
+}
+
+/* bodyの直下要素に横スクロール禁止を適用 */
+body > * {
+  overflow-x: clip;
+  max-width: 100vw;
+}
+
+/* 2. 日付ラベルの位置ズレ修正 (英語対応) */
+.date-label-text {
+  display: inline-block;
+  min-width: 3.5em; /* "Start" に合わせて幅を確保 */
+  text-align: left;
+}
+
+/* 3. 操作パネル（header-bottom）のスマホ最適化 */
+.header-bottom {
+  display: flex;
+  flex-direction: column; /* 縦並び */
+  gap: 8px;
+  width: 100%;
+}
+
+.date-range, .sort-area {
+  display: flex;
+  flex-wrap: wrap; /* 折り返し許可 */
+  gap: 8px;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+/* 各コントロールのサイズ調整 */
+.date-range label, 
+.sort-area select, 
+.sort-area button {
+  flex: 1 1 auto; /* 幅を自動伸縮 */
+  min-width: 110px; /* 小さくなりすぎないように */
+}
+
+/* タブレット・PC以上（640px~）では横並びに戻す */
+@media (min-width: 640px) {
+  .header-bottom {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .date-range, .sort-area {
+    width: auto;
+    flex: 0 1 auto;
+  }
+}
+
+</style>
 </head>
 <body>
   <header>
@@ -1091,8 +1156,8 @@ body.amoled .text-card-footer {
 
     <div class="header-bottom">
       <div class="date-range">
-        <label>開始: <input id="startDate" type="date" /></label>
-        <label>終了: <input id="endDate" type="date" /></label>
+        <label><span class="date-label-text">開始:</span><input id="startDate" type="date" /></label>
+        <label><span class="date-label-text">終了:</span><input id="endDate" type="date" /></label>
       </div>
 
       <div class="sort-area">
