@@ -1197,6 +1197,25 @@ body > * {
     gap: 4px;
   }
 
+
+  .controls {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 4px;
+    align-items: center;
+  }
+
+  #searchInput {
+    flex: 1;
+    min-width: 100px !important;
+    max-width: 140px !important;
+  }
+
+  #searchHelpBtn {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
   .header-top h1 {
     font-size: 16px;
     margin: 0;
@@ -1434,6 +1453,84 @@ body > * {
       display: none !important;
     }
   }
+
+/* Search help modal */
+#searchHelpModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+}
+
+#searchHelpModal.show {
+  display: flex;
+}
+
+.help-modal-content {
+  background: var(--card);
+  color: var(--text);
+  padding: 24px;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.help-modal-content h2 {
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.help-modal-content h3 {
+  margin: 16px 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.help-modal-content code {
+  background: var(--bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+}
+
+.help-modal-content ul {
+  margin: 8px 0;
+  padding-left: 24px;
+}
+
+.help-modal-content li {
+  margin: 6px 0;
+  line-height: 1.5;
+}
+
+.help-close-btn {
+  float: right;
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.help-close-btn:hover {
+  background: #dc2626;
+}
+
 </style>
 </head>
 <body>
@@ -1444,6 +1541,7 @@ body > * {
         <input id="jsonFile" type="file" accept=".json" />
         <input id="searchInput" type="search" placeholder="本文・ユーザー名で検索" style="max-width:180px" />
         <button id="searchBtn" type="button">検索</button>
+        <button id="searchHelpBtn" type="button" title="検索コマンドヘルプ" style="padding:6px 10px;font-size:14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;">❔</button>
         <select id="langSelect">
           <option value="ja">日本語</option>
           <option value="en">English</option>
@@ -1495,6 +1593,30 @@ body > * {
           <div id="mergeStatus" class="merge-status"></div>
         </div>
       </details>
+      <details class="json-merge-section" style="margin-top:12px;">
+        <summary>
+          > 投稿の除外
+          <span class="merge-help-icon" title="">?</span>
+          <div class="merge-help-tooltip">
+            指定したいいね数より少ない投稿をコメントアウトまたは削除できます。例: 10を指定すると、favorite_countが10未満の投稿が除外されます。処理後のJSONファイルがダウンロードされます。
+          </div>
+        </summary>
+        <div class="merge-content">
+          <div class="merge-row">
+            <label>対象JSON: <input id="excludeJson" type="file" accept=".json" /></label>
+          </div>
+          <div class="merge-row" style="margin-top:8px;">
+            <label>いいね数の最小値: <input id="excludeThreshold" type="number" min="0" value="0" style="width:100px;" /></label>
+          </div>
+          
+          <div class="merge-row" style="margin-top:8px;">
+            <label>ファイル名: <input id="excludeFileName" type="text" placeholder="filtered" style="width:150px;" /></label>
+            <button id="executeExclude" type="button">除外実行</button>
+          </div>
+          <div id="excludeStatus" class="merge-status"></div>
+        </div>
+      </details>
+
     </div>
   </header>
 
@@ -1514,6 +1636,32 @@ body > * {
   </div>
 
   <script>
+document.addEventListener('DOMContentLoaded', function() {
+  const searchHelpBtn = document.getElementById('searchHelpBtn');
+  const searchHelpModal = document.getElementById('searchHelpModal');
+
+  if (searchHelpBtn && searchHelpModal) {
+    searchHelpBtn.addEventListener('click', function() {
+      searchHelpModal.classList.add('show');
+    });
+
+    searchHelpModal.addEventListener('click', function(e) {
+      if (e.target === searchHelpModal) {
+        searchHelpModal.classList.remove('show');
+      }
+    });
+
+    // Close button
+    const closeBtn = searchHelpModal.querySelector('.help-close-btn');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function() {
+        searchHelpModal.classList.remove('show');
+      });
+    }
+  }
+});
+
+
 /* XLV js v41 */
 
 (() => {
@@ -1539,6 +1687,15 @@ body > * {
   const mergeFileNameInput = document.getElementById('mergeFileName');
   const executeMergeBtn = document.getElementById('executeMerge');
   const mergeStatus = document.getElementById('mergeStatus');
+
+  // 投稿除外用要素
+  const excludeJsonInput = document.getElementById('excludeJson');
+  const excludeThresholdInput = document.getElementById('excludeThreshold');
+  const excludeFileNameInput = document.getElementById('excludeFileName');
+  const executeExcludeBtn = document.getElementById('executeExclude');
+  const excludeStatus = document.getElementById('excludeStatus');
+
+  let excludeJsonData = null;
 
   // モーダル
   const modal = document.getElementById('modal');
@@ -1898,20 +2055,88 @@ body > * {
   });
 
   // 高度な検索
-  function advancedSearch(query, haystack) {
+  function advancedSearch(query, haystack, tweetObj) {
+    // Extract Twitter search commands
+    const commands = {
+      min_faves: null,
+      min_retweets: null,
+      min_replies: null,
+      since: null,
+      until: null
+    };
+
+    let cleanQuery = query;
+
+    // Parse min_faves:N
+    const favesMatch = cleanQuery.match(/min_faves:(\d+)/i);
+    if (favesMatch) {
+      commands.min_faves = parseInt(favesMatch[1]);
+      cleanQuery = cleanQuery.replace(/min_faves:\d+/gi, '').trim();
+    }
+
+    // Parse min_retweets:N
+    const retweetsMatch = cleanQuery.match(/min_retweets:(\d+)/i);
+    if (retweetsMatch) {
+      commands.min_retweets = parseInt(retweetsMatch[1]);
+      cleanQuery = cleanQuery.replace(/min_retweets:\d+/gi, '').trim();
+    }
+
+    // Parse min_replies:N
+    const repliesMatch = cleanQuery.match(/min_replies:(\d+)/i);
+    if (repliesMatch) {
+      commands.min_replies = parseInt(repliesMatch[1]);
+      cleanQuery = cleanQuery.replace(/min_replies:\d+/gi, '').trim();
+    }
+
+    // Parse since:YYYY-MM-DD
+    const sinceMatch = cleanQuery.match(/since:(\d{4}-\d{2}-\d{2})/i);
+    if (sinceMatch) {
+      commands.since = new Date(sinceMatch[1]);
+      cleanQuery = cleanQuery.replace(/since:\d{4}-\d{2}-\d{2}/gi, '').trim();
+    }
+
+    // Parse until:YYYY-MM-DD
+    const untilMatch = cleanQuery.match(/until:(\d{4}-\d{2}-\d{2})/i);
+    if (untilMatch) {
+      commands.until = new Date(untilMatch[1] + 'T23:59:59');
+      cleanQuery = cleanQuery.replace(/until:\d{4}-\d{2}-\d{2}/gi, '').trim();
+    }
+
+    // Apply Twitter command filters
+    if (tweetObj) {
+      if (commands.min_faves !== null && (tweetObj.favorite_count || 0) < commands.min_faves) {
+        return false;
+      }
+      if (commands.min_retweets !== null && (tweetObj.retweet_count || 0) < commands.min_retweets) {
+        return false;
+      }
+      if (commands.min_replies !== null && (tweetObj.reply_count || 0) < commands.min_replies) {
+        return false;
+      }
+      if (commands.since && tweetObj.created_at) {
+        const tweetDate = new Date(tweetObj.created_at);
+        if (tweetDate < commands.since) return false;
+      }
+      if (commands.until && tweetObj.created_at) {
+        const tweetDate = new Date(tweetObj.created_at);
+        if (tweetDate > commands.until) return false;
+      }
+    }
+
+    // Original advanced search logic for text matching
     const minusTerms = [];
-    const minusMatches = query.match(/-(\S+)/g);
+    const minusMatches = cleanQuery.match(/-(\S+)/g);
     if (minusMatches) {
       minusMatches.forEach(term => minusTerms.push(term.substring(1).toLowerCase()));
     }
-    
+
     for (const term of minusTerms) {
       if (haystack.includes(term)) return false;
     }
-    
-    let cleanQuery = query.replace(/-\S+/g, '').trim();
+
+    cleanQuery = cleanQuery.replace(/-\S+/g, '').trim();
     if (!cleanQuery) return true;
-    
+
     if (/\sOR\s/i.test(cleanQuery) || /\|/.test(cleanQuery)) {
       const orTerms = cleanQuery.split(/\sOR\s|\|/i).map(t => t.trim().toLowerCase());
       return orTerms.some(term => {
@@ -1922,52 +2147,15 @@ body > * {
         return haystack.includes(term);
       });
     }
-    
+
     if (/\sAND\s/i.test(cleanQuery) || /\s&\s/.test(cleanQuery)) {
       const andTerms = cleanQuery.split(/\sAND\s|\s&\s/i).map(t => t.trim().toLowerCase());
       return andTerms.every(term => haystack.includes(term));
     }
-    
-    const terms = cleanQuery.split(/\s+/).filter(Boolean);
-    return terms.every(term => haystack.toLowerCase().includes(term.toLowerCase()));
+
+    return haystack.includes(cleanQuery.toLowerCase());
   }
 
-  
-  // モーダル内画像タップで本文オーバーレイをトグル
-  function toggleTextOverlay() {
-    if (!modalCurrentText) return;
-
-    const lang = window.currentLanguage || { tapToClose: 'タップで閉じる' };
-
-    if (modalTextOverlay.classList.contains('hidden')) {
-      modalTextOverlay.innerHTML = `
-        <div class="modal-text-overlay-content">${escapeHtml(modalCurrentText)}</div>
-        <div class="modal-text-overlay-hint">${lang.tapToClose}</div>
-      `;
-      modalTextOverlay.classList.remove('hidden');
-    } else {
-      modalTextOverlay.classList.add('hidden');
-    }
-  }
-
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  modalImg.addEventListener('click', (e) => {
-    if (modalCurrentText) {
-      e.stopPropagation();
-      toggleTextOverlay();
-    }
-  });
-
-  modalTextOverlay.addEventListener('click', () => {
-    modalTextOverlay.classList.add('hidden');
-  });
-
-  // フィルタリング
   function applyFiltersAndRender() {
     const q = searchInput.value.trim();
     const start = startDateEl.value ? new Date(startDateEl.value) : null;
@@ -1980,7 +2168,7 @@ body > * {
       
       if (q) {
         const hay = ((t.full_text || '') + ' ' + (t.name || '') + ' ' + (t.screen_name || '')).toLowerCase();
-        if (!advancedSearch(q, hay)) return false;
+        if (!advancedSearch(q, hay, t)) return false;
       }
       
       return true;
@@ -2554,6 +2742,34 @@ body > * {
       modalImg.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
     });
 
+    // 画像/動画クリックでテキスト表示
+    modalImg.addEventListener('click', (e) => {
+      if (modalCurrentText && scale === 1 && !mouseDown) {
+        e.stopPropagation();
+        modalTextOverlay.innerHTML = `
+          <div class="modal-text-overlay-content">${modalCurrentText}</div>
+          <div class="modal-text-overlay-hint">タップして閉じる</div>
+        `;
+        modalTextOverlay.classList.remove('hidden');
+      }
+    });
+
+    modalVideo.addEventListener('click', (e) => {
+      if (modalCurrentText) {
+        e.stopPropagation();
+        modalTextOverlay.innerHTML = `
+          <div class="modal-text-overlay-content">${modalCurrentText}</div>
+          <div class="modal-text-overlay-hint">タップして閉じる</div>
+        `;
+        modalTextOverlay.classList.remove('hidden');
+      }
+    });
+
+    modalTextOverlay.addEventListener('click', () => {
+      modalTextOverlay.classList.add('hidden');
+    });
+
+
     closeModal.addEventListener('click', () => {
       scale = 1;
       originX = 0;
@@ -2631,6 +2847,25 @@ body > * {
     };
     r.readAsText(f, 'UTF-8');
   });
+
+  // 投稿除外用JSONファイル読み込み
+  excludeJsonInput.addEventListener('change', e => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      try {
+        let txt = ev.target.result;
+        if (txt?.charCodeAt(0) === 0xFEFF) txt = txt.slice(1);
+        excludeJsonData = JSON.parse(txt);
+        updateExcludeStatus('JSONを読み込みました', 'success');
+      } catch (err) {
+        updateExcludeStatus('JSON解析エラー: ' + err.message, 'error');
+        excludeJsonData = null;
+      }
+    };
+    r.readAsText(f, 'UTF-8');
+  });
   
   executeMergeBtn.addEventListener('click', () => {
     if (!mergeBaseData || !mergeAddData) {
@@ -2679,6 +2914,140 @@ body > * {
   function updateMergeStatus(msg, type) {
     mergeStatus.textContent = msg;
     mergeStatus.className = 'merge-status ' + type;
+  }
+
+  // 投稿除外機能
+  executeExcludeBtn.addEventListener('click', () => {
+    if (!excludeJsonData) {
+      updateExcludeStatus('対象JSONファイルを選択してください', 'error');
+      return;
+    }
+
+    const threshold = parseInt(excludeThresholdInput.value);
+    const mode = 'delete'; // 固定: 削除モードのみ
+
+    if (isNaN(threshold) || threshold < 0) {
+      updateExcludeStatus('有効な数値を入力してください', 'error');
+      return;
+    }
+
+    try {
+      // JSON構造を判定（配列 or globalObjects形式）
+      let tweetsArray = Array.isArray(excludeJsonData) ? excludeJsonData : 
+                       excludeJsonData.globalObjects?.tweets ? Object.values(excludeJsonData.globalObjects.tweets) : [];
+
+      if (!tweetsArray.length) {
+        updateExcludeStatus('有効なツイートデータが見つかりません', 'error');
+        return;
+      }
+
+      let excludedCount = 0;
+      let resultData;
+
+      if (mode === 'delete') {
+        // 削除モード: 条件を満たす投稿のみを残す
+        const filteredArray = tweetsArray.filter(tweet => {
+          const favCount = parseInt(tweet.favorite_count) || 0;
+          if (favCount < threshold) {
+            excludedCount++;
+            return false;
+          }
+          return true;
+        });
+        resultData = filteredArray;
+
+      } else {
+        // コメントアウトモード: JSONテキストとして処理
+        const jsonLines = JSON.stringify(tweetsArray, null, 2).split('\n');
+        const processedLines = [];
+        let inExcludedTweet = false;
+        let currentTweetFavCount = null;
+
+        for (let i = 0; i < jsonLines.length; i++) {
+          const line = jsonLines[i];
+
+          // 各投稿の開始を検出（配列の要素開始）
+          if (line.trim().startsWith('{') && (i === 1 || jsonLines[i-1].trim().endsWith('['))) {
+            // 次のfavorite_countを探す
+            let j = i;
+            while (j < jsonLines.length && !jsonLines[j].includes('favorite_count')) {
+              j++;
+              if (jsonLines[j].trim().startsWith('}')) break;
+            }
+
+            if (j < jsonLines.length && jsonLines[j].includes('favorite_count')) {
+              const match = jsonLines[j].match(/"favorite_count"\s*:\s*(\d+)/);
+              if (match) {
+                currentTweetFavCount = parseInt(match[1]);
+                if (currentTweetFavCount < threshold) {
+                  inExcludedTweet = true;
+                  excludedCount++;
+                }
+              }
+            }
+          }
+
+          // 投稿の終了を検出
+          if (line.trim() === '},' || line.trim() === '}') {
+            if (inExcludedTweet) {
+              processedLines.push('// ' + line + ' // Excluded: favorite_count=' + currentTweetFavCount);
+              inExcludedTweet = false;
+              currentTweetFavCount = null;
+              continue;
+            }
+          }
+
+          // 行を追加（除外対象ならコメントアウト）
+          if (inExcludedTweet) {
+            processedLines.push('// ' + line);
+          } else {
+            processedLines.push(line);
+          }
+        }
+
+        // コメントアウト版のJSONテキストを作成
+        const commentedJson = processedLines.join('\n');
+        resultData = commentedJson;
+      }
+
+      // ファイル名を生成
+      const customName = excludeFileNameInput.value.trim();
+      const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const fileName = customName 
+        ? `${customName}.json` 
+        : `filtered_${threshold}_${mode}_${timestamp}.json`;
+
+      // ダウンロード
+      const jsonStr = typeof resultData === 'string' ? resultData : JSON.stringify(resultData, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      const totalCount = tweetsArray.length;
+      const remainingCount = totalCount - excludedCount;
+      updateExcludeStatus(
+        `✔ 処理完了: ${excludedCount}件を${mode === 'delete' ? '削除' : 'コメントアウト'} (残り:${remainingCount}件)`,
+        'success'
+      );
+
+      // フォームをリセット
+      excludeJsonInput.value = '';
+      excludeThresholdInput.value = '0';
+      excludeFileNameInput.value = '';
+      excludeJsonData = null;
+
+    } catch (err) {
+      updateExcludeStatus('除外エラー: ' + err.message, 'error');
+    }
+  });
+
+  function updateExcludeStatus(msg, type) {
+    excludeStatus.textContent = msg;
+    excludeStatus.className = 'merge-status ' + type;
   }
 
   // テーマ切り替え
@@ -2781,7 +3150,12 @@ body > * {
         mergeFileName: 'ファイル名:',
         mergeExecute: '結合実行',
         tweetCount: '件の投稿',
-        tapToClose: 'タップで閉じる'
+        tapToClose: 'タップで閉じる',
+        excludePosts: '投稿の除外',
+        excludeJson: '対象JSON:',
+        excludeThreshold: 'いいね数の最小値:',
+        excludeFileName: 'ファイル名:',
+        excludeExecute: '除外実行'
       },
       en: { 
         title: '𝕏 Likes Viewer',
@@ -2806,7 +3180,12 @@ body > * {
         mergeFileName: 'File name:',
         mergeExecute: 'Merge',
         tweetCount: ' posts',
-        tapToClose: 'Tap to close'
+        tapToClose: 'Tap to close',
+        excludePosts: 'Exclude posts',
+        excludeJson: 'Target JSON:',
+        excludeThreshold: 'Minimum likes:',
+        excludeFileName: 'File name:',
+        excludeExecute: 'Execute'
       },
       zh: { 
         title: '𝕏 点赞查看器',
@@ -2831,7 +3210,12 @@ body > * {
         mergeFileName: '文件名:',
         mergeExecute: '执行合并',
         tweetCount: '条帖子',
-        tapToClose: '点击关闭'
+        tapToClose: '点击关闭',
+        excludePosts: '排除帖子',
+        excludeJson: '目标JSON:',
+        excludeThreshold: '最小点赞数:',
+        excludeFileName: '文件名:',
+        excludeExecute: '执行排除'
       },
       ko: { 
         title: '𝕏 좋아요 뷰어',
@@ -2856,7 +3240,12 @@ body > * {
         mergeFileName: '파일 이름:',
         mergeExecute: '병합 실행',
         tweetCount: '개 게시물',
-        tapToClose: '탭하여 닫기'
+        tapToClose: '탭하여 닫기',
+        excludePosts: '게시물 제외',
+        excludeJson: '대상JSON:',
+        excludeThreshold: '최소 좋아요 수:',
+        excludeFileName: '파일 이름:',
+        excludeExecute: '제외 실행'
       }
     };
 
@@ -2865,6 +3254,13 @@ body > * {
       en: "If you've gained more likes since your first export, you can select your original JSON as the base and only choose the new one to merge them into a single file. This avoids having to reload all data again.",
       zh: "如果在第一次导出后点赞数量增加，可以以手头的JSON为基础，仅选择新增的部分进行合并，从而生成一个单一的JSON文件。这样就不必重新加载所有数据。",
       ko: "처음 내보낸 이후 좋아요가 늘어난 경우, 기존 JSON을 기준으로 추가된 부분만 선택해 하나의 JSON으로 결합할 수 있습니다. 이를 통해 모든 데이터를 다시 불러올 필요가 없습니다。"
+    };
+
+    const excludeHelpTexts = {
+      ja: "指定したいいね数より少ない投稿を削除します。例: 10を指定すると、favorite_countが10未満の投稿が削除されます。処理後のJSONファイルがダウンロードされます。",
+      en: "Removes posts with fewer likes than specified. Example: Setting 10 will remove posts with favorite_count below 10. The processed JSON file will be downloaded.",
+      zh: "删除点赞数少于指定数量的帖子。例如：设定10后，favorite_count少于10的帖子将被删除。处理后的JSON文件将被下载。",
+      ko: "지정한 좋아요 수보다 적은 게시물을 삭제합니다。예: 10으로 설정하면 favorite_count가 10 미만인 게시물이 삭제됩니다。처리된 JSON 파일이 다운로드됩니다。"
     };
 
     const u = dict[v] || dict.ja;
@@ -2890,8 +3286,13 @@ body > * {
     const deleteBtn = document.querySelector('.delete-cache-btn');
     if (deleteBtn) deleteBtn.title = u.deleteCache;
 
-    const summary = document.querySelector('.json-merge-section summary');
-    if (summary) summary.childNodes[0].textContent = `> ${u.jsonMerge}`;
+    const summaries = document.querySelectorAll('.json-merge-section summary');
+    if (summaries[0]) summaries[0].childNodes[0].textContent = `> ${u.jsonMerge}`;
+    if (summaries[1]) summaries[1].childNodes[0].textContent = `> ${u.excludePosts}`;
+
+    const helpTooltips = document.querySelectorAll('.merge-help-tooltip');
+    if (helpTooltips[0]) helpTooltips[0].textContent = mergeHelpTexts[v] || mergeHelpTexts.ja;
+    if (helpTooltips[1]) helpTooltips[1].textContent = excludeHelpTexts[v] || excludeHelpTexts.ja;
 
     const baseInput = document.getElementById('mergeBase');
     if (baseInput) {
@@ -3045,6 +3446,39 @@ body > * {
   "copyrightYear": "2025"
 }
 </script>
+
+<!-- Search Help Modal -->
+<div id="searchHelpModal">
+  <div class="help-modal-content">
+    <button class="help-close-btn" onclick="document.getElementById('searchHelpModal').classList.remove('show')">✕ 閉じる</button>
+    <h2 id="helpTitle">🔍 検索コマンドヘルプ</h2>
+
+    <h3 id="helpBasicTitle">📝 基本的な検索</h3>
+    <ul id="helpBasicList">
+      <li><code>keyword</code> - キーワードを含むツイートを検索</li>
+      <li><code>word1 AND word2</code> または <code>word1 & word2</code> - 両方を含む</li>
+      <li><code>word1 OR word2</code> または <code>word1 | word2</code> - いずれかを含む</li>
+      <li><code>-word</code> - 指定した単語を除外</li>
+    </ul>
+
+    <h3 id="helpTwitterTitle">🐦 Twitter公式検索コマンド</h3>
+    <ul id="helpTwitterList">
+      <li><code>min_faves:10</code> - いいね数が10以上のツイート</li>
+      <li><code>min_retweets:5</code> - リツイート数が5以上のツイート</li>
+      <li><code>min_replies:3</code> - リプライ数が3以上のツイート</li>
+      <li><code>since:2024-01-01</code> - 指定日以降のツイート</li>
+      <li><code>until:2024-12-31</code> - 指定日以前のツイート</li>
+    </ul>
+
+    <h3 id="helpExampleTitle">💡 組み合わせ例</h3>
+    <ul id="helpExampleList">
+      <li><code>猫 min_faves:100</code> - 「猫」を含み、いいね100以上</li>
+      <li><code>旅行 OR 観光 min_retweets:10</code> - 「旅行」または「観光」を含み、RT10以上</li>
+      <li><code>ニュース -広告 min_faves:50 since:2024-01-01</code> - 「ニュース」を含み「広告」を除外、いいね50以上、2024年1月1日以降</li>
+    </ul>
+  </div>
+</div>
+
 </body>
 </html>
   
