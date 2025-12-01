@@ -1132,6 +1132,301 @@ body > * {
   }
 }
 
+
+/* モーダル本文オーバーレイ */
+.modal-text-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 10001;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.modal-text-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modal-text-overlay-content {
+  max-width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  text-align: left;
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+}
+
+.modal-text-overlay-hint {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  pointer-events: none;
+}
+
+#modalImg.has-text,
+#modalVideo.has-text {
+  cursor: pointer;
+}
+
+/* 小型スマホ専用ヘッダー最適化（6.3インチ以下 / 400px以下） */
+@media (max-width: 400px) {
+  header {
+    padding: 8px 10px;
+  }
+
+  .header-top {
+    gap: 4px;
+  }
+
+  .header-top h1 {
+    font-size: 16px;
+    margin: 0;
+    line-height: 1.2;
+    flex: 0 0 100%;
+  }
+
+  .header-top .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    width: 100%;
+    align-items: center;
+  }
+
+  /* ファイル入力は別行 */
+  .header-top .controls input[type="file"] {
+    order: 0;
+    flex: 0 0 100%;
+    font-size: 11px;
+    margin-bottom: 2px;
+  }
+
+  /* 1行目: キャッシュ選択・ゴミ箱・検索ボックス・検索ボタン */
+  .header-top .controls .cache-dropdown-container {
+    order: 1;
+    flex: 0 0 auto;
+    display: flex;
+    gap: 2px;
+    align-items: center;
+  }
+
+  /* キャッシュプルダウン: 検索プレースホルダーと同じ幅（約130px） */
+  .header-top .controls .cache-dropdown-container select {
+    width: 130px !important;
+    max-width: 130px !important;
+    min-width: 130px !important;
+    font-size: 10px !important;
+    height: 28px;
+    padding: 4px 6px;
+    text-overflow: ellipsis;
+  }
+
+  .header-top .controls .cache-dropdown-container .delete-cache-btn {
+    height: 28px !important;
+    padding: 4px 6px !important;
+    font-size: 12px !important;
+    min-width: 28px;
+  }
+
+  /* 検索ボックス: 残りの幅を埋める */
+  .header-top .controls input[type="search"] {
+    order: 2;
+    flex: 1 1 auto;
+    min-width: 60px !important;
+    max-width: none !important;
+    font-size: 12px;
+    padding: 4px 6px;
+    height: 28px;
+  }
+
+  .header-top .controls #searchBtn {
+    order: 3;
+    flex: 0 0 auto;
+    padding: 4px 8px;
+    font-size: 11px;
+    height: 28px;
+    min-width: auto;
+    white-space: nowrap;
+  }
+
+  /* 2行目: 言語選択・本文のみボタン・テーマボタン・ツイート数 */
+  .header-top .controls #langSelect {
+    order: 4;
+    flex: 0 0 auto;
+    font-size: 10px !important;
+    padding: 5px 6px 4px 6px;
+    height: 28px;
+    min-width: auto;
+    line-height: 1.4;
+  }
+
+  .header-top .controls #textModeToggle {
+    order: 5;
+    flex: 0 0 auto;
+    padding: 3px 6px !important;
+    font-size: 16px !important;
+    height: 28px;
+    line-height: 1.3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+  }
+
+  .header-top .controls #themeToggle {
+    order: 6;
+    flex: 0 0 auto;
+    padding: 3px 6px !important;
+    font-size: 16px !important;
+    height: 28px;
+    line-height: 1.3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+  }
+
+  .header-top .controls #tweetCount {
+    order: 7;
+    flex: 1 1 auto;
+    font-size: 11px !important;
+    text-align: right;
+  }
+
+  /* header-bottomのコンパクト化 */
+  .header-bottom {
+    margin-top: 6px;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
+  .header-bottom .date-range {
+    display: flex;
+    gap: 4px;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  .header-bottom .date-range label {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .header-bottom .date-range .date-label-text {
+    font-size: 11px;
+  }
+
+  .header-bottom .date-range input[type="date"] {
+    font-size: 12px;
+    padding: 3px 4px;
+    height: 28px;
+    max-width: 115px;
+  }
+
+  .header-bottom .sort-area {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+
+  .header-bottom .sort-area select {
+    font-size: 11px !important;
+    padding: 3px 6px;
+    height: 28px;
+    min-width: auto;
+    max-width: 105px;
+    line-height: 1.4;
+  }
+
+  .header-bottom .sort-area button {
+    padding: 3px 6px;
+    font-size: 11px;
+    height: 28px;
+    min-width: 36px;
+  }
+
+  .header-bottom #jsonMergeToggle {
+    font-size: 13px !important;
+    margin-left: 4px !important;
+  }
+}
+
+/* さらに小さい画面用（〜400px） */
+@media (max-width: 400px) {
+  .header-top h1 {
+    font-size: 14px;
+  }
+
+  /* キャッシュプルダウンも縮小 */
+  .header-top .controls .cache-dropdown-container select {
+    width: 100px !important;
+    max-width: 100px !important;
+    min-width: 100px !important;
+    font-size: 9px !important;
+  }
+
+  .header-top .controls input[type="search"] {
+    font-size: 11px;
+    min-width: 50px !important;
+  }
+
+  .header-top .controls #searchBtn {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+
+  .header-top .controls #langSelect {
+    font-size: 9px !important;
+    padding: 5px 4px 4px 4px;
+  }
+
+  .header-top #textModeToggle,
+  .header-top #themeToggle {
+    font-size: 15px !important;
+    min-width: 30px;
+    padding: 3px 5px !important;
+  }
+
+  .header-bottom .date-range input[type="date"] {
+    max-width: 100px;
+    font-size: 11px;
+  }
+
+  .header-bottom .sort-area select {
+    max-width: 95px;
+    font-size: 10px !important;
+  }
+
+  .header-bottom .sort-area button {
+    padding: 2px 5px;
+    font-size: 10px;
+    min-width: 32px;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1205,6 +1500,7 @@ body > * {
       <img id="modalImg" alt="">
       <video id="modalVideo" controls style="display:none"></video>
       <div id="modalText" style="display:none"></div>
+      <div id="modalTextOverlay" class="modal-text-overlay hidden"></div>
     </div>
     <button id="nextBtn" class="modal-btn right" type="button">▶</button>
     <div id="modalCounter" aria-hidden="true"></div>
@@ -1242,6 +1538,7 @@ body > * {
   const modalImg = document.getElementById('modalImg');
   const modalVideo = document.getElementById('modalVideo');
   const modalText = document.getElementById('modalText');
+  const modalTextOverlay = document.getElementById('modalTextOverlay');
   const closeModal = document.getElementById('closeModal');
   const prevBtn = document.getElementById('prevBtn');
   const nextBtn = document.getElementById('nextBtn');
@@ -1252,6 +1549,7 @@ body > * {
   let viewTweets = [];
   let modalList = [];
   let modalIndex = 0;
+  let modalCurrentText = '';
 
   // キャッシュ管理
   const CACHE_LIST_KEY = 'xviewer_json_list';
@@ -1498,7 +1796,7 @@ body > * {
     const select = document.createElement('select');
     select.id = 'cacheSelect';
     select.className = 'cache-select-theme';
-    select.style.cssText = 'padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);min-width:150px';
+    select.style.cssText = 'padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);width:130px;max-width:130px;text-overflow:ellipsis';
     select.innerHTML = `<option value="">${lang.cacheSelect}</option>`;
 
     const currentId = localStorage.getItem(CACHE_CURRENT_KEY);
@@ -1626,6 +1924,41 @@ body > * {
     const terms = cleanQuery.split(/\s+/).filter(Boolean);
     return terms.every(term => haystack.toLowerCase().includes(term.toLowerCase()));
   }
+
+  
+  // モーダル内画像タップで本文オーバーレイをトグル
+  function toggleTextOverlay() {
+    if (!modalCurrentText) return;
+
+    const lang = window.currentLanguage || { tapToClose: 'タップで閉じる' };
+
+    if (modalTextOverlay.classList.contains('hidden')) {
+      modalTextOverlay.innerHTML = `
+        <div class="modal-text-overlay-content">${escapeHtml(modalCurrentText)}</div>
+        <div class="modal-text-overlay-hint">${lang.tapToClose}</div>
+      `;
+      modalTextOverlay.classList.remove('hidden');
+    } else {
+      modalTextOverlay.classList.add('hidden');
+    }
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  modalImg.addEventListener('click', (e) => {
+    if (modalCurrentText) {
+      e.stopPropagation();
+      toggleTextOverlay();
+    }
+  });
+
+  modalTextOverlay.addEventListener('click', () => {
+    modalTextOverlay.classList.add('hidden');
+  });
 
   // フィルタリング
   function applyFiltersAndRender() {
@@ -1839,7 +2172,7 @@ body > * {
       thumb.addEventListener('click', (e) => {
         e.stopPropagation();
         const arr = t.media.map(m => (m.full || m.thumb || '').trim()).filter(Boolean);
-        openModalWithMedia(arr);
+        openModalWithMedia(arr, t.full_text || '');
       });
 
       const info = document.createElement('div');
@@ -1917,10 +2250,12 @@ body > * {
   }
 
   // モーダル
-  function openModalWithMedia(list) {
+  function openModalWithMedia(list, tweetText) {
     modalText.style.display = 'none';
     modalImg.style.display = 'none';
     modalVideo.style.display = 'none';
+    modalTextOverlay.classList.add('hidden');
+    modalCurrentText = tweetText || '';
     modalList = list;
     window.modalList = list;
     modalIndex = 0;
@@ -1930,6 +2265,14 @@ body > * {
     document.body.style.overflow = 'hidden';
     modalCounter.textContent = `${modalIndex + 1} / ${modalList.length}`;
     updateModalNavVisibility();
+
+    if (modalCurrentText) {
+      modalImg.classList.add('has-text');
+      modalVideo.classList.add('has-text');
+    } else {
+      modalImg.classList.remove('has-text');
+      modalVideo.classList.remove('has-text');
+    }
   }
 
   function openModalWithText(text) {
@@ -2430,7 +2773,8 @@ body > * {
         mergeAdd: '追加JSON:',
         mergeFileName: 'ファイル名:',
         mergeExecute: '結合実行',
-        tweetCount: '件の投稿'
+        tweetCount: '件の投稿',
+        tapToClose: 'タップで閉じる'
       },
       en: { 
         title: '𝕏 Likes Viewer',
@@ -2454,7 +2798,8 @@ body > * {
         mergeAdd: 'Additional JSON:',
         mergeFileName: 'File name:',
         mergeExecute: 'Merge',
-        tweetCount: ' posts'
+        tweetCount: ' posts',
+        tapToClose: 'Tap to close'
       },
       zh: { 
         title: '𝕏 点赞查看器',
@@ -2478,7 +2823,8 @@ body > * {
         mergeAdd: '追加JSON:',
         mergeFileName: '文件名:',
         mergeExecute: '执行合并',
-        tweetCount: '条帖子'
+        tweetCount: '条帖子',
+        tapToClose: '点击关闭'
       },
       ko: { 
         title: '𝕏 좋아요 뷰어',
@@ -2502,7 +2848,8 @@ body > * {
         mergeAdd: '추가JSON:',
         mergeFileName: '파일 이름:',
         mergeExecute: '병합 실행',
-        tweetCount: '개 게시물'
+        tweetCount: '개 게시물',
+        tapToClose: '탭하여 닫기'
       }
     };
 
@@ -2564,6 +2911,11 @@ body > * {
     if (mergeHelp && mergeHelpTexts[v]) mergeHelp.textContent = mergeHelpTexts[v];
 
     window.currentLanguage = u;
+
+    // 言語切替時にツイート数表示を更新
+    if (typeof updateTweetCount === 'function') {
+      updateTweetCount();
+    }
   }
 
   // グローバル公開
