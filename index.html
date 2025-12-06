@@ -1211,11 +1211,6 @@ body > * {
     max-width: 140px !important;
   }
 
-  #searchHelpBtn {
-    flex-shrink: 0;
-    white-space: nowrap;
-  }
-
   .header-top h1 {
     font-size: 16px;
     margin: 0;
@@ -1454,86 +1449,76 @@ body > * {
     }
   }
 
-/* Search help modal */
-#searchHelpModal {
-  display: none;
+
+/* Header toggle button */
+#headerToggle {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 10000;
-  align-items: center;
-  justify-content: center;
-}
-
-#searchHelpModal.show {
-  display: flex;
-}
-
-.help-modal-content {
+  top: 10px;
+  left: 10px;
+  z-index: 100;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
   background: var(--card);
   color: var(--text);
-  padding: 24px;
-  border-radius: 12px;
-  max-width: 600px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
-.help-modal-content h2 {
-  margin: 0 0 16px 0;
-  font-size: 20px;
-  border-bottom: 2px solid var(--border);
-  padding-bottom: 8px;
-}
-
-.help-modal-content h3 {
-  margin: 16px 0 8px 0;
+  cursor: pointer;
   font-size: 16px;
-  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  opacity: 0;
+  pointer-events: none;
 }
 
-.help-modal-content code {
-  background: var(--bg);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: 'Courier New', monospace;
-  font-size: 13px;
+#headerToggle:hover {
+  opacity: 1;
+  transform: scale(1.05);
 }
 
-.help-modal-content ul {
-  margin: 8px 0;
-  padding-left: 24px;
+body.header-hidden #headerToggle {
+  opacity: 0.9;
+  pointer-events: auto;
 }
 
-.help-modal-content li {
-  margin: 6px 0;
-  line-height: 1.5;
+header {
+  transition: transform 0.3s ease;
 }
 
-.help-close-btn {
-  float: right;
-  background: #ef4444;
-  color: white;
-  border: none;
-  padding: 8px 16px;
+body.header-hidden header {
+  transform: translateY(-100%);
+}
+
+#headerCloseBtn {
+  padding: 6px 10px;
   border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
   cursor: pointer;
   font-size: 14px;
-  font-weight: 600;
 }
 
-.help-close-btn:hover {
-  background: #dc2626;
+#headerCloseBtn:hover {
+  background: var(--bg);
+}
+
+@media (max-width: 400px) {
+  #headerToggle {
+    top: 8px;
+    left: 8px;
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+
+  #headerCloseBtn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
 }
 
 </style>
 </head>
 <body>
+  <button id="headerToggle" type="button" title="ヘッダーを表示">☰</button>
   <header>
     <div class="header-top">
       <h1 id="title">X いいねビューア</h1>
@@ -1541,7 +1526,6 @@ body > * {
         <input id="jsonFile" type="file" accept=".json" />
         <input id="searchInput" type="search" placeholder="本文・ユーザー名で検索" style="max-width:180px" />
         <button id="searchBtn" type="button">検索</button>
-        <button id="searchHelpBtn" type="button" title="検索コマンドヘルプ" style="padding:6px 10px;font-size:14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;">❔</button>
         <select id="langSelect">
           <option value="ja">日本語</option>
           <option value="en">English</option>
@@ -1551,6 +1535,7 @@ body > * {
         <button id="textModeToggle" type="button" title="テキストのみ表示">📄</button>
         <button id="themeToggle" type="button" title="テーマ切替">🌗</button>
         <span id="tweetCount" style="font-size:13px;color:var(--muted);white-space:nowrap;margin-left:4px"></span>
+        <button id="headerCloseBtn" type="button" title="ヘッダーを閉じる">▲</button>
       </div>
     </div>
 
@@ -1636,30 +1621,7 @@ body > * {
   </div>
 
   <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const searchHelpBtn = document.getElementById('searchHelpBtn');
-  const searchHelpModal = document.getElementById('searchHelpModal');
 
-  if (searchHelpBtn && searchHelpModal) {
-    searchHelpBtn.addEventListener('click', function() {
-      searchHelpModal.classList.add('show');
-    });
-
-    searchHelpModal.addEventListener('click', function(e) {
-      if (e.target === searchHelpModal) {
-        searchHelpModal.classList.remove('show');
-      }
-    });
-
-    // Close button
-    const closeBtn = searchHelpModal.querySelector('.help-close-btn');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', function() {
-        searchHelpModal.classList.remove('show');
-      });
-    }
-  }
-});
 
 
 /* XLV js v41 */
@@ -1680,6 +1642,30 @@ document.addEventListener('DOMContentLoaded', function() {
   const tweetCount = document.getElementById('tweetCount');
   const jsonMergeToggle = document.getElementById('jsonMergeToggle');
   const jsonMergePanel = document.getElementById('jsonMergePanel');
+
+  // Header toggle functionality
+  const headerToggle = document.getElementById('headerToggle');
+  const headerCloseBtn = document.getElementById('headerCloseBtn');
+
+  const savedHeaderState = localStorage.getItem('xlv_header_hidden');
+  if (savedHeaderState === 'true') {
+    document.body.classList.add('header-hidden');
+  }
+
+  if (headerToggle) {
+    headerToggle.addEventListener('click', () => {
+      document.body.classList.remove('header-hidden');
+      localStorage.setItem('xlv_header_hidden', 'false');
+    });
+  }
+
+  if (headerCloseBtn) {
+    headerCloseBtn.addEventListener('click', () => {
+      document.body.classList.add('header-hidden');
+      localStorage.setItem('xlv_header_hidden', 'true');
+    });
+  }
+
   
   // JSONマージ用要素
   const mergeBaseInput = document.getElementById('mergeBase');
@@ -2884,7 +2870,32 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       
-      const mergedArray = [...baseArray, ...addArray];
+      // ID基準で重複除外処理
+      const idMap = new Map();
+      let duplicateCount = 0;
+
+      // ベースJSONのツイートをMapに追加
+      baseArray.forEach(tweet => {
+        const id = tweet.id_str || tweet.id || tweet.idstr;
+        if (id) {
+          idMap.set(String(id), tweet);
+        }
+      });
+
+      // 追加JSONのツイートを処理（重複チェック）
+      addArray.forEach(tweet => {
+        const id = tweet.id_str || tweet.id || tweet.idstr;
+        if (id) {
+          const idStr = String(id);
+          if (idMap.has(idStr)) {
+            duplicateCount++;
+          } else {
+            idMap.set(idStr, tweet);
+          }
+        }
+      });
+
+      const mergedArray = Array.from(idMap.values());
       const mergedJson = JSON.stringify(mergedArray, null, 2);
       
       const customName = mergeFileNameInput.value.trim();
@@ -2898,7 +2909,7 @@ document.addEventListener('DOMContentLoaded', function() {
       a.click();
       URL.revokeObjectURL(url);
       
-      updateMergeStatus(`✔ 結合完了 (基準:${baseArray.length}件 + 追加:${addArray.length}件 = 合計:${mergedArray.length}件)`, 'success');
+      updateMergeStatus(`✔ 結合完了 (基準:${baseArray.length}件 + 追加:${addArray.length}件 = 合計:${mergedArray.length}件、重複除外:${duplicateCount}件)`, 'success');
       
       mergeBaseInput.value = '';
       mergeAddInput.value = '';
@@ -3448,39 +3459,5 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <!-- Search Help Modal -->
-<div id="searchHelpModal">
-  <div class="help-modal-content">
-    <button class="help-close-btn" onclick="document.getElementById('searchHelpModal').classList.remove('show')">✕ 閉じる</button>
-    <h2 id="helpTitle">🔍 検索コマンドヘルプ</h2>
-
-    <h3 id="helpBasicTitle">📝 基本的な検索</h3>
-    <ul id="helpBasicList">
-      <li><code>keyword</code> - キーワードを含むツイートを検索</li>
-      <li><code>word1 AND word2</code> または <code>word1 & word2</code> - 両方を含む</li>
-      <li><code>word1 OR word2</code> または <code>word1 | word2</code> - いずれかを含む</li>
-      <li><code>-word</code> - 指定した単語を除外</li>
-    </ul>
-
-    <h3 id="helpTwitterTitle">🐦 Twitter公式検索コマンド</h3>
-    <ul id="helpTwitterList">
-      <li><code>min_faves:10</code> - いいね数が10以上のツイート</li>
-      <li><code>min_retweets:5</code> - リツイート数が5以上のツイート</li>
-      <li><code>min_replies:3</code> - リプライ数が3以上のツイート</li>
-      <li><code>since:2024-01-01</code> - 指定日以降のツイート</li>
-      <li><code>until:2024-12-31</code> - 指定日以前のツイート</li>
-    </ul>
-
-    <h3 id="helpExampleTitle">💡 組み合わせ例</h3>
-    <ul id="helpExampleList">
-      <li><code>猫 min_faves:100</code> - 「猫」を含み、いいね100以上</li>
-      <li><code>旅行 OR 観光 min_retweets:10</code> - 「旅行」または「観光」を含み、RT10以上</li>
-      <li><code>ニュース -広告 min_faves:50 since:2024-01-01</code> - 「ニュース」を含み「広告」を除外、いいね50以上、2024年1月1日以降</li>
-    </ul>
-  </div>
-</div>
-
-</body>
-</html>
-  
 </body>
 </html>
