@@ -1563,6 +1563,18 @@ body > * {
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   }
 
+
+#debugPanel{position:fixed;bottom:0;left:0;right:0;max-height:50vh;background:#000;border-top:2px solid #0af;z-index:99999;color:#fff;font:11px monospace;display:none;flex-direction:column}
+#debugPanel.show{display:flex}
+.dbg-hdr{padding:8px;background:#111;border-bottom:1px solid #333;display:flex;justify-content:space-between}
+.dbg-hdr h3{margin:0;font-size:13px}
+.dbg-btn{padding:4px 8px;background:#333;color:#fff;border:none;border-radius:4px;cursor:pointer;margin-left:4px}
+#debugLog{flex:1;overflow-y:auto;padding:8px;line-height:1.6}
+.log-info{color:#0af}
+.log-success{color:#0f0}
+.log-error{color:#f00}
+#debugToggle{position:fixed;bottom:20px;right:20px;z-index:100000;padding:12px 20px;background:#0af;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold}
+
 </style>
 </head>
 <body>
@@ -1812,7 +1824,13 @@ document.addEventListener('DOMContentLoaded', function() {
           const video = entry.target;
           if (entry.isIntersecting) {
             const timeout = setTimeout(() => {
-              if (video.paused && entry.isIntersecting) video.play().catch(() => {});
+              if (video.paused && entry.isIntersecting) {
+                var u=(video.src||video.dataset.src||'').substring(0,50);
+                L('▶再生: '+u);
+                video.play()
+                  .then(function(){L('✓成功','s');})
+                  .catch(function(e){L('✗失敗: '+e.name+' - '+e.message,'e');});
+              }
               videoPlayTimeout.delete(video);
             }, 300);
             videoPlayTimeout.set(video, timeout);
@@ -2395,9 +2413,19 @@ document.addEventListener('DOMContentLoaded', function() {
         v.playsInline = true;
         v.setAttribute('playsinline', '');
         v.setAttribute('webkit-playsinline', '');
+        v.setAttribute('referrerpolicy', 'no-referrer');
         v.loading = 'lazy';
         v.preload = 'none';
         if (first.thumb) v.poster = first.thumb;
+        v.onerror=function(){
+          var u=(this.src||this.dataset.src||'').substring(0,60);
+          var err='不明';
+          if(this.error){
+            var t=['','中断','ネットワーク','デコード','非対応'][this.error.code]||this.error.code;
+            err='コード'+this.error.code+'('+t+')';
+          }
+          L('✗エラー: '+err+'\n  URL: '+u,'e');
+        };
         // サムネイルでは自動再生しない
         // if (videoObserver) videoObserver.observe(v);
         thumb.appendChild(v);
@@ -2560,6 +2588,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (isVideo(url)) {
   modalImg.style.display = 'none';
   modalVideo.style.display = 'block';
+  modalVideo.setAttribute('referrerpolicy', 'no-referrer');
   modalVideo.src = url;
   
   // GIFの場合のみループ再生
@@ -3571,8 +3600,72 @@ document.addEventListener('DOMContentLoaded', function() {
   </div>
 </div>
 
+
+<button id="debugToggle" onclick="document.getElementById('debugPanel').classList.toggle('show')">🐛 ログ</button>
+<div id="debugPanel">
+  <div class="dbg-hdr">
+    <h3>動画再生ログ (referrerpolicy=no-referrer)</h3>
+    <div>
+      <button class="dbg-btn" onclick="document.getElementById('debugLog').innerHTML='';window.logs=[]">クリア</button>
+      <button class="dbg-btn" onclick="navigator.clipboard.writeText((window.logs||[]).join('\n'));alert('コピー完了')">コピー</button>
+      <button class="dbg-btn" onclick="document.getElementById('debugPanel').classList.remove('show')">✕</button>
+    </div>
+  </div>
+  <div id="debugLog"></div>
+</div>
+<script>
+window.logs=[];
+window.L=function(m,t){
+  t=t||'i';
+  var s=new Date().toLocaleTimeString();
+  var txt='['+s+'] '+m;
+  window.logs.push(txt);
+  var d=document.createElement('div');
+  d.className='log-'+(t=='i'?'info':t=='s'?'success':'error');
+  d.innerHTML=m.replace(/\n/g,'<br>');
+  var el=document.getElementById('debugLog');
+  if(el){el.appendChild(d);el.scrollTop=el.scrollHeight;}
+  console.log('[LOG]',m);
+};
+
+L('🌍 環境: '+location.protocol+' '+(location.hostname||'ローカル')+' '+(/mobile/i.test(navigator.userAgent)?'モバイル':'PC'));
+L('✅ referrerpolicy=no-referrer 設定済み');
+</script>
+
 </body>
 </html>
   
+
+<button id="debugToggle" onclick="document.getElementById('debugPanel').classList.toggle('show')">🐛 ログ</button>
+<div id="debugPanel">
+  <div class="dbg-hdr">
+    <h3>動画再生ログ (referrerpolicy=no-referrer)</h3>
+    <div>
+      <button class="dbg-btn" onclick="document.getElementById('debugLog').innerHTML='';window.logs=[]">クリア</button>
+      <button class="dbg-btn" onclick="navigator.clipboard.writeText((window.logs||[]).join('\n'));alert('コピー完了')">コピー</button>
+      <button class="dbg-btn" onclick="document.getElementById('debugPanel').classList.remove('show')">✕</button>
+    </div>
+  </div>
+  <div id="debugLog"></div>
+</div>
+<script>
+window.logs=[];
+window.L=function(m,t){
+  t=t||'i';
+  var s=new Date().toLocaleTimeString();
+  var txt='['+s+'] '+m;
+  window.logs.push(txt);
+  var d=document.createElement('div');
+  d.className='log-'+(t=='i'?'info':t=='s'?'success':'error');
+  d.innerHTML=m.replace(/\n/g,'<br>');
+  var el=document.getElementById('debugLog');
+  if(el){el.appendChild(d);el.scrollTop=el.scrollHeight;}
+  console.log('[LOG]',m);
+};
+
+L('🌍 環境: '+location.protocol+' '+(location.hostname||'ローカル')+' '+(/mobile/i.test(navigator.userAgent)?'モバイル':'PC'));
+L('✅ referrerpolicy=no-referrer 設定済み');
+</script>
+
 </body>
 </html>
