@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
+  <meta name="referrer" content="no-referrer" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>X Likes Viewer</title>
   <style>
@@ -1211,11 +1212,6 @@ body > * {
     max-width: 140px !important;
   }
 
-  #searchHelpBtn {
-    flex-shrink: 0;
-    white-space: nowrap;
-  }
-
   .header-top h1 {
     font-size: 16px;
     margin: 0;
@@ -1454,130 +1450,76 @@ body > * {
     }
   }
 
-/* Search help modal */
-#searchHelpModal {
-  display: none;
+
+/* Header toggle button */
+#headerToggle {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 10000;
-  align-items: center;
-  justify-content: center;
-}
-
-#searchHelpModal.show {
-  display: flex;
-}
-
-.help-modal-content {
+  top: 10px;
+  left: 10px;
+  z-index: 100;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
   background: var(--card);
   color: var(--text);
-  padding: 24px;
-  border-radius: 12px;
-  max-width: 600px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
-.help-modal-content h2 {
-  margin: 0 0 16px 0;
-  font-size: 20px;
-  border-bottom: 2px solid var(--border);
-  padding-bottom: 8px;
-}
-
-.help-modal-content h3 {
-  margin: 16px 0 8px 0;
+  cursor: pointer;
   font-size: 16px;
-  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  opacity: 0;
+  pointer-events: none;
 }
 
-.help-modal-content code {
-  background: var(--bg);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: 'Courier New', monospace;
-  font-size: 13px;
+#headerToggle:hover {
+  opacity: 1;
+  transform: scale(1.05);
 }
 
-.help-modal-content ul {
-  margin: 8px 0;
-  padding-left: 24px;
+body.header-hidden #headerToggle {
+  opacity: 0.9;
+  pointer-events: auto;
 }
 
-.help-modal-content li {
-  margin: 6px 0;
-  line-height: 1.5;
+header {
+  transition: transform 0.3s ease;
 }
 
-.help-close-btn {
-  float: right;
-  background: #ef4444;
-  color: white;
-  border: none;
-  padding: 8px 16px;
+body.header-hidden header {
+  transform: translateY(-100%);
+}
+
+#headerCloseBtn {
+  padding: 6px 10px;
   border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
   cursor: pointer;
   font-size: 14px;
-  font-weight: 600;
 }
 
-.help-close-btn:hover {
-  background: #dc2626;
+#headerCloseBtn:hover {
+  background: var(--bg);
 }
 
-
-  header.hidden {
-    transform: translateY(-100%);
-    opacity: 0;
-    pointer-events: none;
-  }
-
+@media (max-width: 400px) {
   #headerToggle {
+    top: 8px;
+    left: 8px;
     padding: 6px 10px;
     font-size: 14px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--card);
-    color: var(--text);
-    cursor: pointer;
   }
 
-  #headerRestore {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    z-index: 70;
-    padding: 8px 12px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--card);
-    color: var(--text);
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  #headerCloseBtn {
+    padding: 4px 8px;
+    font-size: 12px;
   }
-
-
-#debugPanel{position:fixed;bottom:0;left:0;right:0;max-height:50vh;background:#000;border-top:2px solid #0af;z-index:99999;color:#fff;font:11px monospace;display:none;flex-direction:column}
-#debugPanel.show{display:flex}
-.dbg-hdr{padding:8px;background:#111;border-bottom:1px solid #333;display:flex;justify-content:space-between}
-.dbg-hdr h3{margin:0;font-size:13px}
-.dbg-btn{padding:4px 8px;background:#333;color:#fff;border:none;border-radius:4px;cursor:pointer;margin-left:4px}
-#debugLog{flex:1;overflow-y:auto;padding:8px;line-height:1.6}
-.log-info{color:#0af}
-.log-success{color:#0f0}
-.log-error{color:#f00}
-#debugToggle{position:fixed;bottom:20px;right:20px;z-index:100000;padding:12px 20px;background:#0af;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold}
+}
 
 </style>
 </head>
 <body>
+  <button id="headerToggle" type="button" title="ヘッダーを表示">☰</button>
   <header>
     <div class="header-top">
       <h1 id="title">X いいねビューア</h1>
@@ -1585,7 +1527,6 @@ body > * {
         <input id="jsonFile" type="file" accept=".json" />
         <input id="searchInput" type="search" placeholder="本文・ユーザー名で検索" style="max-width:180px" />
         <button id="searchBtn" type="button">検索</button>
-        <button id="searchHelpBtn" type="button" title="検索コマンドヘルプ" style="display:none;padding:6px 10px;font-size:14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;">❔</button>
         <select id="langSelect">
           <option value="ja">日本語</option>
           <option value="en">English</option>
@@ -1594,8 +1535,8 @@ body > * {
         </select>
         <button id="textModeToggle" type="button" title="テキストのみ表示">📄</button>
         <button id="themeToggle" type="button" title="テーマ切替">🌗</button>
-        <button id="headerToggle" type="button" title="ヘッダーを隠す">▲</button>
         <span id="tweetCount" style="font-size:13px;color:var(--muted);white-space:nowrap;margin-left:4px"></span>
+        <button id="headerCloseBtn" type="button" title="ヘッダーを閉じる">▲</button>
       </div>
     </div>
 
@@ -1665,17 +1606,14 @@ body > * {
     </div>
   </header>
 
-  <button id="headerRestore" type="button" title="ヘッダーを表示" style="display:none;">▼</button>
-
-
   <main id="gallery" aria-live="polite"></main>
 
   <div id="modal" class="hidden" role="dialog" aria-modal="true">
     <button id="closeModal" class="modal-btn close" type="button">✕</button>
     <button id="prevBtn" class="modal-btn left" type="button">◀</button>
     <div id="modalInner">
-      <img id="modalImg" alt="">
-      <video id="modalVideo" controls playsinline webkit-playsinline style="display:none"></video>
+      <img id="modalImg" referrerpolicy="no-referrer" alt="">
+      <video id="modalVideo" controls referrerpolicy="no-referrer" style="display:none"></video>
       <div id="modalText" style="display:none"></div>
       <div id="modalTextOverlay" class="modal-text-overlay hidden"></div>
     </div>
@@ -1684,64 +1622,12 @@ body > * {
   </div>
 
   <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const searchHelpBtn = document.getElementById('searchHelpBtn');
-  const searchHelpModal = document.getElementById('searchHelpModal');
 
-  if (searchHelpBtn && searchHelpModal) {
-    searchHelpBtn.addEventListener('click', function() {
-      searchHelpModal.classList.add('show');
-    });
-
-    searchHelpModal.addEventListener('click', function(e) {
-      if (e.target === searchHelpModal) {
-        searchHelpModal.classList.remove('show');
-      }
-    });
-
-    // Close button
-    const closeBtn = searchHelpModal.querySelector('.help-close-btn');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', function() {
-        searchHelpModal.classList.remove('show');
-      });
-    }
-  }
-});
 
 
 /* XLV js v41 */
 
 (() => {
-
-  // ヘッダー表示/非表示トグル
-  const headerToggle = document.getElementById('headerToggle');
-  const headerRestore = document.getElementById('headerRestore');
-  const header = document.querySelector('header');
-
-  if (headerToggle && headerRestore && header) {
-    // LocalStorageから状態を復元
-    const headerHidden = localStorage.getItem('headerHidden') === 'true';
-    if (headerHidden) {
-      header.classList.add('hidden');
-      headerRestore.style.display = 'block';
-    }
-
-    // ヘッダーを隠す
-    headerToggle.addEventListener('click', () => {
-      header.classList.add('hidden');
-      headerRestore.style.display = 'block';
-      localStorage.setItem('headerHidden', 'true');
-    });
-
-    // ヘッダーを表示
-    headerRestore.addEventListener('click', () => {
-      header.classList.remove('hidden');
-      headerRestore.style.display = 'none';
-      localStorage.setItem('headerHidden', 'false');
-    });
-  }
-
   // DOM要素
   const fileInput = document.getElementById('jsonFile');
   const gallery = document.getElementById('gallery');
@@ -1757,6 +1643,30 @@ document.addEventListener('DOMContentLoaded', function() {
   const tweetCount = document.getElementById('tweetCount');
   const jsonMergeToggle = document.getElementById('jsonMergeToggle');
   const jsonMergePanel = document.getElementById('jsonMergePanel');
+
+  // Header toggle functionality
+  const headerToggle = document.getElementById('headerToggle');
+  const headerCloseBtn = document.getElementById('headerCloseBtn');
+
+  const savedHeaderState = localStorage.getItem('xlv_header_hidden');
+  if (savedHeaderState === 'true') {
+    document.body.classList.add('header-hidden');
+  }
+
+  if (headerToggle) {
+    headerToggle.addEventListener('click', () => {
+      document.body.classList.remove('header-hidden');
+      localStorage.setItem('xlv_header_hidden', 'false');
+    });
+  }
+
+  if (headerCloseBtn) {
+    headerCloseBtn.addEventListener('click', () => {
+      document.body.classList.add('header-hidden');
+      localStorage.setItem('xlv_header_hidden', 'true');
+    });
+  }
+
   
   // JSONマージ用要素
   const mergeBaseInput = document.getElementById('mergeBase');
@@ -1824,13 +1734,7 @@ document.addEventListener('DOMContentLoaded', function() {
           const video = entry.target;
           if (entry.isIntersecting) {
             const timeout = setTimeout(() => {
-              if (video.paused && entry.isIntersecting) {
-                var u=(video.src||video.dataset.src||'').substring(0,50);
-                L('▶再生: '+u);
-                video.play()
-                  .then(function(){L('✓成功','s');})
-                  .catch(function(e){L('✗失敗: '+e.name+' - '+e.message,'e');});
-              }
+              if (video.paused && entry.isIntersecting) video.play().catch(() => {});
               videoPlayTimeout.delete(video);
             }, 300);
             videoPlayTimeout.set(video, timeout);
@@ -2411,21 +2315,10 @@ document.addEventListener('DOMContentLoaded', function() {
         v.muted = true;
         v.loop = true;
         v.playsInline = true;
-        v.setAttribute('playsinline', '');
-        v.setAttribute('webkit-playsinline', '');
-        v.setAttribute('referrerpolicy', 'no-referrer');
         v.loading = 'lazy';
         v.preload = 'none';
+        v.referrerPolicy = 'no-referrer';
         if (first.thumb) v.poster = first.thumb;
-        v.onerror=function(){
-          var u=(this.src||this.dataset.src||'').substring(0,60);
-          var err='不明';
-          if(this.error){
-            var t=['','中断','ネットワーク','デコード','非対応'][this.error.code]||this.error.code;
-            err='コード'+this.error.code+'('+t+')';
-          }
-          L('✗エラー: '+err+'\n  URL: '+u,'e');
-        };
         // サムネイルでは自動再生しない
         // if (videoObserver) videoObserver.observe(v);
         thumb.appendChild(v);
@@ -2449,6 +2342,7 @@ document.addEventListener('DOMContentLoaded', function() {
         img.alt = (t.full_text || '').slice(0, 120);
         img.loading = 'lazy';
         img.decoding = 'async';
+        img.referrerPolicy = 'no-referrer';
         thumb.appendChild(img);
       }
 
@@ -2588,7 +2482,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (isVideo(url)) {
   modalImg.style.display = 'none';
   modalVideo.style.display = 'block';
-  modalVideo.setAttribute('referrerpolicy', 'no-referrer');
+  modalVideo.referrerPolicy = 'no-referrer';
   modalVideo.src = url;
   
   // GIFの場合のみループ再生
@@ -2612,6 +2506,7 @@ document.addEventListener('DOMContentLoaded', function() {
       modalVideo.src = '';
       modalVideo.style.display = 'none';
       modalImg.style.display = 'block';
+      modalImg.referrerPolicy = 'no-referrer';
       modalImg.src = url;
       modalImg.style.transform = 'translate(0,0) scale(1)';
     }
@@ -3569,103 +3464,5 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <!-- Search Help Modal -->
-<div id="searchHelpModal">
-  <div class="help-modal-content">
-    <button class="help-close-btn" onclick="document.getElementById('searchHelpModal').classList.remove('show')">✕ 閉じる</button>
-    <h2 id="helpTitle">🔍 検索コマンドヘルプ</h2>
-
-    <h3 id="helpBasicTitle">📝 基本的な検索</h3>
-    <ul id="helpBasicList">
-      <li><code>keyword</code> - キーワードを含むツイートを検索</li>
-      <li><code>word1 AND word2</code> または <code>word1 & word2</code> - 両方を含む</li>
-      <li><code>word1 OR word2</code> または <code>word1 | word2</code> - いずれかを含む</li>
-      <li><code>-word</code> - 指定した単語を除外</li>
-    </ul>
-
-    <h3 id="helpTwitterTitle">🐦 Twitter公式検索コマンド</h3>
-    <ul id="helpTwitterList">
-      <li><code>min_faves:10</code> - いいね数が10以上のツイート</li>
-      <li><code>min_retweets:5</code> - リツイート数が5以上のツイート</li>
-      <li><code>min_replies:3</code> - リプライ数が3以上のツイート</li>
-      <li><code>since:2024-01-01</code> - 指定日以降のツイート</li>
-      <li><code>until:2024-12-31</code> - 指定日以前のツイート</li>
-    </ul>
-
-    <h3 id="helpExampleTitle">💡 組み合わせ例</h3>
-    <ul id="helpExampleList">
-      <li><code>猫 min_faves:100</code> - 「猫」を含み、いいね100以上</li>
-      <li><code>旅行 OR 観光 min_retweets:10</code> - 「旅行」または「観光」を含み、RT10以上</li>
-      <li><code>ニュース -広告 min_faves:50 since:2024-01-01</code> - 「ニュース」を含み「広告」を除外、いいね50以上、2024年1月1日以降</li>
-    </ul>
-  </div>
-</div>
-
-
-<button id="debugToggle" onclick="document.getElementById('debugPanel').classList.toggle('show')">🐛 ログ</button>
-<div id="debugPanel">
-  <div class="dbg-hdr">
-    <h3>動画再生ログ (referrerpolicy=no-referrer)</h3>
-    <div>
-      <button class="dbg-btn" onclick="document.getElementById('debugLog').innerHTML='';window.logs=[]">クリア</button>
-      <button class="dbg-btn" onclick="navigator.clipboard.writeText((window.logs||[]).join('\n'));alert('コピー完了')">コピー</button>
-      <button class="dbg-btn" onclick="document.getElementById('debugPanel').classList.remove('show')">✕</button>
-    </div>
-  </div>
-  <div id="debugLog"></div>
-</div>
-<script>
-window.logs=[];
-window.L=function(m,t){
-  t=t||'i';
-  var s=new Date().toLocaleTimeString();
-  var txt='['+s+'] '+m;
-  window.logs.push(txt);
-  var d=document.createElement('div');
-  d.className='log-'+(t=='i'?'info':t=='s'?'success':'error');
-  d.innerHTML=m.replace(/\n/g,'<br>');
-  var el=document.getElementById('debugLog');
-  if(el){el.appendChild(d);el.scrollTop=el.scrollHeight;}
-  console.log('[LOG]',m);
-};
-
-L('🌍 環境: '+location.protocol+' '+(location.hostname||'ローカル')+' '+(/mobile/i.test(navigator.userAgent)?'モバイル':'PC'));
-L('✅ referrerpolicy=no-referrer 設定済み');
-</script>
-
-</body>
-</html>
-  
-
-<button id="debugToggle" onclick="document.getElementById('debugPanel').classList.toggle('show')">🐛 ログ</button>
-<div id="debugPanel">
-  <div class="dbg-hdr">
-    <h3>動画再生ログ (referrerpolicy=no-referrer)</h3>
-    <div>
-      <button class="dbg-btn" onclick="document.getElementById('debugLog').innerHTML='';window.logs=[]">クリア</button>
-      <button class="dbg-btn" onclick="navigator.clipboard.writeText((window.logs||[]).join('\n'));alert('コピー完了')">コピー</button>
-      <button class="dbg-btn" onclick="document.getElementById('debugPanel').classList.remove('show')">✕</button>
-    </div>
-  </div>
-  <div id="debugLog"></div>
-</div>
-<script>
-window.logs=[];
-window.L=function(m,t){
-  t=t||'i';
-  var s=new Date().toLocaleTimeString();
-  var txt='['+s+'] '+m;
-  window.logs.push(txt);
-  var d=document.createElement('div');
-  d.className='log-'+(t=='i'?'info':t=='s'?'success':'error');
-  d.innerHTML=m.replace(/\n/g,'<br>');
-  var el=document.getElementById('debugLog');
-  if(el){el.appendChild(d);el.scrollTop=el.scrollHeight;}
-  console.log('[LOG]',m);
-};
-
-L('🌍 環境: '+location.protocol+' '+(location.hostname||'ローカル')+' '+(/mobile/i.test(navigator.userAgent)?'モバイル':'PC'));
-L('✅ referrerpolicy=no-referrer 設定済み');
-</script>
-
 </body>
 </html>
