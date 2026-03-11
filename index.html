@@ -4,6 +4,10 @@
   <meta charset="utf-8" />
   <meta name="referrer" content="no-referrer" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0a1628">
+  <link rel="manifest" href="/XLV/manifest.webmanifest">
+  <link rel="icon" href="/XLV/icons/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/XLV/icons/icon-192.png">
   <title>X Likes Viewer</title>
   <style>
 /* XLV css v21 */
@@ -3464,5 +3468,17 @@ body.header-hidden header {
 </script>
 
 <!-- Search Help Modal -->
+
+  <!-- PWA: Service Worker 登録 -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/XLV/sw.js', { scope: '/XLV/' })
+          .catch(function(err) {
+            console.error('SW registration failed:', err);
+          });
+      });
+    }
+  </script>
 </body>
 </html>
