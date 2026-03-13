@@ -1632,6 +1632,64 @@ body.header-hidden header {
 /* XLV js v41 */
 
 (() => {
+
+  // ─── IndexedDB キャッシュヘルパー (localStorage容量制限を回避) ──────────
+  const _IDB_NAME   = 'xlv_idb';
+  const _IDB_VER    = 1;
+  const _STORE_META = 'cache_meta';
+  const _STORE_DATA = 'cache_data';
+
+  function _openDB() {
+    return new Promise((res, rej) => {
+      const req = indexedDB.open(_IDB_NAME, _IDB_VER);
+      req.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(_STORE_META))
+          db.createObjectStore(_STORE_META, { keyPath: 'id' });
+        if (!db.objectStoreNames.contains(_STORE_DATA))
+          db.createObjectStore(_STORE_DATA, { keyPath: 'id' });
+      };
+      req.onsuccess = e => res(e.target.result);
+      req.onerror   = () => rej(req.error);
+    });
+  }
+  async function _idbGetAllMeta() {
+    const db = await _openDB();
+    return new Promise((res, rej) => {
+      const req = db.transaction(_STORE_META, 'readonly').objectStore(_STORE_META).getAll();
+      req.onsuccess = () => res(req.result || []);
+      req.onerror   = () => rej(req.error);
+    });
+  }
+  async function _idbGetData(id) {
+    const db = await _openDB();
+    return new Promise((res, rej) => {
+      const req = db.transaction(_STORE_DATA, 'readonly').objectStore(_STORE_DATA).get(id);
+      req.onsuccess = () => res(req.result ? req.result.data : null);
+      req.onerror   = () => rej(req.error);
+    });
+  }
+  async function _idbPutCache(id, name, timestamp, data) {
+    const db = await _openDB();
+    return new Promise((res, rej) => {
+      const tx = db.transaction([_STORE_META, _STORE_DATA], 'readwrite');
+      tx.objectStore(_STORE_META).put({ id, name, timestamp });
+      tx.objectStore(_STORE_DATA).put({ id, data });
+      tx.oncomplete = () => res();
+      tx.onerror    = () => rej(tx.error);
+    });
+  }
+  async function _idbDeleteCache(id) {
+    const db = await _openDB();
+    return new Promise((res, rej) => {
+      const tx = db.transaction([_STORE_META, _STORE_DATA], 'readwrite');
+      tx.objectStore(_STORE_META).delete(id);
+      tx.objectStore(_STORE_DATA).delete(id);
+      tx.oncomplete = () => res();
+      tx.onerror    = () => rej(tx.error);
+    });
+  }
+  // ─────────────────────────────────────────────────────────────────────────
   // DOM要素
   const fileInput = document.getElementById('jsonFile');
   const gallery = document.getElementById('gallery');
@@ -1716,7 +1774,7 @@ body.header-hidden header {
   let videoPlayTimeout = new Map();
 
   // 初期化
-  (function init() {
+  (async function init() {
     const theme = localStorage.getItem('xviewer_theme') || 'light';
     if (theme === 'dark') document.body.classList.add('dark');
     else if (theme === 'amoled') document.body.classList.add('amoled');
@@ -1758,9 +1816,9 @@ body.header-hidden header {
       }, { threshold: 0.25, rootMargin: '50px' });
     }
     
-    loadCacheList();
+    await loadCacheList();
     const currentId = localStorage.getItem(CACHE_CURRENT_KEY);
-    if (currentId) loadCachedJsonById(currentId);
+    if (currentId) await loadCachedJsonById(currentId);
   })();
 
   // ヘルパー関数
@@ -1843,33 +1901,43 @@ body.header-hidden header {
   }
 
   // キャッシュ管理
-  function loadCacheList() {
+  async function loadCacheList() {
     try {
-      const stored = localStorage.getItem(CACHE_LIST_KEY);
-      if (stored) {
-        jsonCacheList = JSON.parse(stored);
-        updateCacheDropdown();
+      // localStorage → IndexedDB への自動移行
+      const legacy = localStorage.getItem(CACHE_LIST_KEY);
+      if (legacy) {
+        try {
+          const list = JSON.parse(legacy);
+          for (const item of list) {
+            if (item.id && item.data) {
+              await _idbPutCache(item.id, item.name, item.timestamp, item.data);
+            }
+          }
+          localStorage.removeItem(CACHE_LIST_KEY);
+          console.log('✅ localStorage → IndexedDB 移行完了');
+        } catch (e) { console.warn('移行エラー:', e); }
       }
+      jsonCacheList = await _idbGetAllMeta();
+      updateCacheDropdown();
     } catch (err) {
       console.warn('キャッシュ読み込みエラー:', err);
       jsonCacheList = [];
     }
   }
 
-  function saveCacheList() {
-    try {
-      localStorage.setItem(CACHE_LIST_KEY, JSON.stringify(jsonCacheList));
-    } catch (err) {
-      console.warn('キャッシュ保存エラー:', err);
-    }
-  }
+  // saveCacheList は IndexedDB 化により廃止 (_idbPutCache を直接使用)
+  function saveCacheList() {}
 
-  function loadCachedJsonById(id) {
+  async function loadCachedJsonById(id) {
     try {
-      const cacheItem = jsonCacheList.find(item => item.id === id);
-      if (!cacheItem) return;
+      const meta = jsonCacheList.find(item => item.id === id)
+                || (await _idbGetAllMeta()).find(item => item.id === id);
+      if (!meta) return;
 
-      const extracted = extractTweetsFromJson(cacheItem.data);
+      const data = await _idbGetData(id);
+      if (!data) return;
+
+      const extracted = extractTweetsFromJson(data);
       if (!extracted.length) return;
 
       allTweets = extracted.map(raw => ({
@@ -1885,29 +1953,33 @@ body.header-hidden header {
         views_count: Number(raw.views_count || raw.views || 0),
         media: gatherMedia(raw)
       }));
-      
+
       localStorage.setItem(CACHE_CURRENT_KEY, id);
       applyFiltersAndRender();
       updateCacheDropdown();
-      console.log('✅ キャッシュ復元:', cacheItem.name);
+      console.log('✅ キャッシュ復元 (IndexedDB):', meta.name);
     } catch (err) {
       console.warn('キャッシュ読み込みエラー:', err);
     }
   }
 
-  function saveJsonToCache(data, filename) {
+  async function saveJsonToCache(data, filename) {
     try {
       const id = 'cache_' + Date.now();
       const name = filename || `JSON_${new Date().toLocaleString('ja-JP')}`;
-      jsonCacheList.push({ id, name, timestamp: Date.now(), data });
-      if (jsonCacheList.length > 10) {
-        jsonCacheList.sort((a, b) => b.timestamp - a.timestamp);
-        jsonCacheList = jsonCacheList.slice(0, 10);
+      await _idbPutCache(id, name, Date.now(), data);
+      // 上限10件を超えたら古いものを削除
+      const allMeta = await _idbGetAllMeta();
+      if (allMeta.length > 10) {
+        allMeta.sort((a, b) => a.timestamp - b.timestamp);
+        for (let i = 0; i < allMeta.length - 10; i++) {
+          await _idbDeleteCache(allMeta[i].id);
+        }
       }
-      saveCacheList();
+      jsonCacheList = await _idbGetAllMeta();
       localStorage.setItem(CACHE_CURRENT_KEY, id);
       updateCacheDropdown();
-      console.log('✅ キャッシュ保存:', name);
+      console.log('✅ キャッシュ保存 (IndexedDB):', name);
     } catch (err) {
       console.warn('キャッシュ保存エラー:', err);
     }
@@ -2009,7 +2081,7 @@ body.header-hidden header {
     const f = e.target.files?.[0];
     if (!f) return;
     const r = new FileReader();
-    r.onload = ev => {
+    r.onload = async ev => {
       let txt = ev.target.result;
       if (txt?.charCodeAt(0) === 0xFEFF) txt = txt.slice(1);
       try {
@@ -2020,7 +2092,7 @@ body.header-hidden header {
           return; 
         }
         
-        saveJsonToCache(parsed, f.name);
+        await saveJsonToCache(parsed, f.name);
         
         allTweets = extracted.map(raw => ({
           id: raw.id_str || raw.id || '',
@@ -2811,7 +2883,7 @@ body.header-hidden header {
     const f = e.target.files?.[0];
     if (!f) return;
     const r = new FileReader();
-    r.onload = ev => {
+    r.onload = async ev => {
       try {
         let txt = ev.target.result;
         if (txt?.charCodeAt(0) === 0xFEFF) txt = txt.slice(1);
@@ -2829,7 +2901,7 @@ body.header-hidden header {
     const f = e.target.files?.[0];
     if (!f) return;
     const r = new FileReader();
-    r.onload = ev => {
+    r.onload = async ev => {
       try {
         let txt = ev.target.result;
         if (txt?.charCodeAt(0) === 0xFEFF) txt = txt.slice(1);
@@ -2848,7 +2920,7 @@ body.header-hidden header {
     const f = e.target.files?.[0];
     if (!f) return;
     const r = new FileReader();
-    r.onload = ev => {
+    r.onload = async ev => {
       try {
         let txt = ev.target.result;
         if (txt?.charCodeAt(0) === 0xFEFF) txt = txt.slice(1);
@@ -3469,14 +3541,11 @@ body.header-hidden header {
 
 <!-- Search Help Modal -->
 
-  <!-- PWA: Service Worker 登録 -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('/XLV/sw.js', { scope: '/XLV/' })
-          .catch(function(err) {
-            console.error('SW registration failed:', err);
-          });
+          .catch(function(err) { console.error('SW registration failed:', err); });
       });
     }
   </script>
