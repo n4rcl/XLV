@@ -962,100 +962,7 @@ body.amoled .text-card-footer {
   z-index: 200;
 }
 
-
-/* カスタム履歴ドロップダウン */
-.cache-custom-select {
-  position: relative;
-}
-.cache-select-trigger {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 8px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--card);
-  color: var(--text);
-  cursor: pointer;
-  width: 130px;
-  max-width: 130px;
-  text-align: left;
-  font-size: 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-}
-.cache-select-label {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.cache-select-arrow {
-  flex-shrink: 0;
-  font-size: 10px;
-  opacity: 0.5;
-}
-.cache-select-list {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  z-index: 300;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-  min-width: 220px;
-  max-width: 320px;
-  list-style: none;
-  margin: 0;
-  padding: 4px 0;
-  overflow-y: auto;
-  max-height: 260px;
-}
-.cache-select-list.hidden { display: none; }
-.cache-select-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 7px 10px;
-  cursor: pointer;
-  transition: background 0.1s;
-}
-.cache-select-item:hover { background: var(--bg); }
-.cache-select-item.active {
-  background: rgba(29,155,240,0.12);
-}
-.cache-item-label {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 13px;
-  color: var(--text);
-}
-.cache-item-delete {
-  flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  border: none;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-  font-size: 15px;
-  line-height: 1;
-  padding: 0;
-  opacity: 0;
-  transition: opacity 0.15s, background 0.15s, color 0.15s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.cache-select-item:hover .cache-item-delete { opacity: 1; }
-.cache-item-delete:hover {
-  background: rgba(239,68,68,0.15);
-  color: #ef4444;
-}
-/* Cache select (旧selectは廃止) */
+/* Cache select */
 .cache-select-theme,
 .cache-select-theme option {
   background: var(--card) !important;
@@ -1342,7 +1249,7 @@ body > * {
   }
 
   /* キャッシュプルダウン: 検索プレースホルダーと同じ幅（約130px） */
-  .header-top .controls .cache-select-trigger {
+  .header-top .controls .cache-dropdown-container select {
     width: 130px !important;
     max-width: 130px !important;
     min-width: 130px !important;
@@ -1613,6 +1520,323 @@ body.header-hidden header {
   }
 }
 
+
+/* ═══ XLV Header Redesign ═══ */
+/* グラデーションアクセントライン */
+header::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 1.5px;
+  background: linear-gradient(90deg, #1d9bf0, #7856ff, #1d9bf0);
+  background-size: 200% 100%;
+  animation: headerLineFlow 4s linear infinite;
+}
+@keyframes headerLineFlow {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+header {
+  position: sticky; /* 既存上書き */
+  overflow: visible;
+}
+body.dark header, body.amoled header {
+  background: rgba(21,32,43,0.78) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* グラデーションタイトル */
+#title {
+  font-weight: 800 !important;
+  background: linear-gradient(135deg, #1d9bf0, #7856ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 検索入力: ピル型 */
+#searchInput {
+  border-radius: 20px !important;
+  transition: box-shadow 0.2s, border-color 0.2s !important;
+}
+#searchInput:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(29,155,240,0.35) !important;
+  border-color: #1d9bf0 !important;
+}
+
+/* アイコンボタン: 円形 */
+#textModeToggle,
+#themeToggle,
+#headerCloseBtn {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+#textModeToggle:hover,
+#themeToggle:hover,
+#headerCloseBtn:hover {
+  transform: scale(1.12) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+}
+
+/* 適用/解除ボタン */
+#applyFilter {
+  background: #1d9bf0 !important;
+  color: #fff !important;
+  border-color: #1d9bf0 !important;
+  border-radius: 16px !important;
+  transition: transform 0.15s, box-shadow 0.15s !important;
+}
+#applyFilter:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(29,155,240,0.4) !important;
+}
+#clearFilter {
+  color: var(--muted) !important;
+  border-radius: 16px !important;
+}
+
+/* ソートエリアグループ */
+.sort-area {
+  background: var(--bg);
+  border-radius: 12px !important;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+}
+
+/* 日付エリアグループ */
+.date-range {
+  background: var(--bg);
+  border-radius: 12px !important;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+}
+
+/* ツイート数バッジ */
+#tweetCount {
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 20px !important;
+  padding: 2px 10px !important;
+  font-size: 12px !important;
+}
+
+/* ⚙ ツール トグルボタン */
+#jsonMergeToggle {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 3px 10px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+  background: var(--bg) !important;
+  color: var(--muted) !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: border-color 0.15s, color 0.15s !important;
+}
+#jsonMergeToggle.open {
+  border-color: #1d9bf0 !important;
+  color: #1d9bf0 !important;
+}
+
+/* 日付範囲: 常に横並び */
+.date-range { flex-wrap: nowrap !important; }
+.date-range label { flex-shrink: 1 !important; min-width: 0 !important; white-space: nowrap; }
+.date-range input[type="date"] { min-width: 80px !important; width: auto !important; flex-shrink: 1; }
+
+/* hover underline for username */
+.tweet-username:hover,
+.text-card-user:hover,
+.meta > div[data-screen-name]:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* ═══ ユーザーコンテキストメニュー ═══ */
+.user-context-menu {
+  position: fixed;
+  z-index: 600;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.12);
+  overflow: hidden;
+  min-width: 180px;
+  animation: ucmFadeIn 0.12s ease;
+}
+@keyframes ucmFadeIn {
+  from { opacity: 0; transform: scale(0.94) translateY(-4px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+.user-context-menu.hidden { display: none; }
+.ucm-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 16px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  box-shadow: none;
+  transition: background 0.12s, color 0.12s;
+}
+.ucm-item + .ucm-item { border-top: 1px solid var(--border); }
+.ucm-search:hover { background: rgba(29,155,240,0.10); color: #1d9bf0; }
+.ucm-exclude:hover { background: rgba(239,68,68,0.10); color: #ef4444; }
+/* ══════════════════════════════════════════════════ */
+
+
+@keyframes ucmFadeOut {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to   { opacity: 0; transform: scale(0.94) translateY(-4px); }
+}
+.user-context-menu.closing {
+  animation: ucmFadeOut 0.12s ease forwards;
+  pointer-events: none;
+}
+
+/* ═══ no-effects モード（パフォーマンス優先）═══ */
+body.no-effects header::after { display: none !important; }
+body.no-effects.dark header,
+body.no-effects.amoled header {
+  background: var(--card) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+body.no-effects #title {
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: var(--text) !important;
+  background-clip: unset !important;
+}
+body.no-effects .user-context-menu,
+body.no-effects .user-context-menu.closing {
+  animation: none !important;
+}
+
+/* ✨ エフェクトボタン */
+#effectsToggle {
+  order: 7;
+  flex: 0 0 auto;
+  padding: 3px 6px !important;
+  font-size: 16px !important;
+  height: 28px;
+  line-height: 1.3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+#effectsToggle:hover {
+  transform: scale(1.12) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+}
+body.no-effects #effectsToggle {
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+@media (max-width: 400px) {
+  #effectsToggle {
+    font-size: 15px !important;
+    min-width: 30px;
+    padding: 3px 5px !important;
+  }
+}
+/* ══════════════════════════════════════════════════ */
+
+
+/* ⚙ツールボタンを常に同一行に収める */
+.sort-area {
+  flex-wrap: nowrap !important;
+  min-width: 0;
+}
+#applyFilter,
+#clearFilter {
+  padding: 4px 8px !important;
+  min-width: 0 !important;
+  flex-shrink: 1 !important;
+}
+#jsonMergeToggle {
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+}
+/* ══════════════════════════════ */
+
+/* ═══ パフォーマンス最適化 ═══ */
+.card, .text-only-card, .list-mode-card {
+  contain: layout style;
+}
+.card:hover, .text-only-card:hover {
+  will-change: transform;
+}
+/* content-visibility: auto は大量カード時にペイントをスキップ */
+#gallery .card,
+#gallery .text-only-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 240px;
+}
+#gallery.list-mode .list-mode-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 120px;
+}
+/* will-change はエフェクトOFF時は不要 */
+
+/* ══════════════════════════════ */
+
+/* スクロール最適化 */
+#gallery {
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
+/* モーダル背景タッチ最適化 */
+#modal {
+  touch-action: none;
+}
+
+/* NOT FOUND サムネプレースホルダー */
+.thumb-not-found {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #1e1e1e;
+  gap: 6px;
+}
+.thumb-not-found::before {
+  content: '🔗';
+  font-size: 22px;
+  opacity: 0.35;
+}
+.thumb-not-found::after {
+  content: 'NOT FOUND';
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: #555;
+}
 </style>
 </head>
 <body>
@@ -1632,6 +1856,7 @@ body.header-hidden header {
         </select>
         <button id="textModeToggle" type="button" title="テキストのみ表示">📄</button>
         <button id="themeToggle" type="button" title="テーマ切替">🌗</button>
+        <button id="effectsToggle" type="button" title="エフェクト切替">✨</button>
         <span id="tweetCount" style="font-size:13px;color:var(--muted);white-space:nowrap;margin-left:4px"></span>
         <button id="headerCloseBtn" type="button" title="ヘッダーを閉じる">▲</button>
       </div>
@@ -1651,7 +1876,7 @@ body.header-hidden header {
         </select>
         <button id="applyFilter" type="button">適用</button>
         <button id="clearFilter" type="button">解除</button>
-        <span id="jsonMergeToggle" style="cursor:pointer;font-size:14px;color:var(--muted);user-select:none;margin-left:8px" title="JSON結合">﹀</span>
+        <span id="jsonMergeToggle" style="cursor:pointer;user-select:none;margin-left:8px">⚙ ツール</span>
       </div>
     </div>
     
@@ -1680,20 +1905,18 @@ body.header-hidden header {
         <summary>
           > 投稿の除外
           <span class="merge-help-icon" title="">?</span>
-          <div class="merge-help-tooltip">
-            指定したいいね数より少ない投稿をコメントアウトまたは削除できます。例: 10を指定すると、favorite_countが10未満の投稿が除外されます。処理後のJSONファイルがダウンロードされます。
-          </div>
+          <div class="merge-help-tooltip" id="xlvExcludeTooltip">指定したいいね数より少ない投稿をコメントアウトまたは削除できます。例: 10を指定すると、favorite_countが10未満の投稿が除外されます。処理後のJSONファイルがダウンロードされます。</div>
         </summary>
         <div class="merge-content">
           <div class="merge-row">
-            <label>対象JSON: <input id="excludeJson" type="file" accept=".json" /></label>
+            <label><span id="xlvExcludeJsonLabel">対象JSON</span>: <input id="excludeJson" type="file" accept=".json" /></label>
           </div>
           <div class="merge-row" style="margin-top:8px;">
-            <label>いいね数の最小値: <input id="excludeThreshold" type="number" min="0" value="0" style="width:100px;" /></label>
+            <label><span id="xlvExcludeThresholdLabel">いいね数の最小値</span>: <input id="excludeThreshold" type="number" min="0" value="0" style="width:100px;" /></label>
           </div>
           
           <div class="merge-row" style="margin-top:8px;">
-            <label>ファイル名: <input id="excludeFileName" type="text" placeholder="filtered" style="width:150px;" /></label>
+            <label><span id="xlvExcludeFileNameLabel">ファイル名</span>: <input id="excludeFileName" type="text" placeholder="filtered" style="width:150px;" /></label>
             <button id="executeExclude" type="button">除外実行</button>
           </div>
           <div id="excludeStatus" class="merge-status"></div>
@@ -1716,6 +1939,12 @@ body.header-hidden header {
     </div>
     <button id="nextBtn" class="modal-btn right" type="button">▶</button>
     <div id="modalCounter" aria-hidden="true"></div>
+  </div>
+
+    <!-- ユーザーコンテキストメニュー -->
+  <div id="userContextMenu" class="user-context-menu hidden" role="menu">
+    <button class="ucm-item ucm-search" type="button">🔍 <span id="ucmSearchLabel">このユーザーを検索</span></button>
+    <button class="ucm-item ucm-exclude" type="button">🚫 <span id="ucmExcludeLabel">このユーザーを除外</span></button>
   </div>
 
   <script>
@@ -1884,7 +2113,7 @@ body.header-hidden header {
     
     // Intersection Observer初期化
     if ('IntersectionObserver' in window) {
-      videoObserver = new IntersectionObserver((entries) => {
+      window.videoObserver = videoObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           const video = entry.target;
           if (entry.isIntersecting) {
@@ -1906,7 +2135,7 @@ body.header-hidden header {
             }
           }
         });
-      }, { threshold: 0.25, rootMargin: '50px' });
+      }, { threshold: 0.25, rootMargin: '0px' });
     }
     
     await loadCacheList();
@@ -2044,7 +2273,8 @@ body.header-hidden header {
         favorite_count: Number(raw.favorite_count || raw.favorite_count_str || raw.favourite_count || 0),
         retweet_count: Number(raw.retweet_count || raw.retweet_count_str || 0),
         views_count: Number(raw.views_count || raw.views || 0),
-        media: gatherMedia(raw)
+        media: gatherMedia(raw),
+        _hay: ((raw.full_text || raw.text || '') + ' ' + (raw.name || raw.user?.name || '') + ' ' + (raw.screen_name || raw.user?.screen_name || '')).toLowerCase()
       }));
 
       localStorage.setItem(CACHE_CURRENT_KEY, id);
@@ -2079,124 +2309,94 @@ body.header-hidden header {
   }
 
   function updateCacheDropdown() {
-    const lang = window.currentLanguage || { cacheSelect: '履歴を選択', deleteCache: '全履歴を削除' };
+    const lang = window.currentLanguage || { cacheSelect: '履歴を選択', deleteCache: '現在の履歴を削除' };
+    const currentId = localStorage.getItem(CACHE_CURRENT_KEY);
     const container = document.querySelector('.cache-dropdown-container');
-    if (!container) { createCacheDropdown(); return; }
-    const list  = document.getElementById('cacheSelectList');
-    const label = document.getElementById('cacheSelectLabel');
-    if (!list || !label) return;
-    _rebuildCacheList(list, label, lang);
-    const deleteAllBtn = container.querySelector('.delete-cache-btn');
-    if (deleteAllBtn) {
-      deleteAllBtn.style.display = jsonCacheList.length ? 'inline-block' : 'none';
+    
+    if (!container) {
+      createCacheDropdown();
+      return;
+    }
+
+    const select = container.querySelector('select');
+    if (!select) return;
+
+    select.innerHTML = `<option value="">${lang.cacheSelect}</option>`;
+    jsonCacheList.sort((a, b) => b.timestamp - a.timestamp).forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.id;
+      option.textContent = item.name;
+      if (item.id === currentId) option.selected = true;
+      select.appendChild(option);
+    });
+
+    const deleteBtn = container.querySelector('.delete-cache-btn');
+    if (deleteBtn) {
+      deleteBtn.style.display = currentId ? 'inline-block' : 'none';
+      deleteBtn.title = lang.deleteCache;
     }
   }
 
-  function _rebuildCacheList(list, label, lang) {
-    list.innerHTML = '';
-    const currentId = localStorage.getItem(CACHE_CURRENT_KEY);
-    if (!jsonCacheList.length) { label.textContent = lang.cacheSelect; return; }
-    jsonCacheList.sort((a, b) => b.timestamp - a.timestamp).forEach(item => {
-      const li = document.createElement('li');
-      li.className = 'cache-select-item' + (item.id === currentId ? ' active' : '');
-      const itemLabel = document.createElement('span');
-      itemLabel.className = 'cache-item-label';
-      itemLabel.textContent = item.name;
-      itemLabel.title = item.name;
-      const delBtn = document.createElement('button');
-      delBtn.type = 'button';
-      delBtn.className = 'cache-item-delete';
-      delBtn.textContent = '×';
-      delBtn.title = '削除';
-      delBtn.addEventListener('click', async e => {
-        e.stopPropagation();
-        await _idbDeleteCache(item.id);
-        jsonCacheList = await _idbGetAllMeta();
-        if (localStorage.getItem(CACHE_CURRENT_KEY) === item.id) {
-          localStorage.removeItem(CACHE_CURRENT_KEY);
-          allTweets = []; viewTweets = []; renderGallery();
-        }
-        updateCacheDropdown();
-      });
-      li.addEventListener('click', () => {
-        loadCachedJsonById(item.id);
-        list.classList.add('hidden');
-      });
-      li.appendChild(itemLabel);
-      li.appendChild(delBtn);
-      list.appendChild(li);
-    });
-    const selected = jsonCacheList.find(item => item.id === currentId);
-    label.textContent = selected ? selected.name : lang.cacheSelect;
-  }
-
   function createCacheDropdown() {
-    const lang = window.currentLanguage || { cacheSelect: '履歴を選択', deleteCache: '全履歴を削除' };
+    const lang = window.currentLanguage || { cacheSelect: '履歴を選択', deleteCache: '現在の履歴を削除' };
     const container = document.createElement('div');
     container.className = 'cache-dropdown-container';
     container.style.cssText = 'display:flex;gap:6px;align-items:center';
 
-    // カスタムドロップダウン本体
-    const wrapper = document.createElement('div');
-    wrapper.className = 'cache-custom-select';
+    const select = document.createElement('select');
+    select.id = 'cacheSelect';
+    select.className = 'cache-select-theme';
+    select.style.cssText = 'padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);width:130px;max-width:130px;text-overflow:ellipsis';
+    select.innerHTML = `<option value="">${lang.cacheSelect}</option>`;
 
-    const trigger = document.createElement('button');
-    trigger.type = 'button';
-    trigger.id = 'cacheSelectTrigger';
-    trigger.className = 'cache-select-trigger';
-
-    const label = document.createElement('span');
-    label.id = 'cacheSelectLabel';
-    label.className = 'cache-select-label';
-    const arrow = document.createElement('span');
-    arrow.className = 'cache-select-arrow';
-    arrow.textContent = '▾';
-    trigger.appendChild(label);
-    trigger.appendChild(arrow);
-
-    const list = document.createElement('ul');
-    list.id = 'cacheSelectList';
-    list.className = 'cache-select-list hidden';
-    list.addEventListener('click', e => e.stopPropagation());
-
-    trigger.addEventListener('click', e => {
-      e.stopPropagation();
-      list.classList.toggle('hidden');
-    });
-    document.addEventListener('click', () => list.classList.add('hidden'));
-
-    wrapper.appendChild(trigger);
-    wrapper.appendChild(list);
-
-    // 🗑️ ボタン: 全履歴削除
-    const deleteAllBtn = document.createElement('button');
-    deleteAllBtn.className = 'delete-cache-btn';
-    deleteAllBtn.textContent = '🗑️';
-    deleteAllBtn.title = lang.deleteCache;
-    deleteAllBtn.style.cssText = 'padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;display:none';
-    deleteAllBtn.addEventListener('click', async () => {
-      if (!jsonCacheList.length) return;
-      const confirmMsg = lang.cacheSelect.includes('history')  ? 'Delete all history?'
-                       : lang.cacheSelect.includes('历史')     ? '删除所有历史记录?'
-                       : lang.cacheSelect.includes('기록')     ? '모든 기록을 삭제하시겠습니까?'
-                       : '全ての履歴を削除しますか?';
-      if (!confirm(confirmMsg)) return;
-      for (const item of [...jsonCacheList]) await _idbDeleteCache(item.id);
-      jsonCacheList = [];
-      localStorage.removeItem(CACHE_CURRENT_KEY);
-      allTweets = []; viewTweets = []; renderGallery();
-      updateCacheDropdown();
+    const currentId = localStorage.getItem(CACHE_CURRENT_KEY);
+    jsonCacheList.sort((a, b) => b.timestamp - a.timestamp).forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.id;
+      option.textContent = item.name;
+      if (item.id === currentId) option.selected = true;
+      select.appendChild(option);
     });
 
-    container.appendChild(wrapper);
-    container.appendChild(deleteAllBtn);
+    select.addEventListener('change', (e) => {
+      if (e.target.value) loadCachedJsonById(e.target.value);
+    });
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-cache-btn';
+    deleteBtn.textContent = '🗑️';
+    deleteBtn.title = lang.deleteCache;
+    deleteBtn.style.cssText = 'padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;display:' + (currentId ? 'inline-block' : 'none');
+
+    deleteBtn.addEventListener('click', () => {
+      const id = select.value;
+      if (!id) return;
+      
+      const confirmMsg = lang.cacheSelect.includes('history') ? 'Delete this history?' 
+                       : lang.cacheSelect.includes('历史') ? '删除此历史记录?'
+                       : lang.cacheSelect.includes('기록') ? '이 기록을 삭제하시겠습니까?'
+                       : 'この履歴を削除しますか?';
+      
+      if (confirm(confirmMsg)) {
+        jsonCacheList = jsonCacheList.filter(item => item.id !== id);
+        saveCacheList();
+        if (localStorage.getItem(CACHE_CURRENT_KEY) === id) {
+          localStorage.removeItem(CACHE_CURRENT_KEY);
+          allTweets = [];
+          viewTweets = [];
+          renderGallery();
+        }
+        updateCacheDropdown();
+      }
+    });
+
+    container.appendChild(select);
+    container.appendChild(deleteBtn);
 
     const controls = document.querySelector('.controls');
     if (controls && fileInput) {
       fileInput.parentNode.insertBefore(container, fileInput.nextSibling);
     }
-    _rebuildCacheList(list, label, lang);
-    deleteAllBtn.style.display = jsonCacheList.length ? 'inline-block' : 'none';
   }
 
   // ファイル読み込み
@@ -2228,7 +2428,8 @@ body.header-hidden header {
           favorite_count: Number(raw.favorite_count || raw.favorite_count_str || raw.favourite_count || 0),
           retweet_count: Number(raw.retweet_count || raw.retweet_count_str || 0),
           views_count: Number(raw.views_count || raw.views || 0),
-          media: gatherMedia(raw)
+          media: gatherMedia(raw),
+        _hay: ((raw.full_text || raw.text || '') + ' ' + (raw.name || raw.user?.name || '') + ' ' + (raw.screen_name || raw.user?.screen_name || '')).toLowerCase()
         }));
         applyFiltersAndRender();
       } catch (err) {
@@ -2342,6 +2543,13 @@ body.header-hidden header {
     return haystack.includes(cleanQuery.toLowerCase());
   }
 
+  
+  // debounce ユーティリティ
+  function debounce(fn, ms) {
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+  }
+  const debouncedRender = debounce(applyFiltersAndRender, 80);
   function applyFiltersAndRender() {
     const q = searchInput.value.trim();
     const start = startDateEl.value ? new Date(startDateEl.value) : null;
@@ -2353,7 +2561,7 @@ body.header-hidden header {
       if (end && (!dt || dt > end)) return false;
       
       if (q) {
-        const hay = ((t.full_text || '') + ' ' + (t.name || '') + ' ' + (t.screen_name || '')).toLowerCase();
+        const hay = t._hay || ((t.full_text || '') + ' ' + (t.name || '') + ' ' + (t.screen_name || '')).toLowerCase();
         if (!advancedSearch(q, hay, t)) return false;
       }
       
@@ -2392,13 +2600,19 @@ body.header-hidden header {
       openTweet: '投稿を開く'
     };
     
+    // 動画ObserverをリセットしてからDOM削除（メモリリーク防止）
+    if (window.videoObserver) {
+      gallery.querySelectorAll('video').forEach(v => window.videoObserver.unobserve(v));
+    }
     gallery.innerHTML = '';
+    if (!allTweets.length) return; // データ未ロード時は即リターン
     if (!viewTweets.length) { 
       gallery.innerHTML = `<div style="padding:18px;color:var(--muted)">${lang.noResults}</div>`; 
       return; 
     }
     
-    viewTweets.forEach((t) => {
+    const _frag = document.createDocumentFragment();
+  viewTweets.forEach((t) => {
       const card = document.createElement('article');
       card.className = 'card';
 
@@ -2413,6 +2627,10 @@ body.header-hidden header {
           const username = document.createElement('span');
           username.className = 'tweet-username';
           username.textContent = `${t.name || ''} @${t.screen_name || ''}`;
+          username.dataset.name = t.name || '';
+          username.dataset.screenName = t.screen_name || '';
+          username.style.cursor = 'pointer';
+          username.addEventListener('click', e => { e.stopPropagation(); window._xlvShowUserMenu && window._xlvShowUserMenu(e.currentTarget); });
 
           const date = document.createElement('span');
           date.className = 'tweet-date';
@@ -2449,7 +2667,7 @@ body.header-hidden header {
 
           card.append(header, textDiv, statsDiv);
           card.addEventListener('click', () => openModalWithText(fullTextContent));
-          gallery.appendChild(card);
+          _frag.appendChild(card);
           return;
         } else {
           // 既存のグリッド表示処理
@@ -2459,6 +2677,10 @@ body.header-hidden header {
         const userInfo = document.createElement('div');
         userInfo.className = 'text-card-user';
         userInfo.textContent = `${t.name || ''} (@${t.screen_name || ''})`;
+        userInfo.dataset.name = t.name || '';
+        userInfo.dataset.screenName = t.screen_name || '';
+        userInfo.style.cursor = 'pointer';
+        userInfo.addEventListener('click', e => { e.stopPropagation(); window._xlvShowUserMenu && window._xlvShowUserMenu(e.currentTarget); });
         
         const stats = document.createElement('div');
         stats.className = 'text-card-stats';
@@ -2495,7 +2717,7 @@ body.header-hidden header {
         footer.append(dateSpan, noMediaLabel, linkSpan);
         card.append(userInfo, stats, textContent, footer);
         card.addEventListener('click', () => openModalWithText(fullText));
-        gallery.appendChild(card);
+        _frag.appendChild(card);
         return;
           return;
         }
@@ -2521,12 +2743,21 @@ body.header-hidden header {
         // サムネイルでは自動再生しない
         // if (videoObserver) videoObserver.observe(v);
         thumb.appendChild(v);
+        v.addEventListener('error', function() {
+          this.style.display = 'none';
+          if (!this.parentNode.querySelector('.thumb-not-found')) {
+            const nf = document.createElement('div');
+            nf.className = 'thumb-not-found';
+            this.parentNode.appendChild(nf);
+          }
+        }, { once: true });
 
         const icon = document.createElement('div');
         icon.className = 'video-icon';
         
-        let iconText = (first.type === 'animated_gif' || /gif/i.test(first.type)) ? 'GIF' : '🎥';
-        if (first.duration && first.duration > 0 && first.type !== 'animated_gif' && !/gif/i.test(first.type)) {
+        const _firstIsGif = first.type === 'animated_gif' || /gif/i.test(first.type || '') || /\/tweet_video\//i.test(first.full || first.thumb || '');
+        let iconText = _firstIsGif ? 'GIF' : '🎥';
+        if (first.duration && first.duration > 0 && !_firstIsGif) {
           const minutes = Math.floor(first.duration / 60);
           const seconds = first.duration % 60;
           const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
@@ -2537,10 +2768,27 @@ body.header-hidden header {
         thumb.appendChild(icon);
       } else {
         const img = document.createElement('img');
+        img.decoding = 'async';
+        img.onerror = function() {
+          this.style.display = 'none';
+          if (!this.parentNode.querySelector('.thumb-not-found')) {
+            const nf = document.createElement('div');
+            nf.className = 'thumb-not-found';
+            this.parentNode.appendChild(nf);
+          }
+        };
         img.src = (first.thumb || first.full || '').trim();
         img.alt = (t.full_text || '').slice(0, 120);
         img.loading = 'lazy';
         img.decoding = 'async';
+        img.onerror = function() {
+          this.style.display = 'none';
+          if (!this.parentNode.querySelector('.thumb-not-found')) {
+            const nf = document.createElement('div');
+            nf.className = 'thumb-not-found';
+            this.parentNode.appendChild(nf);
+          }
+        };
         img.referrerPolicy = 'no-referrer';
         thumb.appendChild(img);
       }
@@ -2565,6 +2813,10 @@ body.header-hidden header {
       meta.className = 'meta';
       const left = document.createElement('div');
       left.textContent = `${t.name || ''} (@${t.screen_name || ''})`;
+      left.dataset.name = t.name || '';
+      left.dataset.screenName = t.screen_name || '';
+      left.style.cursor = 'pointer';
+      left.addEventListener('click', e => { e.stopPropagation(); window._xlvShowUserMenu && window._xlvShowUserMenu(e.currentTarget); });
       const right = document.createElement('div');
       right.innerHTML = `❤ ${t.favorite_count || 0}　🔁 ${t.retweet_count || 0}`;
       meta.append(left, right);
@@ -2590,7 +2842,8 @@ body.header-hidden header {
         let jpgCount = 0;
         
         t.media.forEach(m => {
-          if (m.type === 'animated_gif' || /gif/i.test(m.full || m.thumb)) {
+          const _isGif = m.type === 'animated_gif' || /gif/i.test(m.type || '') || /\/tweet_video\//i.test(m.full || m.thumb || '');
+          if (_isGif) {
             gifCount++;
           } else if (m.type === 'video' || /mp4|webm|mov/i.test(m.full || m.thumb)) {
             mp4Count++;
@@ -2604,7 +2857,7 @@ body.header-hidden header {
         if (mp4Count > 0) mediaTypes.push('MP4');
         
         const typeText = mediaTypes.join('/');
-        const countText = t.media.length > 1 ? `/${t.media.length}${lang.imageCount}` : '';
+        const countText = t.media.length > 1 ? `/${t.media.length}` : '';
         mediaTypeSpan.textContent = typeText + countText;
       }
       
@@ -2628,8 +2881,9 @@ body.header-hidden header {
         openModalWithMedia(arr);
       });
 
-      gallery.appendChild(card);
+      _frag.appendChild(card);
     });
+  gallery.appendChild(_frag);
   }
 
   // モーダル
@@ -2986,15 +3240,14 @@ body.header-hidden header {
     if (e.key === 'Enter') applyFiltersAndRender();
   });
   
-  startDateEl.addEventListener('change', applyFiltersAndRender);
-  endDateEl.addEventListener('change', applyFiltersAndRender);
-  sortSelect.addEventListener('change', applyFiltersAndRender);
+  startDateEl.addEventListener('change', debouncedRender);
+  endDateEl.addEventListener('change', debouncedRender);
+  sortSelect.addEventListener('change', debouncedRender);
 
   // JSON結合パネルトグル
   if (jsonMergeToggle && jsonMergePanel) {
     jsonMergeToggle.addEventListener('click', () => {
       jsonMergePanel.classList.toggle('hidden');
-      jsonMergeToggle.textContent = jsonMergePanel.classList.contains('hidden') ? '﹀' : '︿';
     });
   }
 
@@ -3287,6 +3540,20 @@ body.header-hidden header {
     localStorage.setItem('xviewer_theme', next);
   });
 
+  // ✨ エフェクト切替
+  const effectsToggle = document.getElementById('effectsToggle');
+  if (effectsToggle) {
+    const EFFECTS_KEY = 'xlv_no_effects';
+    if (localStorage.getItem(EFFECTS_KEY) === 'true') {
+      document.body.classList.add('no-effects');
+    }
+    effectsToggle.addEventListener('click', () => {
+      const off = document.body.classList.toggle('no-effects');
+      localStorage.setItem(EFFECTS_KEY, off ? 'true' : 'false');
+    });
+  }
+
+
   // テキストモードトグル（軽量化版）
   textModeToggle.addEventListener('click', () => {
     const isActive = textModeToggle.classList.contains('active');
@@ -3343,7 +3610,7 @@ body.header-hidden header {
   function applyLanguage(v) {
     const dict = {
       ja: { 
-        title: '𝕏 いいねビューア',
+        title: '𝕏 Likes Viewer',
         search: '本文・ユーザー名で検索',
         searchBtn: '検索',
         apply: '適用',
@@ -3358,7 +3625,7 @@ body.header-hidden header {
         startLabel: '開始:',
         endLabel: '終了:',
         cacheSelect: '履歴を選択',
-        deleteCache: '全履歴を削除',
+        deleteCache: '現在の履歴を削除',
         jsonMerge: 'JSONの結合',
         mergeBase: '基準JSON:',
         mergeAdd: '追加JSON:',
@@ -3370,7 +3637,14 @@ body.header-hidden header {
         excludeJson: '対象JSON:',
         excludeThreshold: 'いいね数の最小値:',
         excludeFileName: 'ファイル名:',
-        excludeExecute: '除外実行'
+        excludeExecute: '除外実行',
+        excludeTooltip: 'いいね数が指定値未満の投稿を除外できます。処理後のJSONをダウンロードします。',
+        excludeJsonLabel: '対象JSON',
+        excludeThresholdLabel: 'いいね数の最小値',
+        excludeFileNameLabel: 'ファイル名',
+        toolsBtn: '⚙ ツール',
+        userSearch: 'このユーザーを検索',
+        userExclude: 'このユーザーを除外'
       },
       en: { 
         title: '𝕏 Likes Viewer',
@@ -3388,7 +3662,7 @@ body.header-hidden header {
         startLabel: 'Start:',
         endLabel: 'End:',
         cacheSelect: 'Select history',
-        deleteCache: 'Delete all history',
+        deleteCache: 'Delete current history',
         jsonMerge: 'Merge JSON',
         mergeBase: 'Base JSON:',
         mergeAdd: 'Additional JSON:',
@@ -3400,10 +3674,17 @@ body.header-hidden header {
         excludeJson: 'Target JSON:',
         excludeThreshold: 'Minimum likes:',
         excludeFileName: 'File name:',
-        excludeExecute: 'Execute'
+        excludeExecute: 'Execute',
+        excludeTooltip: 'Remove posts with fewer likes than the specified value. A processed JSON will be downloaded.',
+        excludeJsonLabel: 'Target JSON',
+        excludeThresholdLabel: 'Min. likes',
+        excludeFileNameLabel: 'File name',
+        toolsBtn: '⚙ Tools',
+        userSearch: 'Search this user',
+        userExclude: 'Exclude this user'
       },
       zh: { 
-        title: '𝕏 点赞查看器',
+        title: '𝕏 Likes Viewer',
         search: '搜索 内容/用户名',
         searchBtn: '搜索',
         apply: '应用',
@@ -3418,7 +3699,7 @@ body.header-hidden header {
         startLabel: '开始:',
         endLabel: '结束:',
         cacheSelect: '选择历史',
-        deleteCache: '删除所有历史',
+        deleteCache: '删除当前历史',
         jsonMerge: '合并JSON',
         mergeBase: '基准JSON:',
         mergeAdd: '追加JSON:',
@@ -3430,10 +3711,17 @@ body.header-hidden header {
         excludeJson: '目标JSON:',
         excludeThreshold: '最小点赞数:',
         excludeFileName: '文件名:',
-        excludeExecute: '执行排除'
+        excludeExecute: '执行排除',
+        excludeTooltip: '移除点赞数低于指定值的帖子，处理后下载JSON文件。',
+        excludeJsonLabel: '目标JSON',
+        excludeThresholdLabel: '最小点赞数',
+        excludeFileNameLabel: '文件名',
+        toolsBtn: '⚙ 工具',
+        userSearch: '搜索此用户',
+        userExclude: '排除此用户'
       },
       ko: { 
-        title: '𝕏 좋아요 뷰어',
+        title: '𝕏 Likes Viewer',
         search: '텍스트/사용자 검색',
         searchBtn: '검색',
         apply: '적용',
@@ -3448,7 +3736,7 @@ body.header-hidden header {
         startLabel: '시작:',
         endLabel: '종료:',
         cacheSelect: '기록 선택',
-        deleteCache: '모든 기록 삭제',
+        deleteCache: '현재 기록 삭제',
         jsonMerge: 'JSON 병합',
         mergeBase: '기준JSON:',
         mergeAdd: '추가JSON:',
@@ -3460,7 +3748,14 @@ body.header-hidden header {
         excludeJson: '대상JSON:',
         excludeThreshold: '최소 좋아요 수:',
         excludeFileName: '파일 이름:',
-        excludeExecute: '제외 실행'
+        excludeExecute: '제외 실행',
+        excludeTooltip: '지정한 좋아요 수보다 적은 게시물을 제거합니다. 처리 후 JSON을 다운로드합니다.',
+        excludeJsonLabel: '대상 JSON',
+        excludeThresholdLabel: '최소 좋아요 수',
+        excludeFileNameLabel: '파일 이름',
+        toolsBtn: '⚙ 도구',
+        userSearch: '이 유저를 검색',
+        userExclude: '이 유저를 제외'
       }
     };
 
@@ -3483,6 +3778,19 @@ body.header-hidden header {
     document.getElementById('title').textContent = u.title;
     searchInput.placeholder = u.search;
     document.getElementById('searchBtn').textContent = u.searchBtn;
+    const ucmSL = document.getElementById('ucmSearchLabel');
+    const ucmEL = document.getElementById('ucmExcludeLabel');
+    if (ucmSL && u.userSearch) ucmSL.textContent = u.userSearch;
+    if (jsonMergeToggle && u.toolsBtn) jsonMergeToggle.textContent = u.toolsBtn;
+    const _exT = document.getElementById('xlvExcludeTooltip');
+    const _exJ = document.getElementById('xlvExcludeJsonLabel');
+    const _exTh = document.getElementById('xlvExcludeThresholdLabel');
+    const _exF = document.getElementById('xlvExcludeFileNameLabel');
+    if (_exT && u.excludeTooltip) _exT.textContent = u.excludeTooltip;
+    if (_exJ && u.excludeJsonLabel) _exJ.textContent = u.excludeJsonLabel;
+    if (_exTh && u.excludeThresholdLabel) _exTh.textContent = u.excludeThresholdLabel;
+    if (_exF && u.excludeFileNameLabel) _exF.textContent = u.excludeFileNameLabel;
+    if (ucmEL && u.userExclude) ucmEL.textContent = u.userExclude;
     applyBtn.textContent = u.apply;
     clearBtn.textContent = u.clear;
 
@@ -3495,12 +3803,9 @@ body.header-hidden header {
     if (dateLabels[0]) dateLabels[0].childNodes[0].textContent = u.startLabel + ' ';
     if (dateLabels[1]) dateLabels[1].childNodes[0].textContent = u.endLabel + ' ';
 
-    const cacheLabel = document.getElementById('cacheSelectLabel');
-    if (cacheLabel) {
-      const currentId = localStorage.getItem(CACHE_CURRENT_KEY);
-      const currentItem = jsonCacheList.find(item => item.id === currentId);
-      if (!currentItem) cacheLabel.textContent = u.cacheSelect;
-    }
+    const cacheSelect = document.getElementById('cacheSelect');
+    if (cacheSelect?.options[0]) cacheSelect.options[0].textContent = u.cacheSelect;
+
     const deleteBtn = document.querySelector('.delete-cache-btn');
     if (deleteBtn) deleteBtn.title = u.deleteCache;
 
@@ -3550,11 +3855,106 @@ body.header-hidden header {
   window.modalIndex = 0;
 })();
 
+// ─── ユーザーコンテキストメニュー ───────────────────────────────────
+(() => {
+  const menu = document.getElementById('userContextMenu');
+  if (!menu) return;
+  const btnSearch  = menu.querySelector('.ucm-search');
+  const btnExclude = menu.querySelector('.ucm-exclude');
+  let activeData = { name: '', screenName: '' };
+
+  function showMenu(el) {
+    const rect = el.getBoundingClientRect();
+    activeData = { name: el.dataset.name || '', screenName: el.dataset.screenName || '' };
+    menu.classList.remove('hidden');
+    const mw = menu.offsetWidth  || 190;
+    const mh = menu.offsetHeight || 90;
+    const left = rect.left + mw > window.innerWidth  ? window.innerWidth  - mw - 8 : rect.left;
+    const top  = rect.bottom + mh > window.innerHeight ? rect.bottom - mh - 4 : rect.bottom + 4;
+    menu.style.left = left + 'px';
+    menu.style.top  = top  + 'px';
+  }
+  function hideMenu() {
+    if (menu.classList.contains('hidden')) return;
+    menu.classList.remove('closing'); // 前回の中断状態をリセット
+
+    // no-effects モードまたはアニメーション抑制設定時は即時非表示
+    const skipAnim = document.body.classList.contains('no-effects')
+                  || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (skipAnim) {
+      menu.classList.add('hidden');
+      return;
+    }
+
+    menu.classList.add('closing');
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      menu.classList.remove('closing');
+      menu.classList.add('hidden');
+    };
+    menu.addEventListener('animationend', finish, { once: true });
+    setTimeout(finish, 200); // フォールバック: 200ms後に強制非表示
+  }
+
+  // renderGallery から呼べるようグローバル公開
+  window._xlvShowUserMenu = showMenu;
+
+  // メニュー外クリックで閉じる
+  document.addEventListener('click', e => {
+    if (!menu.classList.contains('hidden') && !menu.contains(e.target)) hideMenu();
+  });
+
+  // スクロール・タッチスクロールで閉じる
+  window.addEventListener('scroll', hideMenu, { passive: true });
+  document.addEventListener('touchmove', hideMenu, { passive: true });
+
+  // ESCで閉じる
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') hideMenu(); });
+
+  // 「このユーザーを検索」
+  btnSearch.addEventListener('click', e => {
+    e.stopPropagation();
+    hideMenu();
+    const q = [activeData.name, activeData.screenName].filter(Boolean).join(' ');
+    const si = document.getElementById('searchInput');
+    if (si) { si.value = q; if (typeof applyFiltersAndRender === 'function') applyFiltersAndRender(); }
+  });
+
+  // 「このユーザーを除外」
+  btnExclude.addEventListener('click', e => {
+    e.stopPropagation();
+    hideMenu();
+    const q = [activeData.name, activeData.screenName].filter(Boolean).map(s => '-' + s).join(' ');
+    const si = document.getElementById('searchInput');
+    if (si) { si.value = q; if (typeof applyFiltersAndRender === 'function') applyFiltersAndRender(); }
+  });
+})();
+// ─────────────────────────────────────────────────────────────────────
+
 // ヘッダー自動非表示
 (() => {
   let lastScroll = 0;
+  let ignoreScroll = false;
+  let ignoreTimer = null;
   const header = document.querySelector('header');
+
+  function suppressScroll() {
+    ignoreScroll = true;
+    lastScroll = window.scrollY;
+    clearTimeout(ignoreTimer);
+    ignoreTimer = setTimeout(() => {
+      ignoreScroll = false;
+      lastScroll = window.scrollY;
+    }, 400);
+  }
+
+  header.addEventListener('click',    suppressScroll, { capture: true });
+  header.addEventListener('touchend', suppressScroll, { capture: true, passive: true });
+
   window.addEventListener('scroll', () => {
+    if (ignoreScroll) { lastScroll = window.scrollY; return; }
     const current = window.scrollY;
     if (current > lastScroll && current > 80) {
       header.classList.add('hide-header');
