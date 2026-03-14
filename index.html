@@ -962,7 +962,100 @@ body.amoled .text-card-footer {
   z-index: 200;
 }
 
-/* Cache select */
+
+/* カスタム履歴ドロップダウン */
+.cache-custom-select {
+  position: relative;
+}
+.cache-select-trigger {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  width: 130px;
+  max-width: 130px;
+  text-align: left;
+  font-size: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+.cache-select-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cache-select-arrow {
+  flex-shrink: 0;
+  font-size: 10px;
+  opacity: 0.5;
+}
+.cache-select-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 300;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  min-width: 220px;
+  max-width: 320px;
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  overflow-y: auto;
+  max-height: 260px;
+}
+.cache-select-list.hidden { display: none; }
+.cache-select-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 10px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.cache-select-item:hover { background: var(--bg); }
+.cache-select-item.active {
+  background: rgba(29,155,240,0.12);
+}
+.cache-item-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--text);
+}
+.cache-item-delete {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cache-select-item:hover .cache-item-delete { opacity: 1; }
+.cache-item-delete:hover {
+  background: rgba(239,68,68,0.15);
+  color: #ef4444;
+}
+/* Cache select (旧selectは廃止) */
 .cache-select-theme,
 .cache-select-theme option {
   background: var(--card) !important;
@@ -1249,7 +1342,7 @@ body > * {
   }
 
   /* キャッシュプルダウン: 検索プレースホルダーと同じ幅（約130px） */
-  .header-top .controls .cache-dropdown-container select {
+  .header-top .controls .cache-select-trigger {
     width: 130px !important;
     max-width: 130px !important;
     min-width: 130px !important;
@@ -1986,94 +2079,124 @@ body.header-hidden header {
   }
 
   function updateCacheDropdown() {
-    const lang = window.currentLanguage || { cacheSelect: '履歴を選択', deleteCache: '現在の履歴を削除' };
-    const currentId = localStorage.getItem(CACHE_CURRENT_KEY);
+    const lang = window.currentLanguage || { cacheSelect: '履歴を選択', deleteCache: '全履歴を削除' };
     const container = document.querySelector('.cache-dropdown-container');
-    
-    if (!container) {
-      createCacheDropdown();
-      return;
-    }
-
-    const select = container.querySelector('select');
-    if (!select) return;
-
-    select.innerHTML = `<option value="">${lang.cacheSelect}</option>`;
-    jsonCacheList.sort((a, b) => b.timestamp - a.timestamp).forEach(item => {
-      const option = document.createElement('option');
-      option.value = item.id;
-      option.textContent = item.name;
-      if (item.id === currentId) option.selected = true;
-      select.appendChild(option);
-    });
-
-    const deleteBtn = container.querySelector('.delete-cache-btn');
-    if (deleteBtn) {
-      deleteBtn.style.display = currentId ? 'inline-block' : 'none';
-      deleteBtn.title = lang.deleteCache;
+    if (!container) { createCacheDropdown(); return; }
+    const list  = document.getElementById('cacheSelectList');
+    const label = document.getElementById('cacheSelectLabel');
+    if (!list || !label) return;
+    _rebuildCacheList(list, label, lang);
+    const deleteAllBtn = container.querySelector('.delete-cache-btn');
+    if (deleteAllBtn) {
+      deleteAllBtn.style.display = jsonCacheList.length ? 'inline-block' : 'none';
     }
   }
 
+  function _rebuildCacheList(list, label, lang) {
+    list.innerHTML = '';
+    const currentId = localStorage.getItem(CACHE_CURRENT_KEY);
+    if (!jsonCacheList.length) { label.textContent = lang.cacheSelect; return; }
+    jsonCacheList.sort((a, b) => b.timestamp - a.timestamp).forEach(item => {
+      const li = document.createElement('li');
+      li.className = 'cache-select-item' + (item.id === currentId ? ' active' : '');
+      const itemLabel = document.createElement('span');
+      itemLabel.className = 'cache-item-label';
+      itemLabel.textContent = item.name;
+      itemLabel.title = item.name;
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'cache-item-delete';
+      delBtn.textContent = '×';
+      delBtn.title = '削除';
+      delBtn.addEventListener('click', async e => {
+        e.stopPropagation();
+        await _idbDeleteCache(item.id);
+        jsonCacheList = await _idbGetAllMeta();
+        if (localStorage.getItem(CACHE_CURRENT_KEY) === item.id) {
+          localStorage.removeItem(CACHE_CURRENT_KEY);
+          allTweets = []; viewTweets = []; renderGallery();
+        }
+        updateCacheDropdown();
+      });
+      li.addEventListener('click', () => {
+        loadCachedJsonById(item.id);
+        list.classList.add('hidden');
+      });
+      li.appendChild(itemLabel);
+      li.appendChild(delBtn);
+      list.appendChild(li);
+    });
+    const selected = jsonCacheList.find(item => item.id === currentId);
+    label.textContent = selected ? selected.name : lang.cacheSelect;
+  }
+
   function createCacheDropdown() {
-    const lang = window.currentLanguage || { cacheSelect: '履歴を選択', deleteCache: '現在の履歴を削除' };
+    const lang = window.currentLanguage || { cacheSelect: '履歴を選択', deleteCache: '全履歴を削除' };
     const container = document.createElement('div');
     container.className = 'cache-dropdown-container';
     container.style.cssText = 'display:flex;gap:6px;align-items:center';
 
-    const select = document.createElement('select');
-    select.id = 'cacheSelect';
-    select.className = 'cache-select-theme';
-    select.style.cssText = 'padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);width:130px;max-width:130px;text-overflow:ellipsis';
-    select.innerHTML = `<option value="">${lang.cacheSelect}</option>`;
+    // カスタムドロップダウン本体
+    const wrapper = document.createElement('div');
+    wrapper.className = 'cache-custom-select';
 
-    const currentId = localStorage.getItem(CACHE_CURRENT_KEY);
-    jsonCacheList.sort((a, b) => b.timestamp - a.timestamp).forEach(item => {
-      const option = document.createElement('option');
-      option.value = item.id;
-      option.textContent = item.name;
-      if (item.id === currentId) option.selected = true;
-      select.appendChild(option);
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.id = 'cacheSelectTrigger';
+    trigger.className = 'cache-select-trigger';
+
+    const label = document.createElement('span');
+    label.id = 'cacheSelectLabel';
+    label.className = 'cache-select-label';
+    const arrow = document.createElement('span');
+    arrow.className = 'cache-select-arrow';
+    arrow.textContent = '▾';
+    trigger.appendChild(label);
+    trigger.appendChild(arrow);
+
+    const list = document.createElement('ul');
+    list.id = 'cacheSelectList';
+    list.className = 'cache-select-list hidden';
+    list.addEventListener('click', e => e.stopPropagation());
+
+    trigger.addEventListener('click', e => {
+      e.stopPropagation();
+      list.classList.toggle('hidden');
+    });
+    document.addEventListener('click', () => list.classList.add('hidden'));
+
+    wrapper.appendChild(trigger);
+    wrapper.appendChild(list);
+
+    // 🗑️ ボタン: 全履歴削除
+    const deleteAllBtn = document.createElement('button');
+    deleteAllBtn.className = 'delete-cache-btn';
+    deleteAllBtn.textContent = '🗑️';
+    deleteAllBtn.title = lang.deleteCache;
+    deleteAllBtn.style.cssText = 'padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;display:none';
+    deleteAllBtn.addEventListener('click', async () => {
+      if (!jsonCacheList.length) return;
+      const confirmMsg = lang.cacheSelect.includes('history')  ? 'Delete all history?'
+                       : lang.cacheSelect.includes('历史')     ? '删除所有历史记录?'
+                       : lang.cacheSelect.includes('기록')     ? '모든 기록을 삭제하시겠습니까?'
+                       : '全ての履歴を削除しますか?';
+      if (!confirm(confirmMsg)) return;
+      for (const item of [...jsonCacheList]) await _idbDeleteCache(item.id);
+      jsonCacheList = [];
+      localStorage.removeItem(CACHE_CURRENT_KEY);
+      allTweets = []; viewTweets = []; renderGallery();
+      updateCacheDropdown();
     });
 
-    select.addEventListener('change', (e) => {
-      if (e.target.value) loadCachedJsonById(e.target.value);
-    });
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'delete-cache-btn';
-    deleteBtn.textContent = '🗑️';
-    deleteBtn.title = lang.deleteCache;
-    deleteBtn.style.cssText = 'padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;display:' + (currentId ? 'inline-block' : 'none');
-
-    deleteBtn.addEventListener('click', () => {
-      const id = select.value;
-      if (!id) return;
-      
-      const confirmMsg = lang.cacheSelect.includes('history') ? 'Delete this history?' 
-                       : lang.cacheSelect.includes('历史') ? '删除此历史记录?'
-                       : lang.cacheSelect.includes('기록') ? '이 기록을 삭제하시겠습니까?'
-                       : 'この履歴を削除しますか?';
-      
-      if (confirm(confirmMsg)) {
-        jsonCacheList = jsonCacheList.filter(item => item.id !== id);
-        saveCacheList();
-        if (localStorage.getItem(CACHE_CURRENT_KEY) === id) {
-          localStorage.removeItem(CACHE_CURRENT_KEY);
-          allTweets = [];
-          viewTweets = [];
-          renderGallery();
-        }
-        updateCacheDropdown();
-      }
-    });
-
-    container.appendChild(select);
-    container.appendChild(deleteBtn);
+    container.appendChild(wrapper);
+    container.appendChild(deleteAllBtn);
 
     const controls = document.querySelector('.controls');
     if (controls && fileInput) {
       fileInput.parentNode.insertBefore(container, fileInput.nextSibling);
     }
+    _rebuildCacheList(list, label, lang);
+    deleteAllBtn.style.display = jsonCacheList.length ? 'inline-block' : 'none';
   }
 
   // ファイル読み込み
@@ -3235,7 +3358,7 @@ body.header-hidden header {
         startLabel: '開始:',
         endLabel: '終了:',
         cacheSelect: '履歴を選択',
-        deleteCache: '現在の履歴を削除',
+        deleteCache: '全履歴を削除',
         jsonMerge: 'JSONの結合',
         mergeBase: '基準JSON:',
         mergeAdd: '追加JSON:',
@@ -3265,7 +3388,7 @@ body.header-hidden header {
         startLabel: 'Start:',
         endLabel: 'End:',
         cacheSelect: 'Select history',
-        deleteCache: 'Delete current history',
+        deleteCache: 'Delete all history',
         jsonMerge: 'Merge JSON',
         mergeBase: 'Base JSON:',
         mergeAdd: 'Additional JSON:',
@@ -3295,7 +3418,7 @@ body.header-hidden header {
         startLabel: '开始:',
         endLabel: '结束:',
         cacheSelect: '选择历史',
-        deleteCache: '删除当前历史',
+        deleteCache: '删除所有历史',
         jsonMerge: '合并JSON',
         mergeBase: '基准JSON:',
         mergeAdd: '追加JSON:',
@@ -3325,7 +3448,7 @@ body.header-hidden header {
         startLabel: '시작:',
         endLabel: '종료:',
         cacheSelect: '기록 선택',
-        deleteCache: '현재 기록 삭제',
+        deleteCache: '모든 기록 삭제',
         jsonMerge: 'JSON 병합',
         mergeBase: '기준JSON:',
         mergeAdd: '추가JSON:',
@@ -3372,9 +3495,12 @@ body.header-hidden header {
     if (dateLabels[0]) dateLabels[0].childNodes[0].textContent = u.startLabel + ' ';
     if (dateLabels[1]) dateLabels[1].childNodes[0].textContent = u.endLabel + ' ';
 
-    const cacheSelect = document.getElementById('cacheSelect');
-    if (cacheSelect?.options[0]) cacheSelect.options[0].textContent = u.cacheSelect;
-
+    const cacheLabel = document.getElementById('cacheSelectLabel');
+    if (cacheLabel) {
+      const currentId = localStorage.getItem(CACHE_CURRENT_KEY);
+      const currentItem = jsonCacheList.find(item => item.id === currentId);
+      if (!currentItem) cacheLabel.textContent = u.cacheSelect;
+    }
     const deleteBtn = document.querySelector('.delete-cache-btn');
     if (deleteBtn) deleteBtn.title = u.deleteCache;
 
