@@ -962,13 +962,44 @@ body.amoled .text-card-footer {
   z-index: 200;
 }
 
-/* Cache select */
-.cache-select-theme,
-.cache-select-theme option {
-  background: var(--card) !important;
-  color: var(--text) !important;
-  border-color: var(--border) !important;
+/* Cache custom dropdown */
+.cache-custom-select { position: relative; }
+.cache-select-trigger {
+  display: flex; align-items: center; gap: 4px;
+  padding: 6px 8px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--card); color: var(--text);
+  cursor: pointer; width: 130px; max-width: 130px; text-align: left;
+  font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.04);
 }
+.cache-select-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cache-select-arrow { flex-shrink: 0; font-size: 10px; opacity: 0.5; }
+.cache-select-list {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 300;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  min-width: 220px; max-width: 320px; list-style: none;
+  margin: 0; padding: 4px 0; overflow-y: auto; max-height: 260px;
+}
+.cache-select-list.hidden { display: none; }
+.cache-select-item {
+  display: flex; align-items: center; gap: 4px;
+  padding: 7px 10px; cursor: pointer; transition: background 0.1s;
+}
+.cache-select-item:hover { background: var(--bg); }
+.cache-select-item.active { background: rgba(29,155,240,0.12); }
+.cache-item-label {
+  flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 13px; color: var(--text);
+}
+.cache-item-delete {
+  flex-shrink: 0; width: 20px; height: 20px; border-radius: 4px;
+  border: none; background: transparent; color: var(--muted);
+  cursor: pointer; font-size: 15px; line-height: 1; padding: 0;
+  opacity: 0; transition: opacity 0.15s, background 0.15s, color 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.cache-select-item:hover .cache-item-delete { opacity: 1; }
+.cache-item-delete:hover { background: rgba(239,68,68,0.15); color: #ef4444; }
 
 /* PC */
 @media (min-width:769px) {
@@ -1249,7 +1280,7 @@ body > * {
   }
 
   /* キャッシュプルダウン: 検索プレースホルダーと同じ幅（約130px） */
-  .header-top .controls .cache-dropdown-container select {
+  .header-top .controls .cache-select-trigger {
     width: 130px !important;
     max-width: 130px !important;
     min-width: 130px !important;
@@ -1400,7 +1431,7 @@ body > * {
   }
 
   /* キャッシュプルダウンも縮小 */
-  .header-top .controls .cache-dropdown-container select {
+  .header-top .controls .cache-select-trigger {
     width: 100px !important;
     max-width: 100px !important;
     min-width: 100px !important;
@@ -1837,6 +1868,71 @@ body.no-effects #effectsToggle {
   letter-spacing: 1.5px;
   color: #555;
 }
+
+/* ═══ エクスポートセクション（インライン） ═══ */
+.export-steps-inline {
+  padding-left: 0;
+  margin: 10px 0 10px;
+  list-style: none;
+  counter-reset: step;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.export-steps-inline li {
+  counter-increment: step;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.export-steps-inline li::before {
+  content: counter(step);
+  flex-shrink: 0;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: rgba(29,155,240,0.2);
+  color: #1d9bf0;
+  font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.bm-link-wrap {
+  background: var(--bg);
+  border: 1.5px dashed #1d9bf0;
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: flex; align-items: center; gap: 8px;
+  margin: 8px 0 6px;
+}
+.bm-drag-link {
+  font-size: 13px; font-weight: 700;
+  color: #1d9bf0; text-decoration: none;
+  flex: 1; cursor: grab;
+  padding: 3px 8px; border-radius: 8px;
+  background: rgba(29,155,240,0.10);
+  border: 1px solid rgba(29,155,240,0.25);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: background 0.15s;
+}
+.bm-drag-link:hover { background: rgba(29,155,240,0.2); }
+.export-note {
+  font-size: 11px; color: var(--muted);
+  padding: 8px 10px; background: var(--bg);
+  border-radius: 8px; border-left: 3px solid #7856ff;
+  line-height: 1.5;
+}
+
+.export-credit {
+  font-size: 11px; color: var(--muted);
+  padding: 8px 10px; background: var(--bg);
+  border-radius: 8px; border-left: 3px solid #1d9bf0;
+  line-height: 1.5; margin-top: 6px;
+}
+.export-credit a { color: #1d9bf0 !important; text-decoration: none; }
+.export-credit a:hover { text-decoration: underline; }
+/* ══════════════════════════════ */
 </style>
 </head>
 <body>
@@ -1881,7 +1977,27 @@ body.no-effects #effectsToggle {
     </div>
     
     <div id="jsonMergePanel" class="json-merge-panel hidden">
-      <details class="json-merge-section">
+      <details class="json-merge-section" id="xlvExportSection" style="margin-top:12px;">
+        <summary>
+          > <span id="xlvExportSummary">データエクスポート</span>
+        </summary>
+        <div class="merge-content">
+
+          <ol class="export-steps-inline">
+            <li id="xlvExportStep1">下のリンクをブックマークバーにドラッグして登録</li>
+            <li id="xlvExportStep2">x.com を開き、ブックマークレットをクリック</li>
+            <li id="xlvExportStep3">右上に進捗UIが出て完了後 JSON が自動ダウンロードされます</li>
+            <li id="xlvExportStep4">ダウンロードした .json をこのツールに読み込む</li>
+          </ol>
+          <div class="bm-link-wrap">
+            <a id="xlvBookmarklet" class="bm-drag-link" href="#">📥 XLV Exporter</a>
+            <button id="copyBmBtn" type="button" style="flex-shrink:0">コピー</button>
+          </div>
+          <div class="export-note" id="xlvExportNote">⚠️ 必ず x.com 上で実行してください。100件/1.2秒 で取得します。</div>
+        <div class="export-credit" id="xlvExportCredit"></div>
+        </div>
+      </details>
+      <details class="json-merge-section" style="margin-top:12px;">
         <summary>
           JSONの結合
           <span class="merge-help-icon" title="">?</span>
@@ -2309,94 +2425,94 @@ body.no-effects #effectsToggle {
   }
 
   function updateCacheDropdown() {
-    const lang = window.currentLanguage || { cacheSelect: '履歴を選択', deleteCache: '現在の履歴を削除' };
-    const currentId = localStorage.getItem(CACHE_CURRENT_KEY);
+    const lang = window.currentLanguage || { cacheSelect: '履歴を選択', deleteCache: '全履歴を削除' };
     const container = document.querySelector('.cache-dropdown-container');
-    
-    if (!container) {
-      createCacheDropdown();
-      return;
-    }
+    if (!container) { createCacheDropdown(); return; }
+    const list  = document.getElementById('cacheSelectList');
+    const label = document.getElementById('cacheSelectLabel');
+    if (!list || !label) return;
+    _rebuildCacheList(list, label, lang);
+    const deleteAllBtn = container.querySelector('.delete-cache-btn');
+    if (deleteAllBtn) deleteAllBtn.style.display = jsonCacheList.length ? 'inline-block' : 'none';
+  }
 
-    const select = container.querySelector('select');
-    if (!select) return;
-
-    select.innerHTML = `<option value="">${lang.cacheSelect}</option>`;
+  function _rebuildCacheList(list, label, lang) {
+    list.innerHTML = '';
+    const currentId = localStorage.getItem(CACHE_CURRENT_KEY);
+    if (!jsonCacheList.length) { label.textContent = lang.cacheSelect; return; }
     jsonCacheList.sort((a, b) => b.timestamp - a.timestamp).forEach(item => {
-      const option = document.createElement('option');
-      option.value = item.id;
-      option.textContent = item.name;
-      if (item.id === currentId) option.selected = true;
-      select.appendChild(option);
+      const li = document.createElement('li');
+      li.className = 'cache-select-item' + (item.id === currentId ? ' active' : '');
+      const itemLabel = document.createElement('span');
+      itemLabel.className = 'cache-item-label';
+      itemLabel.textContent = item.name;
+      itemLabel.title = item.name;
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'cache-item-delete';
+      delBtn.textContent = '\u00d7';
+      delBtn.title = '削除';
+      delBtn.addEventListener('click', async e => {
+        e.stopPropagation();
+        await _idbDeleteCache(item.id);
+        jsonCacheList = await _idbGetAllMeta();
+        if (localStorage.getItem(CACHE_CURRENT_KEY) === item.id) {
+          localStorage.removeItem(CACHE_CURRENT_KEY);
+          allTweets = []; viewTweets = []; renderGallery();
+        }
+        updateCacheDropdown();
+      });
+      li.addEventListener('click', () => { loadCachedJsonById(item.id); list.classList.add('hidden'); });
+      li.appendChild(itemLabel);
+      li.appendChild(delBtn);
+      list.appendChild(li);
     });
-
-    const deleteBtn = container.querySelector('.delete-cache-btn');
-    if (deleteBtn) {
-      deleteBtn.style.display = currentId ? 'inline-block' : 'none';
-      deleteBtn.title = lang.deleteCache;
-    }
+    const selected = jsonCacheList.find(item => item.id === currentId);
+    label.textContent = selected ? selected.name : lang.cacheSelect;
   }
 
   function createCacheDropdown() {
-    const lang = window.currentLanguage || { cacheSelect: '履歴を選択', deleteCache: '現在の履歴を削除' };
+    const lang = window.currentLanguage || { cacheSelect: '履歴を選択', deleteCache: '全履歴を削除' };
     const container = document.createElement('div');
     container.className = 'cache-dropdown-container';
     container.style.cssText = 'display:flex;gap:6px;align-items:center';
-
-    const select = document.createElement('select');
-    select.id = 'cacheSelect';
-    select.className = 'cache-select-theme';
-    select.style.cssText = 'padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);width:130px;max-width:130px;text-overflow:ellipsis';
-    select.innerHTML = `<option value="">${lang.cacheSelect}</option>`;
-
-    const currentId = localStorage.getItem(CACHE_CURRENT_KEY);
-    jsonCacheList.sort((a, b) => b.timestamp - a.timestamp).forEach(item => {
-      const option = document.createElement('option');
-      option.value = item.id;
-      option.textContent = item.name;
-      if (item.id === currentId) option.selected = true;
-      select.appendChild(option);
+    const wrapper = document.createElement('div');
+    wrapper.className = 'cache-custom-select';
+    const trigger = document.createElement('button');
+    trigger.type = 'button'; trigger.id = 'cacheSelectTrigger'; trigger.className = 'cache-select-trigger';
+    const label = document.createElement('span');
+    label.id = 'cacheSelectLabel'; label.className = 'cache-select-label';
+    const arrow = document.createElement('span');
+    arrow.className = 'cache-select-arrow'; arrow.textContent = '\u25be';
+    trigger.appendChild(label); trigger.appendChild(arrow);
+    const list = document.createElement('ul');
+    list.id = 'cacheSelectList'; list.className = 'cache-select-list hidden';
+    list.addEventListener('click', e => e.stopPropagation());
+    trigger.addEventListener('click', e => { e.stopPropagation(); list.classList.toggle('hidden'); });
+    document.addEventListener('click', () => list.classList.add('hidden'));
+    wrapper.appendChild(trigger); wrapper.appendChild(list);
+    const deleteAllBtn = document.createElement('button');
+    deleteAllBtn.className = 'delete-cache-btn'; deleteAllBtn.textContent = '\ud83d\uddd1\ufe0f';
+    deleteAllBtn.title = lang.deleteCache;
+    deleteAllBtn.style.cssText = 'padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;display:none';
+    deleteAllBtn.addEventListener('click', async () => {
+      if (!jsonCacheList.length) return;
+      const confirmMsg = lang.cacheSelect.includes('history') ? 'Delete all history?'
+                       : lang.cacheSelect.includes('\u5386\u53f2')    ? '\u5220\u9664\u6240\u6709\u5386\u53f2\u8bb0\u5f55?'
+                       : lang.cacheSelect.includes('\uae30\ub85d')    ? '\ubaa8\ub4e0 \uae30\ub85d\uc744 \uc0ad\uc81c\ud558\uc2dc\uaca0\uc2b5\ub2c8\uae4c?'
+                       : '\u5168\u3066\u306e\u5c65\u6b74\u3092\u524a\u9664\u3057\u307e\u3059\u304b?';
+      if (!confirm(confirmMsg)) return;
+      for (const item of [...jsonCacheList]) await _idbDeleteCache(item.id);
+      jsonCacheList = [];
+      localStorage.removeItem(CACHE_CURRENT_KEY);
+      allTweets = []; viewTweets = []; renderGallery();
+      updateCacheDropdown();
     });
-
-    select.addEventListener('change', (e) => {
-      if (e.target.value) loadCachedJsonById(e.target.value);
-    });
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'delete-cache-btn';
-    deleteBtn.textContent = '🗑️';
-    deleteBtn.title = lang.deleteCache;
-    deleteBtn.style.cssText = 'padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;display:' + (currentId ? 'inline-block' : 'none');
-
-    deleteBtn.addEventListener('click', () => {
-      const id = select.value;
-      if (!id) return;
-      
-      const confirmMsg = lang.cacheSelect.includes('history') ? 'Delete this history?' 
-                       : lang.cacheSelect.includes('历史') ? '删除此历史记录?'
-                       : lang.cacheSelect.includes('기록') ? '이 기록을 삭제하시겠습니까?'
-                       : 'この履歴を削除しますか?';
-      
-      if (confirm(confirmMsg)) {
-        jsonCacheList = jsonCacheList.filter(item => item.id !== id);
-        saveCacheList();
-        if (localStorage.getItem(CACHE_CURRENT_KEY) === id) {
-          localStorage.removeItem(CACHE_CURRENT_KEY);
-          allTweets = [];
-          viewTweets = [];
-          renderGallery();
-        }
-        updateCacheDropdown();
-      }
-    });
-
-    container.appendChild(select);
-    container.appendChild(deleteBtn);
-
+    container.appendChild(wrapper); container.appendChild(deleteAllBtn);
     const controls = document.querySelector('.controls');
-    if (controls && fileInput) {
-      fileInput.parentNode.insertBefore(container, fileInput.nextSibling);
-    }
+    if (controls && fileInput) fileInput.parentNode.insertBefore(container, fileInput.nextSibling);
+    _rebuildCacheList(list, label, lang);
+    deleteAllBtn.style.display = jsonCacheList.length ? 'inline-block' : 'none';
   }
 
   // ファイル読み込み
@@ -3643,6 +3759,16 @@ body.no-effects #effectsToggle {
         excludeThresholdLabel: 'いいね数の最小値',
         excludeFileNameLabel: 'ファイル名',
         toolsBtn: '⚙ ツール',
+        exportSection: 'データエクスポート',
+        exportTooltip: 'ブックマークレットをX.com上で実行していいね/ブックマークをJSONでエクスポートできます。',
+        exportLikes: 'いいね', exportBm: 'ブックマーク',
+        exportStep1: '下のリンクをブックマークバーにドラッグして登録',
+        exportStep2: 'x.com を開き、ブックマークレットをクリック',
+        exportStep3: '右上に進捗UIが出て完了後 JSON が自動ダウンロードされます',
+        exportStep4: 'ダウンロードした .json をこのツールに読み込む',
+        exportNote: '⚠️ 必ず x.com 上で実行してください。100件/1.2秒 で取得します。',
+        exportCopy: 'コピー', exportCopied: '✅ コピー済',
+        exportCredit: 'このエクスポート機能は <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a> を参考にしています。より多くの項目を取得・管理するには本家スクリプトをご利用ください。',
         userSearch: 'このユーザーを検索',
         userExclude: 'このユーザーを除外'
       },
@@ -3680,6 +3806,16 @@ body.no-effects #effectsToggle {
         excludeThresholdLabel: 'Min. likes',
         excludeFileNameLabel: 'File name',
         toolsBtn: '⚙ Tools',
+        exportSection: 'Data Export',
+        exportTooltip: 'Run the bookmarklet on X.com to export your likes/bookmarks as JSON.',
+        exportLikes: 'Likes', exportBm: 'Bookmarks',
+        exportStep1: 'Drag the link below to your bookmarks bar',
+        exportStep2: 'Open x.com and click the bookmarklet',
+        exportStep3: 'A progress UI appears top-right; JSON downloads on completion',
+        exportStep4: 'Load the downloaded .json into this tool',
+        exportNote: '⚠️ Must run on x.com. Fetches 100 items per 1.2 seconds.',
+        exportCopy: 'Copy', exportCopied: '✅ Copied',
+        exportCredit: 'The export feature is inspired by <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a>. For more advanced data capture and management, please use the original script.',
         userSearch: 'Search this user',
         userExclude: 'Exclude this user'
       },
@@ -3717,6 +3853,16 @@ body.no-effects #effectsToggle {
         excludeThresholdLabel: '最小点赞数',
         excludeFileNameLabel: '文件名',
         toolsBtn: '⚙ 工具',
+        exportSection: '数据导出',
+        exportTooltip: '在X.com上运行书签脚本，以JSON格式导出点赞/书签。',
+        exportLikes: '点赞', exportBm: '书签',
+        exportStep1: '将下方链接拖拽到书签栏进行注册',
+        exportStep2: '打开 x.com 并点击书签脚本',
+        exportStep3: '右上角显示进度，完成后自动下载 JSON',
+        exportStep4: '将下载的 .json 文件加载到此工具',
+        exportNote: '⚠️ 请在 x.com 上运行。每1.2秒获取100条。',
+        exportCopy: '复制', exportCopied: '✅ 已复制',
+        exportCredit: '导出功能参考了 <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a>。如需获取更多数据项目，请使用原版脚本。',
         userSearch: '搜索此用户',
         userExclude: '排除此用户'
       },
@@ -3754,6 +3900,16 @@ body.no-effects #effectsToggle {
         excludeThresholdLabel: '최소 좋아요 수',
         excludeFileNameLabel: '파일 이름',
         toolsBtn: '⚙ 도구',
+        exportSection: '데이터 내보내기',
+        exportTooltip: 'X.com에서 북마크렛을 실행해 좋아요/북마크를 JSON으로 내보냅니다.',
+        exportLikes: '좋아요', exportBm: '북마크',
+        exportStep1: '아래 링크를 북마크바로 드래그하여 등록',
+        exportStep2: 'x.com을 열고 북마크렛을 클릭',
+        exportStep3: '오른쪽 상단 진행 UI가 완료되면 JSON이 자동 다운로드됩니다',
+        exportStep4: '다운로드한 .json을 이 도구에 로드',
+        exportNote: '⚠️ 반드시 x.com 에서 실행하세요. 1.2초당 100건을 가져옵니다.',
+        exportCopy: '복사', exportCopied: '✅ 복사됨',
+        exportCredit: '이 내보내기 기능은 <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a>를 참고하였습니다. 더 많은 항목을 수집하려면 원본 스크립트를 이용해 주세요.',
         userSearch: '이 유저를 검색',
         userExclude: '이 유저를 제외'
       }
@@ -3790,6 +3946,20 @@ body.no-effects #effectsToggle {
     if (_exJ && u.excludeJsonLabel) _exJ.textContent = u.excludeJsonLabel;
     if (_exTh && u.excludeThresholdLabel) _exTh.textContent = u.excludeThresholdLabel;
     if (_exF && u.excludeFileNameLabel) _exF.textContent = u.excludeFileNameLabel;
+    // エクスポートセクション
+    const _eSu = document.getElementById('xlvExportSummary');
+
+    if (_eSu && u.exportSection) _eSu.textContent = u.exportSection;
+    ['1','2','3','4'].forEach(n => {
+      const el = document.getElementById('xlvExportStep'+n);
+      if (el && u['exportStep'+n]) el.textContent = u['exportStep'+n];
+    });
+    const _eNo = document.getElementById('xlvExportNote');
+    if (_eNo && u.exportNote) _eNo.textContent = u.exportNote;
+    const _eCr = document.getElementById('xlvExportCredit');
+    if (_eCr && u.exportCredit) _eCr.innerHTML = u.exportCredit;
+    const _eCp = document.getElementById('copyBmBtn');
+    if (_eCp && u.exportCopy && !_eCp.textContent.includes('✅')) _eCp.textContent = u.exportCopy;
     if (ucmEL && u.userExclude) ucmEL.textContent = u.userExclude;
     applyBtn.textContent = u.apply;
     clearBtn.textContent = u.clear;
@@ -3810,8 +3980,8 @@ body.no-effects #effectsToggle {
     if (deleteBtn) deleteBtn.title = u.deleteCache;
 
     const summaries = document.querySelectorAll('.json-merge-section summary');
-    if (summaries[0]) summaries[0].childNodes[0].textContent = `> ${u.jsonMerge}`;
-    if (summaries[1]) summaries[1].childNodes[0].textContent = `> ${u.excludePosts}`;
+    if (summaries[1]) summaries[1].childNodes[0].textContent = `> ${u.jsonMerge}`;
+    if (summaries[2]) summaries[2].childNodes[0].textContent = `> ${u.excludePosts}`;
 
     const helpTooltips = document.querySelectorAll('.merge-help-tooltip');
     if (helpTooltips[0]) helpTooltips[0].textContent = mergeHelpTexts[v] || mergeHelpTexts.ja;
@@ -3854,6 +4024,234 @@ body.no-effects #effectsToggle {
   window.modalList = [];
   window.modalIndex = 0;
 })();
+
+
+// ─── 📥 エクスポートセクション & ブックマークレット ─────────────────────
+(() => {
+  /* ── ブックマークレット本体（X.com 上で実行） ─────────────────────────── */
+    function _xlvBmCode() {
+    if (document.getElementById('_xlv_exp')) { document.getElementById('_xlv_exp').remove(); return; }
+
+    const ui = document.createElement('div');
+    ui.id = '_xlv_exp';
+    ui.style.cssText = 'position:fixed;top:12px;right:12px;z-index:2147483647;background:#15202b;color:#e6eef6;border:1px solid #38444d;border-radius:16px;padding:14px 18px;font-family:system-ui,sans-serif;font-size:13px;min-width:260px;box-shadow:0 8px 32px rgba(0,0,0,.6)';
+    ui.innerHTML = `
+      <button id="_xlv_cl" style="position:absolute;top:8px;right:10px;background:none;border:none;color:#8899a6;cursor:pointer;font-size:16px;padding:2px 6px">✕</button>
+      <div style="font-weight:700;font-size:15px;margin-bottom:10px">📥 XLV Exporter</div>
+      <div style="display:flex;gap:10px;margin-bottom:10px">
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:5px 10px;border-radius:8px;border:1px solid #38444d;background:#192734;flex:1;justify-content:center">
+          <input type="radio" name="_xlv_type" value="likes" checked style="accent-color:#1d9bf0"> <span>⭐ いいね</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:5px 10px;border-radius:8px;border:1px solid #38444d;background:#192734;flex:1;justify-content:center">
+          <input type="radio" name="_xlv_type" value="bookmarks" style="accent-color:#1d9bf0"> <span>🔖 ブックマーク</span>
+        </label>
+      </div>
+      <button id="_xlv_go" style="width:100%;padding:7px;border-radius:10px;border:none;background:#1d9bf0;color:#fff;font-weight:700;font-size:13px;cursor:pointer">開始</button>
+      <div id="_xlv_st" style="color:#8899a6;margin-top:8px;min-height:16px"></div>`;
+    document.body.appendChild(ui);
+    document.getElementById('_xlv_cl').onclick = () => ui.remove();
+
+    const $s = t => { const el = document.getElementById('_xlv_st'); if (el) el.textContent = t; };
+
+    document.getElementById('_xlv_go').onclick = async () => {
+      const isLikes = document.querySelector('input[name="_xlv_type"]:checked')?.value !== 'bookmarks';
+      const goBtn = document.getElementById('_xlv_go');
+      goBtn.disabled = true;
+
+      const ct0 = document.cookie.match(/\bct0=([^;]+)/)?.[1];
+      const uid = document.cookie.match(/\btwid=u%3D(\d+)/)?.[1];
+      if (!ct0) { $s('❌ x.com にログインしてください'); goBtn.disabled = false; return; }
+      if (isLikes && !uid) { $s('❌ ユーザーIDが取得できません'); goBtn.disabled = false; return; }
+
+      const B   = 'AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA';
+      const EP  = isLikes ? 'Likes' : 'Bookmarks';
+      const FBK = { Likes: '8yejnJghC-UE-qhFlPvXpA', Bookmarks: 'nWdgTDcvkR3dPXFCVwvOsg' };
+      const FT  = '{"rweb_video_screen_enabled":false,"profile_label_improvements_pcf_label_in_post_enabled":true,"responsive_web_graphql_timeline_navigation_enabled":true,"responsive_web_graphql_skip_user_profile_image_extensions_enabled":false,"creator_subscriptions_tweet_preview_api_enabled":true,"communities_web_enable_tweet_community_results_fetch":true,"articles_preview_enabled":true,"responsive_web_edit_tweet_api_enabled":true,"graphql_is_translatable_rweb_tweet_is_translatable_enabled":true,"view_counts_everywhere_api_enabled":true,"longform_notetweets_consumption_enabled":true,"tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled":true,"longform_notetweets_rich_text_read_enabled":true,"longform_notetweets_inline_media_enabled":true,"responsive_web_enhance_cards_enabled":false}';
+
+      /* ---- QID: performance entries から動的取得、失敗時はフォールバック ---- */
+      function getQID(ep) {
+        try {
+          const es = performance.getEntriesByType('resource').reverse();
+          const f  = es.find(e => e.name.includes('/graphql/') && e.name.includes('/'+ep+'?'));
+          if (f) { const m = f.name.match(/graphql\/([^/]+)\//); if (m) return m[1]; }
+        } catch(_) {}
+        return FBK[ep];
+      }
+
+      /* ---- GraphQL ツイート結果を正規化 ---- */
+      function tt(tr) {
+        if (tr?.__typename === 'TweetWithVisibilityResults') tr = tr.tweet || {};
+        const lg = tr?.legacy; if (!lg) return null;
+        const ur = tr?.core?.user_results?.result || {};
+        const uc = ur.core || {}, ua = ur.avatar || {}, ul = ur.legacy || {};
+        const nm = uc.name || ul.name || '', sn = uc.screen_name || ul.screen_name || '';
+        const av = (ua.image_url || ul.profile_image_url_https || '').replace('_normal', '_bigger');
+        const ft = tr?.note_tweet?.note_tweet_results?.result?.text || lg.full_text || '';
+        const rm = lg.extended_entities?.media || lg.entities?.media || [];
+        const media = rm.map(m => {
+          const mt = m.type || 'photo', th = m.media_url_https + '?name=medium';
+          let url, orig;
+          if (mt === 'video' || mt === 'animated_gif') {
+            const vs = (m.video_info?.variants||[]).filter(v=>v.content_type==='video/mp4').sort((a,b)=>(b.bitrate||0)-(a.bitrate||0));
+            url = vs[0]?.url || th; orig = url;
+          } else { url = m.media_url_https + '?name=large'; orig = m.media_url_https + '?name=orig'; }
+          return { type: mt, url, thumbnail: th, original: orig };
+        });
+        const id = lg.id_str || '';
+        let ca = '';
+        try { ca = new Date(lg.created_at).toISOString().replace('T',' ').replace('.000Z',' +00:00'); } catch(_) {}
+        return { id, id_str: id, created_at: ca, full_text: ft, name: nm, screen_name: sn,
+          profile_image_url: av, user: { name: nm, screen_name: sn, profile_image_url_https: av },
+          favorite_count: lg.favorite_count||0, retweet_count: lg.retweet_count||0,
+          views_count: tr.views?.count||0, media,
+          url: id && sn ? 'https://twitter.com/'+sn+'/status/'+id : '' };
+      }
+
+      /* ---- タイムライン instructions をパース ---- */
+      function parse(data) {
+        const paths = isLikes
+          ? [['data','user','result','timeline_v2','timeline','instructions'],
+             ['data','user','result','timeline','timeline','instructions']]
+          : [['data','bookmark_timeline_v2','timeline','instructions'],
+             ['data','bookmark_timeline','timeline','instructions']];
+        for (const path of paths) {
+          try {
+            let n = data; for (const k of path) n = n[k];
+            if (!Array.isArray(n)) continue;
+            const tweets = []; let nc = null;
+            for (const inst of n) {
+              if (inst.type === 'TimelineAddEntries') {
+                for (const en of inst.entries || []) {
+                  const c = en.content || {}, et = c.entryType;
+                  if (et === 'TimelineTimelineCursor') { if (c.cursorType === 'Bottom') nc = c.value; continue; }
+                  const ics = et === 'TimelineTimelineItem'  ? [c.itemContent]
+                            : et === 'TimelineTimelineModule' ? (c.items||[]).map(i=>i.item?.itemContent)
+                            : [];
+                  for (const ic of ics) {
+                    if (!ic) continue;
+                    if (ic.itemType === 'TimelineTimelineCursor') { if (ic.cursorType === 'Bottom') nc = ic.value; continue; }
+                    if (ic.itemType !== 'TimelineTweet') continue;
+                    const t = tt(ic.tweet_results?.result); if (t) tweets.push(t);
+                  }
+                }
+              } else if (inst.type === 'TimelineAddToModule') {
+                for (const item of inst.moduleItems || []) {
+                  const ic = item?.item?.itemContent; if (!ic) continue;
+                  if (ic.itemType === 'TimelineTimelineCursor') { if (ic.cursorType === 'Bottom') nc = ic.value; continue; }
+                  if (ic.itemType !== 'TimelineTweet') continue;
+                  const t = tt(ic.tweet_results?.result); if (t) tweets.push(t);
+                }
+              } else if (inst.type === 'TimelineReplaceEntry') {
+                const c = inst.entry?.content || {};
+                if (c.entryType === 'TimelineTimelineCursor' && c.cursorType === 'Bottom') nc = c.value;
+              }
+            }
+            return { tweets, nc };
+          } catch(_) {}
+        }
+        return { tweets: [], nc: null };
+      }
+
+      /* ---- 停止ボタン ---- */
+      const spDiv = document.createElement('div');
+      spDiv.style.marginTop = '8px';
+      spDiv.innerHTML = '<button id="_xlv_sp" style="padding:3px 10px;border-radius:8px;border:1px solid #38444d;background:#192734;color:#e6eef6;cursor:pointer;font-size:12px">⏹ 停止</button>';
+      ui.appendChild(spDiv);
+      let stop = false;
+      document.getElementById('_xlv_sp').onclick = () => { stop = true; };
+
+      /* ---- メインループ ---- */
+      const QID  = getQID(EP);
+      const all  = []; let cur = null; let retries = 0; let emptyStreak = 0;
+
+      while (!stop) {
+        const v = { count: 100, includePromotedContent: false };
+        if (isLikes) v.userId = uid;
+        if (cur) v.cursor = cur;
+        const qs = 'variables='+encodeURIComponent(JSON.stringify(v))+'&features='+encodeURIComponent(FT);
+
+        try {
+          const res = await fetch('/i/api/graphql/'+QID+'/'+EP+'?'+qs, {
+            credentials: 'include',
+            headers: { authorization:'Bearer '+B, 'x-csrf-token':ct0,
+              'x-twitter-active-user':'yes', 'x-twitter-auth-type':'OAuth2Session',
+              'content-type':'application/json', accept:'*/*' }
+          });
+
+          /* 429: レート制限 → 自動バックオフ（最大3回） */
+          if (res.status === 429) {
+            if (++retries > 3) { $s('❌ レート制限が続いています。後で再試行してください'); break; }
+            const wait = retries * 60;
+            $s('⏳ レート制限 — '+wait+'秒待機中... ('+retries+'/3)');
+            await new Promise(r => setTimeout(r, wait * 1000));
+            continue;
+          }
+          retries = 0;
+
+          if (!res.ok) {
+            $s('❌ HTTP '+res.status+(res.status===400 && !isLikes ? ' — x.com/bookmarks を開いてから再試行してください' : ''));
+            break;
+          }
+
+          const json = await res.json();
+          const { tweets, nc } = parse(json);
+
+          /* 初回フェッチで完全に0件かつカーソルなし → 異常 */
+          if (all.length === 0 && tweets.length === 0 && !nc) {
+            const keys = Object.keys(json?.data||{}).join(',') || JSON.stringify(json).slice(0,80);
+            $s('⚠️ 0件取得 (data keys: '+keys+')');
+            break;
+          }
+
+          all.push(...tweets);
+
+          if (tweets.length === 0) {
+            emptyStreak++;
+            $s('📡 '+all.length+' 件取得中... (空ページ '+emptyStreak+'/5)');
+          } else {
+            emptyStreak = 0;
+            $s('📡 '+all.length+' 件取得中...');
+          }
+
+          /* カーソルなし or 空ページ5連続で終了 */
+          if (!nc || emptyStreak >= 5) break;
+          cur = nc;
+          await new Promise(r => setTimeout(r, 800));
+
+        } catch(e) { $s('❌ '+e.message); break; }
+      }
+
+      spDiv.remove();
+      if (!all.length) { $s('⚠️ データなし'); goBtn.disabled = false; return; }
+
+      const blob = new Blob([JSON.stringify(all)], { type:'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'xlv_'+EP.toLowerCase()+'_'+new Date().toISOString().slice(0,10)+'.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(a.href);
+      $s('✅ '+all.length+' 件ダウンロード完了');
+    };
+  }
+
+    function buildBmHref() {
+    return 'javascript:'+encodeURIComponent('('+_xlvBmCode.toString()+')()');
+  }
+
+  const bmLink  = document.getElementById('xlvBookmarklet');
+  const copyBtn = document.getElementById('copyBmBtn');
+  if (!bmLink) return;
+  bmLink.href = buildBmHref();
+
+  copyBtn && copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(buildBmHref()).then(() => {
+      copyBtn.textContent = '✅ コピー済';
+      setTimeout(() => { copyBtn.textContent = 'コピー'; }, 2000);
+    });
+  });
+})();
+// ─────────────────────────────────────────────────────────────────────────
+
 
 // ─── ユーザーコンテキストメニュー ───────────────────────────────────
 (() => {
