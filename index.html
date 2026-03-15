@@ -1933,6 +1933,264 @@ body.no-effects #effectsToggle {
 .export-credit a { color: #1d9bf0 !important; text-decoration: none; }
 .export-credit a:hover { text-decoration: underline; }
 /* ══════════════════════════════ */
+
+/* =====================================================
+   XLV Design Patch — Final All-in-One
+   <style> タグ末尾にそのまま追加するだけでOK
+   ===================================================== */
+
+/* ════════════════════════════════════════════════════
+   1. 背景：テーマ別サブカラーグラデーション
+   ════════════════════════════════════════════════════ */
+body.dark {
+  background-image:
+    radial-gradient(ellipse at 15% 45%, rgba(29,155,240,0.05) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 15%, rgba(120,86,255,0.05) 0%, transparent 55%);
+}
+body.amoled {
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(29,155,240,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(120,86,255,0.04) 0%, transparent 50%);
+}
+body:not(.dark):not(.amoled) {
+  background-image:
+    radial-gradient(ellipse at 10% 50%, rgba(29,155,240,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 10%, rgba(120,86,255,0.04) 0%, transparent 50%);
+}
+
+/* ════════════════════════════════════════════════════
+   2. カード共通：形状・影・枠
+   ════════════════════════════════════════════════════ */
+.card, .text-only-card {
+  border-radius: 14px !important;
+  border: 1px solid var(--border) !important;
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.06),
+    0 3px 10px rgba(0,0,0,0.08) !important;
+  transition:
+    transform .15s ease,
+    box-shadow .15s ease,
+    border-color .15s ease !important;
+  overflow: hidden;
+}
+
+.card:hover, .text-only-card:hover {
+  transform: translateY(-4px) scale(1.012) !important;
+  box-shadow:
+    0 4px 8px rgba(0,0,0,0.08),
+    0 12px 28px rgba(0,0,0,0.12),
+    0 0 0 1px rgba(29,155,240,0.25) !important;
+  border-color: rgba(29,155,240,0.4) !important;
+}
+
+body.dark .card,
+body.dark .text-only-card {
+  background:
+    linear-gradient(150deg, rgba(255,255,255,0.03) 0%, transparent 60%),
+    var(--card) !important;
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.25),
+    0 4px 16px rgba(0,0,0,0.3) !important;
+}
+body.dark .card:hover,
+body.dark .text-only-card:hover {
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.4),
+    0 16px 32px rgba(0,0,0,0.3),
+    0 0 0 1px rgba(29,155,240,0.3) !important;
+  border-color: rgba(29,155,240,0.45) !important;
+}
+
+body.amoled .card,
+body.amoled .text-only-card {
+  background:
+    linear-gradient(150deg, rgba(255,255,255,0.025) 0%, transparent 60%),
+    var(--card) !important;
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.5),
+    0 4px 20px rgba(0,0,0,0.5) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+body.amoled .card:hover,
+body.amoled .text-only-card:hover {
+  box-shadow:
+    0 6px 20px rgba(0,0,0,0.6),
+    0 0 0 1px rgba(29,155,240,0.35) !important;
+  border-color: rgba(29,155,240,0.45) !important;
+}
+
+/* ════════════════════════════════════════════════════
+   3. サムネイル
+   ════════════════════════════════════════════════════ */
+.thumb {
+  background: #0c0c0c !important;
+}
+
+.thumb::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 28%;
+  background: linear-gradient(to top, rgba(0,0,0,0.22) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 3;
+}
+body:not(.dark):not(.amoled) .thumb::after {
+  background: linear-gradient(to top, rgba(0,0,0,0.10) 0%, transparent 100%);
+}
+
+.thumb .count,
+.thumb .video-icon {
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+  background: rgba(0,0,0,0.55) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 8px !important;
+}
+
+/* ════════════════════════════════════════════════════
+   4. カード info エリア：余白・テキスト
+   ════════════════════════════════════════════════════ */
+.card .info,
+.card:not(.text-only-card) .info {
+  padding: 10px 12px 7px !important;
+}
+
+.card .meta {
+  font-size: clamp(10.0px, 2.8vw, 12.5px) !important;
+}
+
+/* 本文プレビュー：余白を消費して表示行を増やす */
+.card .preview {
+  font-size: clamp(10.5px, 3.0vw, 12.5px) !important;
+  line-height: 1.45 !important;
+  opacity: 0.85;
+  flex-grow: 1 !important;
+  max-height: 3.4em !important;
+  flex-shrink: 1 !important;
+}
+
+/* ════════════════════════════════════════════════════
+   5. card-date：2行レイアウト（重なり解消）
+   ════════════════════════════════════════════════════ */
+.card .card-date {
+  flex-wrap: wrap !important;
+  gap: 2px 6px !important;
+  padding-bottom: 0 !important;
+  font-size: clamp(9.5px, 2.5vw, 11.0px) !important;
+}
+
+/* 日付：1行目フル幅 */
+.card .card-date > span:first-child {
+  flex: 0 0 100% !important;
+  white-space: nowrap !important;
+}
+
+/* メディア種別：2行目 左寄せ */
+.card .card-date .media-type-label {
+  position: static !important;
+  bottom: auto !important;
+  left: auto !important;
+  flex: 1 !important;
+  margin: 0 !important;
+}
+
+/* 投稿リンク：2行目 右寄せ */
+.card .card-date > span:last-child {
+  position: static !important;
+  bottom: auto !important;
+  right: auto !important;
+  margin-left: auto !important;
+}
+
+/* モバイルの absolute 配置を無効化 */
+@media (max-width: 768px) {
+  .card .info {
+    position: static !important;
+    padding-bottom: 7px !important;
+  }
+  .card .card-date {
+    position: static !important;
+    margin-bottom: 0 !important;
+  }
+  .card .media-type-label {
+    position: static !important;
+  }
+  .card .card-date a {
+    position: static !important;
+    margin-left: 0 !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   6. 極小端末（≤360px）追加調整
+   ════════════════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .card .info {
+    padding: 8px 10px 5px !important;
+    gap: 5px !important;
+  }
+  .card .preview {
+    font-size: 10.5px !important;
+    max-height: 3.0em !important;
+    line-height: 1.4 !important;
+  }
+  .card .meta {
+    font-size: 10px !important;
+  }
+  .card .card-date {
+    font-size: 9.5px !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   7. ギャラリー余白（PC）
+   ════════════════════════════════════════════════════ */
+@media (min-width: 769px) {
+  #gallery {
+    padding: 20px 24px !important;
+    gap: 18px !important;
+  }
+}
+
+/* リストモード：ホバー変更なし */
+.gallery.list-mode .card:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: var(--border) !important;
+}
+
+/* ════════════════════════════════════════════════════
+   8. no-effects 時：すべてオフ
+   ════════════════════════════════════════════════════ */
+body.no-effects .card,
+body.no-effects .text-only-card {
+  background: var(--card) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
+  border: 1px solid var(--border) !important;
+}
+body.no-effects .card:hover,
+body.no-effects .text-only-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
+  border-color: var(--border) !important;
+}
+body.no-effects .thumb::after {
+  display: none !important;
+}
+body.no-effects .thumb .count,
+body.no-effects .thumb .video-icon {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  background: rgba(0,0,0,0.6) !important;
+}
+body.no-effects,
+body.no-effects.dark,
+body.no-effects.amoled {
+  background-image: none !important;
+}
+
 </style>
 </head>
 <body>
