@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="/XLV/icons/icon-192.png">
   <title>X Likes Viewer</title>
   <style>
-/* XLV css v21 (opt) */
+/* XLV css v21 */
 
 :root {
   --bg: #f5f7fa;
@@ -316,6 +316,40 @@ body.amoled .merge-row button:hover {
   flex-wrap: wrap;
 }
 
+/* ── ツールボタン: 右端まで判定 ── */
+.sort-area {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+#jsonMergeToggle {
+  flex: 1;
+  text-align: right;
+  padding: 4px 0;
+}
+
+/* ── ロード完了フラッシュライン ── */
+#xlvLoadLine {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 1.5px;
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(90deg, #00e676, #52ff9b, #00c853, #52ff9b, #00e676);
+  background-size: 300% 100%;
+  opacity: 0;
+  transition: opacity 0.12s ease-in;
+}
+#xlvLoadLine.xlv-flash-on {
+  opacity: 1;
+  animation: xlvLineScroll 0.9s linear;
+}
+@keyframes xlvLineScroll {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 300% 0%; }
+}
+body.no-effects #xlvLoadLine { display: none; }
+
 .date-range label {
   font-size: 13px;
   color: var(--muted);
@@ -357,10 +391,13 @@ body.amoled .merge-row button:hover {
   font-size: 13px;
   color: var(--text);
   user-select: none;
-  padding: 4px 0;
+  padding: 6px 0;
   position: relative;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  width: 100%;
   list-style: none;
+  box-sizing: border-box;
 }
 
 .json-merge-section summary::-webkit-details-marker {
@@ -528,6 +565,31 @@ body.amoled .merge-content {
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
 }
+
+.thumb .seq-num {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  z-index: 4;
+  pointer-events: none;
+  white-space: nowrap;
+  font-family: monospace;
+  display: none;
+}
+body.xlv-show-seq .thumb .seq-num { display: block; }
+/* トグルスイッチ */
+.xlv-toggle-row{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;color:var(--text);cursor:pointer;user-select:none;}
+.xlv-sw{position:relative;display:inline-block;width:38px;height:22px;flex-shrink:0;}
+.xlv-sw input{opacity:0;width:0;height:0;position:absolute;}
+.xlv-sw-track{position:absolute;inset:0;border-radius:11px;background:var(--border);transition:background .2s;}
+.xlv-sw input:checked~.xlv-sw-track{background:#1d9bf0;}
+.xlv-sw-knob{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .18s;box-shadow:0 1px 4px rgba(0,0,0,.3);}
+.xlv-sw input:checked~.xlv-sw-knob{left:19px;}
 
 .thumb .count,
 .thumb .video-icon {
@@ -1702,6 +1764,40 @@ body.no-effects .user-context-menu.closing {
   animation: none !important;
 }
 
+/* ── 低スペック端末: GPU blur 無効化 ── */
+body.no-effects .thumb .count,
+body.no-effects .thumb .video-icon,
+body.no-effects .thumb .seq-num {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: rgba(0,0,0,0.65) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+/* ── 読み込み件数プリセットボタン ── */
+.ps-btn {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  text-align: center;
+  line-height: 1.4;
+}
+.ps-btn.active {
+  background: #1d9bf0;
+  color: #fff;
+  border-color: #1d9bf0;
+}
+.ps-btn .ps-hint {
+  font-size: 10px;
+  opacity: 0.75;
+  display: block;
+}
+
 /* ✨ エフェクトボタン */
 #effectsToggle {
   order: 7;
@@ -2288,7 +2384,42 @@ body.no-effects.amoled {
         </div>
       </details>
 
+      <details class="json-merge-section" style="margin-top:12px;">
+        <summary>
+          > 読み込み件数
+          <span class="merge-help-icon" title="">?</span>
+          <div class="merge-help-tooltip" id="xlvPageSizeTooltip">スクロールごとに読み込む件数。高スペックなら増やすと快適。低スペックや動作が重い場合は減らしてください。</div>
+        </summary>
+        <div class="merge-content">
+          <div id="pageSizePresets" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+            <button class="ps-btn" data-ps="auto" id="psBtn_auto"><span id="xlvPsAutoLabel">自動</span></button>
+            <button class="ps-btn" data-ps="50"  id="psBtn_50" >50<span class="ps-hint">〜2GB</span></button>
+            <button class="ps-btn" data-ps="75"  id="psBtn_75" >75<span class="ps-hint">〜4GB</span></button>
+            <button class="ps-btn" data-ps="100" id="psBtn_100">100<span class="ps-hint">〜6GB</span></button>
+            <button class="ps-btn" data-ps="200" id="psBtn_200">200<span class="ps-hint">8GB+</span></button>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:4px;">
+              <span id="xlvPsCustomLabel">任意指定</span>:
+              <input id="pageSizeCustom" type="number" min="1" style="width:80px;" placeholder="例: 150">
+              <span id="xlvPsHintLabel" style="font-size:11px;color:var(--muted);">空欄=全件</span>
+            </label>
+            <button id="pageSizeApply" type="button"><span id="xlvPsApplyLabel">適用</span></button>
+          </div>
+          <div id="pageSizeStatus" class="merge-status" style="margin-top:6px;"></div>
+          <label class="xlv-toggle-row">
+            <span class="xlv-sw">
+              <input type="checkbox" id="xlvSeqToggle">
+              <span class="xlv-sw-track"></span>
+              <span class="xlv-sw-knob"></span>
+            </span>
+            <span id="xlvSeqLabel">連番表示</span>
+          </label>
+        </div>
+      </details>
+
     </div>
+    <div id="xlvLoadLine"></div>
   </header>
 
   <main id="gallery" aria-live="polite"></main>
@@ -2317,7 +2448,7 @@ body.no-effects.amoled {
 
 
 
-/* XLV js v41 (opt) */
+/* XLV js v41 */
 
 (() => {
 
@@ -2460,6 +2591,7 @@ body.no-effects.amoled {
   // Intersection Observer
   let videoObserver = null;
   let videoPlayTimeout = new Map();
+  let PAGE_SIZE; // 読み込み件数（initPageSizeUI + _computeAutoPageSize で設定）
 
   // 初期化
   (async function init() {
@@ -2476,7 +2608,15 @@ body.no-effects.amoled {
     }
     
     applyLanguage(savedLang);
-    
+
+    // 低スペック端末自動判定 → no-effects 自動適用
+    const _isLowEnd = (navigator.hardwareConcurrency || 8) <= 4
+      || (navigator.deviceMemory  || 8) <= 4
+      || (/Android/i.test(navigator.userAgent) && window.devicePixelRatio < 2);
+    if (_isLowEnd && !localStorage.getItem('xlv_effects_forced')) {
+      document.body.classList.add('no-effects');
+    }
+
     // Intersection Observer初期化
     if ('IntersectionObserver' in window) {
       window.videoObserver = videoObserver = new IntersectionObserver((entries) => {
@@ -2504,6 +2644,8 @@ body.no-effects.amoled {
       }, { threshold: 0.25, rootMargin: '0px' });
     }
     
+    initPageSizeUI();
+    initSeqToggle();
     await loadCacheList();
     const currentId = localStorage.getItem(CACHE_CURRENT_KEY);
     if (currentId) await loadCachedJsonById(currentId);
@@ -2590,14 +2732,24 @@ body.no-effects.amoled {
 
 
 
-  // ─── JSON ファイル読み込みヘルパー ─────────────────────────────────
+  // ─── JSON ファイル読み込みヘルパー（Web Worker で parse） ───────────
   function readJsonFile(file) {
     return new Promise((resolve, reject) => {
       const r = new FileReader();
       r.onload = ev => {
         let txt = ev.target.result;
         if (txt?.charCodeAt(0) === 0xFEFF) txt = txt.slice(1);
-        try { resolve(JSON.parse(txt)); } catch (e) { reject(e); }
+        const burl = URL.createObjectURL(new Blob(
+          [`self.onmessage=e=>{try{postMessage({ok:1,d:JSON.parse(e.data)})}catch(x){postMessage({ok:0,e:x.message})}}`],
+          { type: 'application/javascript' }
+        ));
+        const w = new Worker(burl);
+        w.onmessage = msg => {
+          URL.revokeObjectURL(burl); w.terminate();
+          msg.data.ok ? resolve(msg.data.d) : reject(new Error(msg.data.e));
+        };
+        w.onerror = err => { URL.revokeObjectURL(burl); w.terminate(); reject(err); };
+        w.postMessage(txt);
       };
       r.onerror = () => reject(new Error('ファイル読み込みエラー'));
       r.readAsText(file, 'UTF-8');
@@ -2662,7 +2814,7 @@ body.no-effects.amoled {
 
       localStorage.setItem(CACHE_CURRENT_KEY, id);
       applyFiltersAndRender();
-      updateCacheDropdown();
+      flashLoadLine();     updateCacheDropdown();
       console.log('✅ キャッシュ復元 (IndexedDB):', meta.name);
     } catch (err) {
       console.warn('キャッシュ読み込みエラー:', err);
@@ -2792,6 +2944,7 @@ body.no-effects.amoled {
       await saveJsonToCache(parsed, f.name);
       allTweets = extracted.map(parseTweet);
       applyFiltersAndRender();
+      flashLoadLine();
     }).catch(err => {
       console.error(err);
       alert('JSON解析エラー: ' + (err?.message || err));
@@ -2906,7 +3059,7 @@ body.no-effects.amoled {
     let t;
     return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
   }
-  const debouncedRender = debounce(applyFiltersAndRender, 80);
+  const debouncedRender = debounce(applyFiltersAndRender, 200);
   function applyFiltersAndRender() {
     const q = searchInput.value.trim();
     const start = startDateEl.value ? new Date(startDateEl.value) : null;
@@ -2948,28 +3101,26 @@ body.no-effects.amoled {
     }
   }
 
-  // レンダリング
-  function renderGallery() {
+  // レンダリング（インクリメンタル — スペック別ページサイズ自動調整）
+  function _computeAutoPageSize() {
+    const score = (navigator.deviceMemory || 4) * (navigator.hardwareConcurrency || 4);
+    if (score >= 48) return 200;
+    if (score >= 20) return 100;
+    if (score >= 12) return 75;
+    return 50;
+  }
+  // PAGE_SIZE が未設定（initPageSizeUI で設定されなかった場合）はここで決定
+  if (PAGE_SIZE == null) PAGE_SIZE = _computeAutoPageSize();
+  let renderOffset = 0;
+  let _sentinelObs = null;
+
+  function _buildCard(t, seqIdx) {
     const lang = window.currentLanguage || {
       noResults: '表示する投稿がありません。',
       noText: '(本文なし)',
       imageCount: '枚',
       openTweet: '投稿を開く'
     };
-    
-    // 動画ObserverをリセットしてからDOM削除（メモリリーク防止）
-    if (window.videoObserver) {
-      gallery.querySelectorAll('video').forEach(v => window.videoObserver.unobserve(v));
-    }
-    gallery.innerHTML = '';
-    if (!allTweets.length) return; // データ未ロード時は即リターン
-    if (!viewTweets.length) { 
-      gallery.innerHTML = `<div style="padding:18px;color:var(--muted)">${lang.noResults}</div>`; 
-      return; 
-    }
-    
-    const _frag = document.createDocumentFragment();
-  viewTweets.forEach((t) => {
       const card = document.createElement('article');
       card.className = 'card';
 
@@ -3003,8 +3154,10 @@ body.no-effects.amoled {
 
           const statsDiv = document.createElement('div');
           statsDiv.className = 'tweet-stats';
-          statsDiv.style.cssText = 'display:flex;justify-content:space-between;align-items:center;width:100%';
           statsDiv.innerHTML = `<span>❤️ ${(t.favorite_count || 0).toLocaleString()}</span><span>🔁 ${(t.retweet_count || 0).toLocaleString()}</span>`;
+
+          // Make statsDiv a flex container
+          statsDiv.style.cssText = 'display:flex;justify-content:space-between;align-items:center;width:100%';
 
           // Add "Open post" link to statsDiv
           if (t.url || (t.screen_name && t.id)) {
@@ -3020,10 +3173,11 @@ body.no-effects.amoled {
 
           card.append(header, textDiv, statsDiv);
           card.addEventListener('click', () => openModalWithText(fullTextContent));
-          _frag.appendChild(card);
-          return;
+          return card;
         } else {
-            card.classList.add('text-only-card');
+          // 既存のグリッド表示処理
+          // テキストのみ
+        card.classList.add('text-only-card');
         
         const userInfo = document.createElement('div');
         userInfo.className = 'text-card-user';
@@ -3068,11 +3222,11 @@ body.no-effects.amoled {
         footer.append(dateSpan, noMediaLabel, linkSpan);
         card.append(userInfo, stats, textContent, footer);
         card.addEventListener('click', () => openModalWithText(fullText));
-        _frag.appendChild(card);
-        return;
+        return card;
         }
       }
 
+      // メディアあり
       const thumb = document.createElement('div');
       thumb.className = 'thumb';
       
@@ -3089,6 +3243,8 @@ body.no-effects.amoled {
         v.preload = 'none';
         v.referrerPolicy = 'no-referrer';
         if (first.thumb) v.poster = first.thumb;
+        // サムネイルでは自動再生しない
+        // if (videoObserver) videoObserver.observe(v);
         thumb.appendChild(v);
         v.addEventListener('error', function() {
           this.style.display = 'none';
@@ -3137,6 +3293,10 @@ body.no-effects.amoled {
         count.textContent = `${t.media.length}${lang.imageCount}`;
         thumb.appendChild(count);
       }
+      const _sb = document.createElement('span');
+      _sb.className = 'seq-num';
+      _sb.textContent = '#' + ((seqIdx != null ? seqIdx : 0) + 1);
+      thumb.appendChild(_sb);
 
       thumb.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -3218,10 +3378,56 @@ body.no-effects.amoled {
         const arr = t.media.map(m => (m.full || m.thumb || '').trim()).filter(Boolean);
         openModalWithMedia(arr);
       });
+      return card;
+  }
 
-      _frag.appendChild(card);
+  function _renderPage() {
+    const frag = document.createDocumentFragment();
+    const limit = PAGE_SIZE === Infinity ? viewTweets.length : renderOffset + PAGE_SIZE;
+    viewTweets.slice(renderOffset, limit).forEach((t, i) => {
+      const c = _buildCard(t, renderOffset + i); if (c) frag.appendChild(c);
     });
-  gallery.appendChild(_frag);
+    const sentinel = gallery.querySelector('#_xlv_sentinel');
+    if (sentinel) gallery.insertBefore(frag, sentinel);
+    else gallery.appendChild(frag);
+    renderOffset += (PAGE_SIZE === Infinity ? viewTweets.length : Math.min(PAGE_SIZE, viewTweets.length - renderOffset));
+    if (renderOffset >= viewTweets.length) {
+      if (_sentinelObs) { _sentinelObs.disconnect(); _sentinelObs = null; }
+      const s = gallery.querySelector('#_xlv_sentinel');
+      if (s) s.remove();
+    }
+    flashLoadLine();
+  }
+
+  function renderGallery() {
+    const lang = window.currentLanguage || {
+      noResults: '表示する投稿がありません。',
+      noText: '(本文なし)',
+      imageCount: '枚',
+      openTweet: '投稿を開く'
+    };
+    if (window.videoObserver) {
+      gallery.querySelectorAll('video').forEach(v => window.videoObserver.unobserve(v));
+    }
+    if (_sentinelObs) { _sentinelObs.disconnect(); _sentinelObs = null; }
+    gallery.innerHTML = '';
+    renderOffset = 0;
+    if (!allTweets.length) return;
+    if (!viewTweets.length) {
+      gallery.innerHTML = `<div style="padding:18px;color:var(--muted)">${lang.noResults}</div>`;
+      return;
+    }
+    _renderPage();
+    if (renderOffset < viewTweets.length) {
+      const sentinel = document.createElement('div');
+      sentinel.id = '_xlv_sentinel';
+      sentinel.style.cssText = 'height:1px;width:100%;grid-column:1/-1';
+      gallery.appendChild(sentinel);
+      _sentinelObs = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting) _renderPage();
+      }, { rootMargin: '300px' });
+      _sentinelObs.observe(sentinel);
+    }
   }
 
   // モーダル
@@ -3900,6 +4106,12 @@ body.no-effects.amoled {
   
   langSelect.addEventListener('change', () => {
     const v = langSelect.value;
+    // 連番ラベルを言語に合わせて更新
+    setTimeout(() => {
+      const sl = document.getElementById('xlvSeqLabel');
+      if (sl && window.currentLanguage && window.currentLanguage.seqLabel)
+        sl.textContent = window.currentLanguage.seqLabel;
+    }, 50);
     localStorage.setItem('xviewer_lang', v);
     
     // 英語選択時の属性設定
@@ -3960,9 +4172,19 @@ body.no-effects.amoled {
         exportStep4: 'ダウンロードした .json をこのツールに読み込む',
         exportNote: '⚠️ 必ず x.com 上で実行してください。100件/0.8秒 で取得します。',
         exportCopy: 'コピー', exportCopied: '✅ コピー済',
+        seqLabel: '連番表示',
         exportCredit: 'このエクスポート機能は <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a> を参考にしています。より多くの項目を取得・管理するには本家スクリプトをご利用ください。',
         userSearch: 'このユーザーを検索',
-        userExclude: 'このユーザーを除外'
+        userExclude: 'このユーザーを除外',
+        pageSizeSection: '読み込み件数',
+        pageSizeAuto: '自動',
+        pageSizeCustomLabel: '任意指定',
+        pageSizeHint: '空欄=全件',
+        pageSizeApplyBtn: '適用',
+        pageSizeSaved: '設定を保存しました',
+        pageSizeNotSaved: '保存対象外（低スペック端末）',
+        pageSizeApplied: '件に変更しました',
+        pageSizeTooltip: 'スクロールごとに読み込む件数。高スペックなら増やすと快適。低スペックや動作が重い場合は減らしてください。'
       },
       en: { 
         title: '𝕏 Likes Viewer',
@@ -4007,9 +4229,19 @@ body.no-effects.amoled {
         exportStep4: 'Load the downloaded .json into this tool',
         exportNote: '⚠️ Must run on x.com. Fetches 100 items per 0.8 seconds.',
         exportCopy: 'Copy', exportCopied: '✅ Copied',
+        seqLabel: 'Seq#',
         exportCredit: 'The export feature is inspired by <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a>. For more advanced data capture and management, please use the original script.',
         userSearch: 'Search this user',
-        userExclude: 'Exclude this user'
+        userExclude: 'Exclude this user',
+        pageSizeSection: 'Page Load Size',
+        pageSizeAuto: 'Auto',
+        pageSizeCustomLabel: 'Custom',
+        pageSizeHint: 'Empty=All',
+        pageSizeApplyBtn: 'Apply',
+        pageSizeSaved: 'Setting saved',
+        pageSizeNotSaved: 'Not saved (low-spec device)',
+        pageSizeApplied: ' items/page applied',
+        pageSizeTooltip: 'Items loaded per scroll. Increase for faster devices; reduce if performance is poor.'
       },
       zh: { 
         title: '𝕏 Likes Viewer',
@@ -4054,9 +4286,19 @@ body.no-effects.amoled {
         exportStep4: '将下载的 .json 文件加载到此工具',
         exportNote: '⚠️ 请在 x.com 上运行。每0.8秒获取100条。',
         exportCopy: '复制', exportCopied: '✅ 已复制',
+        seqLabel: '序号显示',
         exportCredit: '导出功能参考了 <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a>。如需获取更多数据项目，请使用原版脚本。',
         userSearch: '搜索此用户',
-        userExclude: '排除此用户'
+        userExclude: '排除此用户',
+        pageSizeSection: '读取件数',
+        pageSizeAuto: '自动',
+        pageSizeCustomLabel: '自定义',
+        pageSizeHint: '空=全部',
+        pageSizeApplyBtn: '应用',
+        pageSizeSaved: '设置已保存',
+        pageSizeNotSaved: '未保存（低配设备）',
+        pageSizeApplied: '条/次已应用',
+        pageSizeTooltip: '每次滚动加载的条数。高配设备可增加，低配或卡顿时请减少。'
       },
       ko: { 
         title: '𝕏 Likes Viewer',
@@ -4101,9 +4343,19 @@ body.no-effects.amoled {
         exportStep4: '다운로드한 .json을 이 도구에 로드',
         exportNote: '⚠️ 반드시 x.com 에서 실행하세요. 0.8초당 100건을 가져옵니다.',
         exportCopy: '복사', exportCopied: '✅ 복사됨',
+        seqLabel: '번호 표시',
         exportCredit: '이 내보내기 기능은 <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a>를 참고하였습니다. 더 많은 항목을 수집하려면 원본 스크립트를 이용해 주세요.',
         userSearch: '이 유저를 검색',
-        userExclude: '이 유저를 제외'
+        userExclude: '이 유저를 제외',
+        pageSizeSection: '읽기 건수',
+        pageSizeAuto: '자동',
+        pageSizeCustomLabel: '직접 입력',
+        pageSizeHint: '빈칸=전체',
+        pageSizeApplyBtn: '적용',
+        pageSizeSaved: '설정이 저장되었습니다',
+        pageSizeNotSaved: '저장 안 됨 (저사양 기기)',
+        pageSizeApplied: '건으로 변경되었습니다',
+        pageSizeTooltip: '스크롤마다 읽어오는 건수입니다. 고사양이면 늘리고, 저사양이거나 버벅일 때는 줄여주세요.'
       }
     };
 
@@ -4174,6 +4426,17 @@ body.no-effects.amoled {
     const summaries = document.querySelectorAll('.json-merge-section summary');
     if (summaries[1]) summaries[1].childNodes[0].textContent = `> ${u.jsonMerge}`;
     if (summaries[2]) summaries[2].childNodes[0].textContent = `> ${u.excludePosts}`;
+    if (summaries[3]) summaries[3].childNodes[0].textContent = `> ${u.pageSizeSection || '読み込み件数'}`;
+    const _psAuto = document.getElementById('xlvPsAutoLabel');
+    const _psCL   = document.getElementById('xlvPsCustomLabel');
+    const _psCH   = document.getElementById('xlvPsHintLabel');
+    const _psAp   = document.getElementById('xlvPsApplyLabel');
+    const _psTip  = document.getElementById('xlvPageSizeTooltip');
+    if (_psAuto && u.pageSizeAuto)        _psAuto.textContent = u.pageSizeAuto;
+    if (_psCL   && u.pageSizeCustomLabel) _psCL.textContent   = u.pageSizeCustomLabel;
+    if (_psCH   && u.pageSizeHint)        _psCH.textContent   = u.pageSizeHint;
+    if (_psAp   && u.pageSizeApplyBtn)    _psAp.textContent   = u.pageSizeApplyBtn;
+    if (_psTip  && u.pageSizeTooltip)     _psTip.textContent  = u.pageSizeTooltip;
 
     const helpTooltips = document.querySelectorAll('.merge-help-tooltip');
     if (helpTooltips[0]) helpTooltips[0].textContent = mergeHelpTexts[v] || mergeHelpTexts.ja;
@@ -4211,6 +4474,118 @@ body.no-effects.amoled {
       updateTweetCount();
     }
   }
+
+
+
+  // ─── ロード完了フラッシュライン ───────────────────────────────────
+  function flashLoadLine() {
+    if (document.body.classList.contains('no-effects')) return;
+    const line = document.getElementById('xlvLoadLine');
+    if (!line) return;
+    // アニメーション再起動: クラス除去 → reflow → 付与
+    line.classList.remove('xlv-flash-on');
+    void line.offsetWidth;
+    line.classList.add('xlv-flash-on');
+    clearTimeout(line._ft);
+    line._ft = setTimeout(() => {
+      line.style.transition = 'opacity 0.7s ease-out';
+      line.classList.remove('xlv-flash-on');
+      setTimeout(() => { line.style.transition = ''; }, 750);
+    }, 700);
+  }
+  // ─── 読み込み件数 UI ─────────────────────────────────────────────
+  function initPageSizeUI() {
+    const _hwScore = (navigator.deviceMemory || 4) * (navigator.hardwareConcurrency || 4);
+    const _canSave = _hwScore >= 24;
+
+    // 保存済み設定を読み込んで PAGE_SIZE に反映
+    const saved = _canSave ? localStorage.getItem('xlv_page_size') : null;
+    if (saved !== null) {
+      if (saved === '')           PAGE_SIZE = Infinity;
+      else if (saved !== 'auto') PAGE_SIZE = parseInt(saved) || _computeAutoPageSize();
+    }
+    // 未設定なら自動計算
+    if (PAGE_SIZE == null) PAGE_SIZE = _computeAutoPageSize();
+
+    function _setActive(val) {
+      document.querySelectorAll('#pageSizePresets .ps-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.ps === String(val));
+      });
+    }
+    _setActive(!saved || saved === 'auto' ? 'auto' : saved);
+    if (saved && saved !== 'auto' && !['50','75','100','200',''].includes(saved)) {
+      const inp = document.getElementById('pageSizeCustom');
+      if (inp) inp.value = saved;
+    }
+
+    function _showStatus(msg) {
+      const el = document.getElementById('pageSizeStatus');
+      if (el) { el.textContent = msg; el.className = 'merge-status success'; }
+    }
+
+    function _applySize(rawVal) {
+      const lang = window.currentLanguage || {};
+      let storeVal;
+      if (rawVal === '' || rawVal === Infinity) {
+        PAGE_SIZE = Infinity; storeVal = '';
+      } else {
+        PAGE_SIZE = Math.max(1, parseInt(rawVal) || _computeAutoPageSize());
+        storeVal  = String(PAGE_SIZE);
+      }
+      const lbl = PAGE_SIZE === Infinity
+        ? '全件読み込み'
+        : PAGE_SIZE + (lang.pageSizeApplied || '件に変更しました');
+      _showStatus(_canSave
+        ? lbl + ' / ' + (lang.pageSizeSaved    || '設定を保存しました')
+        : lbl + ' / ' + (lang.pageSizeNotSaved || '保存対象外（低スペック端末）'));
+      if (_canSave) localStorage.setItem('xlv_page_size', storeVal);
+      renderGallery();
+    }
+
+    document.querySelectorAll('#pageSizePresets .ps-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = btn.dataset.ps;
+        _setActive(val);
+        if (val === 'auto') {
+          PAGE_SIZE = _computeAutoPageSize();
+          const lang = window.currentLanguage || {};
+          const msg = '自動: ' + PAGE_SIZE + (lang.pageSizeApplied || '件に変更しました');
+          _showStatus(_canSave
+            ? msg + ' / ' + (lang.pageSizeSaved    || '設定を保存しました')
+            : msg + ' / ' + (lang.pageSizeNotSaved || '保存対象外（低スペック端末）'));
+          if (_canSave) localStorage.setItem('xlv_page_size', 'auto');
+          renderGallery();
+        } else {
+          _applySize(val);
+        }
+      });
+    });
+
+    const applyBtn = document.getElementById('pageSizeApply');
+    if (applyBtn) {
+      applyBtn.addEventListener('click', () => {
+        const inp = document.getElementById('pageSizeCustom');
+        const val = inp ? inp.value.trim() : '';
+        document.querySelectorAll('#pageSizePresets .ps-btn').forEach(b => b.classList.remove('active'));
+        _applySize(val);
+      });
+    }
+  }
+  function initSeqToggle() {
+    var c = document.getElementById('xlvSeqToggle');
+    if (!c) return;
+    var lbl = document.getElementById('xlvSeqLabel');
+    if (lbl && window.currentLanguage && window.currentLanguage.seqLabel)
+      lbl.textContent = window.currentLanguage.seqLabel;
+    var s = localStorage.getItem('xlv_show_seq') === '1';
+    c.checked = s;
+    if (s) document.body.classList.add('xlv-show-seq');
+    c.addEventListener('change', function() {
+      document.body.classList.toggle('xlv-show-seq', this.checked);
+      localStorage.setItem('xlv_show_seq', this.checked ? '1' : '0');
+    });
+  }
+
 
   // グローバル公開
   window.applyFiltersAndRender = applyFiltersAndRender;
@@ -4759,7 +5134,7 @@ body.no-effects.amoled {
 <!-- Search Help Modal -->
 
   <script>
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('/XLV/sw.js', { scope: '/XLV/' })
           .catch(function(err) { console.error('SW registration failed:', err); });
