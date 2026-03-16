@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="/XLV/icons/icon-192.png">
   <title>X Likes Viewer</title>
   <style>
-/* XLV css v21 */
+/* XLV css v21 (opt) */
 
 :root {
   --bg: #f5f7fa;
@@ -591,7 +591,7 @@ body:not(.dark):not(.amoled) .thumb .video-icon {
 .preview {
   font-size: 13px;
   color: #fff;
-  max-height: 3.6em;
+  max-height: 4.4em;
   overflow: hidden;
   flex-grow: 1;
 }
@@ -658,31 +658,6 @@ body.dark .text-card-footer,
 body.amoled .card-date,
 body.amoled .text-card-footer {
   color: rgba(255,255,255,0.65);
-}
-
-.card-date {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 8px;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.card-date a {
-  margin-left: auto !important;
-  color: #1d9bf0 !important;
-  text-decoration: none;
-  font-size: 11px;
-  font-weight: 400;
-  line-height: 1;
-}
-
-.card-date a:hover {
-  text-decoration: underline;
 }
 
 /* スマホ表示時: メディア付きカードのリンクを右下に配置 */
@@ -806,40 +781,6 @@ body.amoled .text-card-footer {
 
 .text-card-link:hover {
   text-decoration: underline;
-}
-
-/* ライトモード時のテキストカラー */
-body:not(.dark):not(.amoled) .card,
-body:not(.dark):not(.amoled) .card * {
-  color: #0f1720 !important;
-}
-
-body:not(.dark):not(.amoled) .card a,
-body:not(.dark):not(.amoled) .text-card-link,
-body:not(.dark):not(.amoled) .card-date a {
-  color: #1d9bf0 !important;
-}
-
-body:not(.dark):not(.amoled) .text-card-user {
-  color: #0f1720;
-}
-
-body:not(.dark):not(.amoled) .text-card-stats,
-body:not(.dark):not(.amoled) .text-card-footer,
-body:not(.dark):not(.amoled) .card-date {
-  color: #6b7280;
-}
-
-body:not(.dark):not(.amoled) .text-card-content {
-  color: #0f1720;
-}
-
-/* ダーク&AMOLEDモード時の統一色 */
-body.dark .card-date,
-body.dark .text-card-footer,
-body.amoled .card-date,
-body.amoled .text-card-footer {
-  color: rgba(255,255,255,0.65);
 }
 
 /* Modal */
@@ -2066,7 +2007,7 @@ body:not(.dark):not(.amoled) .thumb::after {
   line-height: 1.45 !important;
   opacity: 0.85;
   flex-grow: 1 !important;
-  max-height: 3.4em !important;
+  max-height: 4.4em !important;
   flex-shrink: 1 !important;
 }
 
@@ -2132,7 +2073,7 @@ body:not(.dark):not(.amoled) .thumb::after {
   }
   .card .preview {
     font-size: 10.5px !important;
-    max-height: 3.0em !important;
+    max-height: 4.4em !important;
     line-height: 1.4 !important;
   }
   .card .meta {
@@ -2191,7 +2132,37 @@ body.no-effects.amoled {
   background-image: none !important;
 }
 
-</style>
+
+    /* [p.py Patch 4] プレビューが空きスペースを使い切って日時直前まで伸びるよう上書き */
+    .card .info { justify-content: flex-start !important; }
+    .card .meta { margin-bottom: 4px; }
+    .card .preview { margin-bottom: 4px; }
+  
+    /* [Fix A] maximize preview area */
+    .card .info { gap: 0 !important; }
+    .card .meta { margin-bottom: 6px !important; }
+    /* overflow:hidden + padding-top で中央寄せ (JS が制御) */
+    .card .preview {
+      max-height: none !important;
+      margin-bottom: 0 !important;
+      overflow: hidden !important;
+      box-sizing: border-box !important;
+    }
+    @media (max-width: 360px) { .card .preview { max-height: none !important; } }
+
+    /* [Fix B] card-date: margin-top:auto で常に .info 最下部に固定 */
+    .card .card-date {
+      margin-top: auto !important;
+      padding-top: 2px !important;
+      padding-bottom: 4px !important;
+      flex-shrink: 0 !important;
+    }
+
+    /* [Fix D/CSS] UCM dismiss button */
+    .ucm-dismiss { color: var(--muted) !important; opacity: 0.8; }
+    .ucm-dismiss:hover { background: var(--bg) !important; opacity: 1; color: var(--text) !important; }
+
+  </style>
 </head>
 <body>
   <button id="headerToggle" type="button" title="ヘッダーを表示">☰</button>
@@ -2250,8 +2221,28 @@ body.no-effects.amoled {
           <div class="bm-link-wrap">
             <a id="xlvBookmarklet" class="bm-drag-link" href="#">📥 XLV Exporter</a>
             <button id="copyBmBtn" type="button" style="flex-shrink:0">コピー</button>
+            <button id="xlvMobileGuideBtn" type="button"
+              title="モバイル登録ガイド"
+              style="flex-shrink:0;padding:4px 8px;font-size:14px;">📱</button>
           </div>
-          <div class="export-note" id="xlvExportNote">⚠️ 必ず x.com 上で実行してください。100件/1.2秒 で取得します。</div>
+          <!-- Mobile guide modal -->
+          <div id="xlvMobileGuideModal"
+               style="display:none;position:fixed;inset:0;z-index:9998;
+                      background:rgba(0,0,0,0.72);align-items:center;
+                      justify-content:center;padding:16px;">
+            <div style="background:var(--card);color:var(--text);border-radius:16px;
+                        padding:20px 22px;max-width:400px;width:100%;max-height:82vh;
+                        overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.45);
+                        position:relative;border:1px solid var(--border);">
+              <button id="xlvMobileGuideClose"
+                style="position:absolute;top:10px;right:12px;background:none;
+                       border:none;font-size:22px;cursor:pointer;
+                       color:var(--muted);line-height:1;padding:0;">✕</button>
+              <h3 id="xlvMgTitle" style="margin:0 0 14px;font-size:15px;font-weight:700;padding-right:24px;"></h3>
+              <div id="xlvMgBody" style="font-size:13px;line-height:1.75;color:var(--text);"></div>
+            </div>
+          </div>
+          <div class="export-note" id="xlvExportNote">⚠️ 必ず x.com 上で実行してください。100件/0.8秒 で取得します。</div>
         <div class="export-credit" id="xlvExportCredit"></div>
         </div>
       </details>
@@ -2319,13 +2310,14 @@ body.no-effects.amoled {
   <div id="userContextMenu" class="user-context-menu hidden" role="menu">
     <button class="ucm-item ucm-search" type="button">🔍 <span id="ucmSearchLabel">このユーザーを検索</span></button>
     <button class="ucm-item ucm-exclude" type="button">🚫 <span id="ucmExcludeLabel">このユーザーを除外</span></button>
+  <button class="ucm-item ucm-dismiss" id="ucmDismissBtn" type="button"><span id="ucmDismissLabel"></span></button>
   </div>
 
   <script>
 
 
 
-/* XLV js v41 */
+/* XLV js v41 (opt) */
 
 (() => {
 
@@ -2596,6 +2588,38 @@ body.no-effects.amoled {
     return m ? m[0] : '';
   }
 
+
+
+  // ─── JSON ファイル読み込みヘルパー ─────────────────────────────────
+  function readJsonFile(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = ev => {
+        let txt = ev.target.result;
+        if (txt?.charCodeAt(0) === 0xFEFF) txt = txt.slice(1);
+        try { resolve(JSON.parse(txt)); } catch (e) { reject(e); }
+      };
+      r.onerror = () => reject(new Error('ファイル読み込みエラー'));
+      r.readAsText(file, 'UTF-8');
+    });
+  }
+  function parseTweet(raw) {
+    return {
+      id: raw.id_str || raw.id || '',
+      created_at: raw.created_at || raw.date || '',
+      full_text: raw.full_text || raw.text || '',
+      name: raw.name || raw.user?.name || '',
+      screen_name: raw.screen_name || raw.user?.screen_name || raw.user?.screen_name_str || '',
+      profile_image_url: stripSpaces(raw.profile_image_url || raw.user?.profile_image_url),
+      url: raw.url || extractFirstLink(raw.full_text || raw.text || '') || '',
+      favorite_count: Number(raw.favorite_count || raw.favorite_count_str || raw.favourite_count || 0),
+      retweet_count: Number(raw.retweet_count || raw.retweet_count_str || 0),
+      views_count: Number(raw.views_count || raw.views || 0),
+      media: gatherMedia(raw),
+      _hay: ((raw.full_text || raw.text || '') + ' ' + (raw.name || raw.user?.name || '') + ' ' + (raw.screen_name || raw.user?.screen_name || '')).toLowerCase()
+    };
+  }
+
   // キャッシュ管理
   async function loadCacheList() {
     try {
@@ -2621,8 +2645,6 @@ body.no-effects.amoled {
     }
   }
 
-  // saveCacheList は IndexedDB 化により廃止 (_idbPutCache を直接使用)
-  function saveCacheList() {}
 
   async function loadCachedJsonById(id) {
     try {
@@ -2636,20 +2658,7 @@ body.no-effects.amoled {
       const extracted = extractTweetsFromJson(data);
       if (!extracted.length) return;
 
-      allTweets = extracted.map(raw => ({
-        id: raw.id_str || raw.id || '',
-        created_at: raw.created_at || raw.date || '',
-        full_text: raw.full_text || raw.text || '',
-        name: raw.name || raw.user?.name || '',
-        screen_name: raw.screen_name || raw.user?.screen_name || raw.user?.screen_name_str || '',
-        profile_image_url: stripSpaces(raw.profile_image_url || raw.user?.profile_image_url),
-        url: raw.url || extractFirstLink(raw.full_text || raw.text || '') || '',
-        favorite_count: Number(raw.favorite_count || raw.favorite_count_str || raw.favourite_count || 0),
-        retweet_count: Number(raw.retweet_count || raw.retweet_count_str || 0),
-        views_count: Number(raw.views_count || raw.views || 0),
-        media: gatherMedia(raw),
-        _hay: ((raw.full_text || raw.text || '') + ' ' + (raw.name || raw.user?.name || '') + ' ' + (raw.screen_name || raw.user?.screen_name || '')).toLowerCase()
-      }));
+      allTweets = extracted.map(parseTweet);
 
       localStorage.setItem(CACHE_CURRENT_KEY, id);
       applyFiltersAndRender();
@@ -2777,42 +2786,16 @@ body.no-effects.amoled {
   fileInput.addEventListener('change', e => {
     const f = e.target.files?.[0];
     if (!f) return;
-    const r = new FileReader();
-    r.onload = async ev => {
-      let txt = ev.target.result;
-      if (txt?.charCodeAt(0) === 0xFEFF) txt = txt.slice(1);
-      try {
-        const parsed = JSON.parse(txt);
-        const extracted = extractTweetsFromJson(parsed);
-        if (!extracted.length) { 
-          alert('ツイートデータが見つかりませんでした'); 
-          return; 
-        }
-        
-        await saveJsonToCache(parsed, f.name);
-        
-        allTweets = extracted.map(raw => ({
-          id: raw.id_str || raw.id || '',
-          created_at: raw.created_at || raw.date || '',
-          full_text: raw.full_text || raw.text || '',
-          name: raw.name || raw.user?.name || '',
-          screen_name: raw.screen_name || raw.user?.screen_name || raw.user?.screen_name_str || '',
-          profile_image_url: stripSpaces(raw.profile_image_url || raw.user?.profile_image_url),
-          url: raw.url || extractFirstLink(raw.full_text || raw.text || '') || '',
-          favorite_count: Number(raw.favorite_count || raw.favorite_count_str || raw.favourite_count || 0),
-          retweet_count: Number(raw.retweet_count || raw.retweet_count_str || 0),
-          views_count: Number(raw.views_count || raw.views || 0),
-          media: gatherMedia(raw),
-        _hay: ((raw.full_text || raw.text || '') + ' ' + (raw.name || raw.user?.name || '') + ' ' + (raw.screen_name || raw.user?.screen_name || '')).toLowerCase()
-        }));
-        applyFiltersAndRender();
-      } catch (err) {
-        console.error(err);
-        alert('JSON解析エラー: ' + (err?.message || err));
-      }
-    };
-    r.onerror = () => alert('ファイル読み込みエラー');
-    r.readAsText(f, 'UTF-8');
+    readJsonFile(f).then(async parsed => {
+      const extracted = extractTweetsFromJson(parsed);
+      if (!extracted.length) { alert('ツイートデータが見つかりませんでした'); return; }
+      await saveJsonToCache(parsed, f.name);
+      allTweets = extracted.map(parseTweet);
+      applyFiltersAndRender();
+    }).catch(err => {
+      console.error(err);
+      alert('JSON解析エラー: ' + (err?.message || err));
+    });
   });
 
   // 高度な検索
@@ -3020,10 +3003,8 @@ body.no-effects.amoled {
 
           const statsDiv = document.createElement('div');
           statsDiv.className = 'tweet-stats';
-          statsDiv.innerHTML = `<span>❤️ ${(t.favorite_count || 0).toLocaleString()}</span><span>🔁 ${(t.retweet_count || 0).toLocaleString()}</span>`;
-
-          // Make statsDiv a flex container
           statsDiv.style.cssText = 'display:flex;justify-content:space-between;align-items:center;width:100%';
+          statsDiv.innerHTML = `<span>❤️ ${(t.favorite_count || 0).toLocaleString()}</span><span>🔁 ${(t.retweet_count || 0).toLocaleString()}</span>`;
 
           // Add "Open post" link to statsDiv
           if (t.url || (t.screen_name && t.id)) {
@@ -3034,8 +3015,6 @@ body.no-effects.amoled {
             tweetLink.textContent = lang.openTweet;
             tweetLink.style.cssText = 'color:#1d9bf0;text-decoration:none;font-size:13px;margin-left:auto';
             tweetLink.addEventListener('click', e => e.stopPropagation());
-            tweetLink.addEventListener('mouseover', function() { this.style.textDecoration = 'underline'; });
-            tweetLink.addEventListener('mouseout', function() { this.style.textDecoration = 'none'; });
             statsDiv.appendChild(tweetLink);
           }
 
@@ -3044,9 +3023,7 @@ body.no-effects.amoled {
           _frag.appendChild(card);
           return;
         } else {
-          // 既存のグリッド表示処理
-          // テキストのみ
-        card.classList.add('text-only-card');
+            card.classList.add('text-only-card');
         
         const userInfo = document.createElement('div');
         userInfo.className = 'text-card-user';
@@ -3093,11 +3070,9 @@ body.no-effects.amoled {
         card.addEventListener('click', () => openModalWithText(fullText));
         _frag.appendChild(card);
         return;
-          return;
         }
       }
 
-      // メディアあり
       const thumb = document.createElement('div');
       thumb.className = 'thumb';
       
@@ -3114,8 +3089,6 @@ body.no-effects.amoled {
         v.preload = 'none';
         v.referrerPolicy = 'no-referrer';
         if (first.thumb) v.poster = first.thumb;
-        // サムネイルでは自動再生しない
-        // if (videoObserver) videoObserver.observe(v);
         thumb.appendChild(v);
         v.addEventListener('error', function() {
           this.style.display = 'none';
@@ -3142,19 +3115,11 @@ body.no-effects.amoled {
         thumb.appendChild(icon);
       } else {
         const img = document.createElement('img');
-        img.decoding = 'async';
-        img.onerror = function() {
-          this.style.display = 'none';
-          if (!this.parentNode.querySelector('.thumb-not-found')) {
-            const nf = document.createElement('div');
-            nf.className = 'thumb-not-found';
-            this.parentNode.appendChild(nf);
-          }
-        };
         img.src = (first.thumb || first.full || '').trim();
         img.alt = (t.full_text || '').slice(0, 120);
         img.loading = 'lazy';
         img.decoding = 'async';
+        img.referrerPolicy = 'no-referrer';
         img.onerror = function() {
           this.style.display = 'none';
           if (!this.parentNode.querySelector('.thumb-not-found')) {
@@ -3163,7 +3128,6 @@ body.no-effects.amoled {
             this.parentNode.appendChild(nf);
           }
         };
-        img.referrerPolicy = 'no-referrer';
         thumb.appendChild(img);
       }
 
@@ -3358,8 +3322,11 @@ body.no-effects.amoled {
   });
 
   modal.addEventListener('click', (e) => {
-    if (e.target === modalImg || e.target === modalVideo || e.target === modalText || 
-        e.target.closest('#modalInner') || e.target.closest('.modal-btn')) return;
+    // 画像/動画/テキスト表示中は閉じない、ボタン・オーバーレイ・カウンターも除外
+    if (e.target === modalImg || e.target === modalVideo || e.target === modalText ||
+        e.target.closest('#modalTextOverlay') ||
+        e.target.closest('#modalCounter') ||
+        e.target.closest('.modal-btn')) return;
     closeModal.click();
   });
 
@@ -3566,7 +3533,7 @@ body.no-effects.amoled {
         e.stopPropagation();
         modalTextOverlay.innerHTML = `
           <div class="modal-text-overlay-content">${modalCurrentText}</div>
-          <div class="modal-text-overlay-hint">タップして閉じる</div>
+          <div class="modal-text-overlay-hint">${(window.currentLanguage||{}).tapToClose||"タップで閉じる"}</div>
         `;
         modalTextOverlay.classList.remove('hidden');
       }
@@ -3632,56 +3599,23 @@ body.no-effects.amoled {
   mergeBaseInput.addEventListener('change', e => {
     const f = e.target.files?.[0];
     if (!f) return;
-    const r = new FileReader();
-    r.onload = async ev => {
-      try {
-        let txt = ev.target.result;
-        if (txt?.charCodeAt(0) === 0xFEFF) txt = txt.slice(1);
-        mergeBaseData = JSON.parse(txt);
-        updateMergeStatus('基準JSONを読み込みました', 'success');
-      } catch (err) {
-        updateMergeStatus('基準JSON解析エラー: ' + err.message, 'error');
-        mergeBaseData = null;
-      }
-    };
-    r.readAsText(f, 'UTF-8');
+    readJsonFile(f).then(d => { mergeBaseData = d; updateMergeStatus('基準JSONを読み込みました', 'success'); })
+                   .catch(err => { updateMergeStatus('基準JSON解析エラー: ' + err.message, 'error'); mergeBaseData = null; });
   });
   
   mergeAddInput.addEventListener('change', e => {
     const f = e.target.files?.[0];
     if (!f) return;
-    const r = new FileReader();
-    r.onload = async ev => {
-      try {
-        let txt = ev.target.result;
-        if (txt?.charCodeAt(0) === 0xFEFF) txt = txt.slice(1);
-        mergeAddData = JSON.parse(txt);
-        updateMergeStatus('追加JSONを読み込みました', 'success');
-      } catch (err) {
-        updateMergeStatus('追加JSON解析エラー: ' + err.message, 'error');
-        mergeAddData = null;
-      }
-    };
-    r.readAsText(f, 'UTF-8');
+    readJsonFile(f).then(d => { mergeAddData = d; updateMergeStatus('追加JSONを読み込みました', 'success'); })
+                   .catch(err => { updateMergeStatus('追加JSON解析エラー: ' + err.message, 'error'); mergeAddData = null; });
   });
 
   // 投稿除外用JSONファイル読み込み
   excludeJsonInput.addEventListener('change', e => {
     const f = e.target.files?.[0];
     if (!f) return;
-    const r = new FileReader();
-    r.onload = async ev => {
-      try {
-        let txt = ev.target.result;
-        if (txt?.charCodeAt(0) === 0xFEFF) txt = txt.slice(1);
-        excludeJsonData = JSON.parse(txt);
-        updateExcludeStatus('JSONを読み込みました', 'success');
-      } catch (err) {
-        updateExcludeStatus('JSON解析エラー: ' + err.message, 'error');
-        excludeJsonData = null;
-      }
-    };
-    r.readAsText(f, 'UTF-8');
+    readJsonFile(f).then(d => { excludeJsonData = d; updateExcludeStatus('JSONを読み込みました', 'success'); })
+                   .catch(err => { updateExcludeStatus('JSON解析エラー: ' + err.message, 'error'); excludeJsonData = null; });
   });
   
   executeMergeBtn.addEventListener('click', () => {
@@ -4024,7 +3958,7 @@ body.no-effects.amoled {
         exportStep2: 'x.com を開き、ブックマークレットをクリック',
         exportStep3: '右上に進捗UIが出て完了後 JSON が自動ダウンロードされます',
         exportStep4: 'ダウンロードした .json をこのツールに読み込む',
-        exportNote: '⚠️ 必ず x.com 上で実行してください。100件/1.2秒 で取得します。',
+        exportNote: '⚠️ 必ず x.com 上で実行してください。100件/0.8秒 で取得します。',
         exportCopy: 'コピー', exportCopied: '✅ コピー済',
         exportCredit: 'このエクスポート機能は <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a> を参考にしています。より多くの項目を取得・管理するには本家スクリプトをご利用ください。',
         userSearch: 'このユーザーを検索',
@@ -4071,7 +4005,7 @@ body.no-effects.amoled {
         exportStep2: 'Open x.com and click the bookmarklet',
         exportStep3: 'A progress UI appears top-right; JSON downloads on completion',
         exportStep4: 'Load the downloaded .json into this tool',
-        exportNote: '⚠️ Must run on x.com. Fetches 100 items per 1.2 seconds.',
+        exportNote: '⚠️ Must run on x.com. Fetches 100 items per 0.8 seconds.',
         exportCopy: 'Copy', exportCopied: '✅ Copied',
         exportCredit: 'The export feature is inspired by <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a>. For more advanced data capture and management, please use the original script.',
         userSearch: 'Search this user',
@@ -4118,7 +4052,7 @@ body.no-effects.amoled {
         exportStep2: '打开 x.com 并点击书签脚本',
         exportStep3: '右上角显示进度，完成后自动下载 JSON',
         exportStep4: '将下载的 .json 文件加载到此工具',
-        exportNote: '⚠️ 请在 x.com 上运行。每1.2秒获取100条。',
+        exportNote: '⚠️ 请在 x.com 上运行。每0.8秒获取100条。',
         exportCopy: '复制', exportCopied: '✅ 已复制',
         exportCredit: '导出功能参考了 <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a>。如需获取更多数据项目，请使用原版脚本。',
         userSearch: '搜索此用户',
@@ -4165,7 +4099,7 @@ body.no-effects.amoled {
         exportStep2: 'x.com을 열고 북마크렛을 클릭',
         exportStep3: '오른쪽 상단 진행 UI가 완료되면 JSON이 자동 다운로드됩니다',
         exportStep4: '다운로드한 .json을 이 도구에 로드',
-        exportNote: '⚠️ 반드시 x.com 에서 실행하세요. 1.2초당 100건을 가져옵니다.',
+        exportNote: '⚠️ 반드시 x.com 에서 실행하세요. 0.8초당 100건을 가져옵니다.',
         exportCopy: '복사', exportCopied: '✅ 복사됨',
         exportCredit: '이 내보내기 기능은 <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a>를 참고하였습니다. 더 많은 항목을 수집하려면 원본 스크립트를 이용해 주세요.',
         userSearch: '이 유저를 검색',
@@ -4269,6 +4203,7 @@ body.no-effects.amoled {
     const mergeHelp = document.querySelector('.merge-help-tooltip');
     if (mergeHelp && mergeHelpTexts[v]) mergeHelp.textContent = mergeHelpTexts[v];
 
+    u._key = v || 'ja';
     window.currentLanguage = u;
 
     // 言語切替時にツイート数表示を更新
@@ -4502,11 +4437,111 @@ body.no-effects.amoled {
   bmLink.href = buildBmHref();
 
   copyBtn && copyBtn.addEventListener('click', () => {
-    navigator.clipboard.writeText(buildBmHref()).then(() => {
-      copyBtn.textContent = '✅ コピー済';
-      setTimeout(() => { copyBtn.textContent = 'コピー'; }, 2000);
-    });
+    const _href = buildBmHref();
+    const _lang = window.currentLanguage || {};
+    const _copiedLabel = _lang.exportCopied || '✅ Copied';
+    const _copyLabel   = _lang.exportCopy   || 'Copy';
+    function _restore()  { setTimeout(() => { copyBtn.textContent = _copyLabel; }, 2000); }
+    function _onCopied() { copyBtn.textContent = _copiedLabel; _restore(); }
+    function _onFail()   {
+      window.prompt(
+        (_lang.exportCopy || 'Copy') + ' — ' +
+        (navigator.language && navigator.language.startsWith('ja')
+          ? 'このURLをコピーしてブックマークのURL欄に貼り付けてください'
+          : 'Copy this URL and paste it into a bookmark URL field'),
+        _href
+      );
+    }
+    function _fbCopy(t) {
+      const ta = document.createElement('textarea');
+      ta.value = t;
+      ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;pointer-events:none';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length);
+      let ok = false; try { ok = document.execCommand('copy'); } catch(e) {}
+      document.body.removeChild(ta); return ok;
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(_href).then(_onCopied).catch(() => {
+        _fbCopy(_href) ? _onCopied() : _onFail();
+      });
+    } else { _fbCopy(_href) ? _onCopied() : _onFail(); }
   });
+
+  // モバイルガイドモーダル JS (4ン言語対応)
+  const _mgBtn   = document.getElementById('xlvMobileGuideBtn');
+  const _mgModal = document.getElementById('xlvMobileGuideModal');
+  const _mgClose = document.getElementById('xlvMobileGuideClose');
+  const _mgBody  = document.getElementById('xlvMgBody');
+  const _mgTitle = document.getElementById('xlvMgTitle');
+
+  const _mgLang = {
+    ja: {
+      title: '📱 モバイルでのブックマークレット登録方法',
+      steps: [
+        ['① コピーボタンを押す', '上の「コピー」ボタンでブックマークレットURLをクリップボードにコピーします。'],
+        ['② ブラウザで任意のページをブックマーク登録', 'Chrome: 「…」 → ブックマークに追加　Safari: 共有ボタン → ブックマークに追加'],
+        ['③ ブックマークを編集しURLを書き換え', '登録したブックマークを長押しして「編集」を選択。URL欄を全選して手順①のコードを貼り付けて保存。'],
+        ['④ x.com で実行', 'x.com を開き、アドレスバーにブックマーク名の一部を入力すると候補に出ます。タップして実行してください。']
+      ]
+    },
+    en: {
+      title: '📱 How to install bookmarklet on mobile',
+      steps: [
+        ['① Press the Copy button', "Use the 'Copy' button above to copy the bookmarklet URL to clipboard."],
+        ['② Bookmark any page in your browser', 'Chrome: ⋯ → Add to Bookmarks Safari: Share → Add Bookmark'],
+        ['③ Edit the bookmark and replace the URL', "Long-press the saved bookmark and select 'Edit'. Select all in the URL field and paste the copied code. Save."],
+        ['④ Run it on x.com', 'Open x.com, type part of the bookmark name in the address bar, and tap the suggestion to run it.']
+      ]
+    },
+    zh: {
+      title: '📱 移动端安装书签小工具的方法',
+      steps: [
+        ['① 点击复制按鈕', '使用上方的「复制」按鈕将书签URL复制到剪贴板。'],
+        ['② 在浏览器中收藏任意页面', 'Chrome: 点击「⋮」→ 添加书签　Safari: 分享按鈕 → 添加书签'],
+        ['③ 编辑书签并替换URL', '长按保存的书签，选择「编辑」。全选URL字段的文本，粘贴步骤①复制的代码后保存。'],
+        ['④ 在 x.com 上运行', '打开 x.com，在地址栏输入书签名称的一部分，点击候选项即可运行。']
+      ]
+    },
+    ko: {
+      title: '📱 모바일에서 북마클릿 등록 방법',
+      steps: [
+        ['① 복사 버튼 누르기', "'복사' 버튼으로 북마클릿 URL을 클립보드에 복사합니다."],
+        ['② 북마크 저장', 'Chrome: ⋯ → 북마크에 추가　Safari: 공유 → 북마크에 추가'],
+        ['③ 북마크 편집 후 URL 교체', '저장한 북마크를 길게 눌러 "편집"을 선택. URL 필드를 전체 선택한 후 ①에서 복사한 코드를 붙여넣고 저장.'],
+        ['④ x.com에서 실행', 'x.com을 열고 주소창에 저장한 북마크 이름의 일부를 입력하면 후보가 나탕니다. 탭하여 실행하세요.']
+      ]
+    }
+  };
+
+  function _mgRender() {
+    if (!_mgBody || !_mgTitle) return;
+    const lk = (window.currentLanguage && window.currentLanguage._key) || 'ja';
+    const d  = _mgLang[lk] || _mgLang.ja;
+    _mgTitle.textContent = d.title;
+    _mgBody.innerHTML = d.steps.map((s, i) => {
+      const sep = i < d.steps.length - 1
+        ? '<hr style="border:none;border-top:1px solid var(--border);margin:10px 0">'
+        : '';
+      return `<p style="margin:0 0 4px"><b>${s[0]}</b></p>`
+           + `<p style="margin:0 0 10px;color:var(--muted);font-size:12px">${s[1]}</p>`
+           + sep;
+    }).join('');
+  }
+
+  if (_mgBtn && _mgModal) {
+    function _closeMg() { _mgModal.style.display='none'; document.body.style.overflow=''; }
+    _mgBtn.addEventListener('click', () => {
+      _mgRender();
+      _mgModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    });
+    _mgClose && _mgClose.addEventListener('click', _closeMg);
+    _mgModal.addEventListener('click', e => { if (e.target === _mgModal) _closeMg(); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && _mgModal.style.display === 'flex') _closeMg();
+    });
+  }
 })();
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -4659,7 +4694,7 @@ body.no-effects.amoled {
                border-top:1px solid var(--border);background:var(--card);
                transition:color .3s,background .3s;">
   <span style="white-space:nowrap;">
-    © 2025 <span property="creator" typeof="Person"><span property="name">n4rcole</span></span> ·
+    © 2025-2026 <span property="creator" typeof="Person"><span property="name">n4rcole</span></span> ·
     <span property="name">X Likes Viewer</span> ·
     <a id="license-link" rel="license" property="license"
        href="https://creativecommons.org/licenses/by-sa/4.0/"
@@ -4731,5 +4766,134 @@ body.no-effects.amoled {
       });
     }
   </script>
+<script>
+/* [Fix C] preview clamp+center  batch read/write via IntersectionObserver+rAF */
+(function() {
+
+  /* ---- 1 カード分の処理データを計測（読み取り専用） ---- */
+  function measure(el) {
+    var info = el.parentElement;
+    if (!info) return null;
+    var meta = info.querySelector('.meta');
+    var cd   = info.querySelector('.card-date');
+    if (!meta || !cd) return null;
+    var lh    = parseFloat(getComputedStyle(el).lineHeight);
+    if (!lh || lh <= 0) return null;
+    var ics   = getComputedStyle(info);
+    var padV  = (parseFloat(ics.paddingTop)||0) + (parseFloat(ics.paddingBottom)||0);
+    var mMb   = parseFloat(getComputedStyle(meta).marginBottom) || 0;
+    var avail = info.clientHeight - padV - meta.offsetHeight - mMb - cd.offsetHeight;
+    var textH = el.scrollHeight;   /* max-height:none の状態で計測 */
+    return { el: el, lh: lh, avail: avail, textH: textH };
+  }
+
+  /* ---- バッチ適用（書き込み専用） ---- */
+  function applyData(d) {
+    if (!d || d.avail <= 0) return;
+    if (d.textH <= d.avail) {
+      /* テキストが収まる → padding-top で縦中央寄せ */
+      d.el.style.paddingTop = Math.max(0, Math.floor((d.avail - d.textH) / 2)) + 'px';
+      d.el.style.setProperty('max-height', d.avail + 'px', 'important');
+    } else {
+      /* テキストが溢れる → 行単位でクランプ、先頭行から表示 */
+      d.el.style.paddingTop = '0';
+      d.el.style.setProperty('max-height', (Math.floor(d.avail / d.lh) * d.lh) + 'px', 'important');
+    }
+  }
+
+  /* ---- バッチ実行: 書き込み → 読み取り → 書き込み (layout flush 1回) ---- */
+  function processBatch(previews) {
+    if (!previews.length) return;
+    /* Phase 1: 全 preview の max-height を解除（書き込み） */
+    previews.forEach(function(el) {
+      el.style.setProperty('max-height', 'none', 'important');
+      el.style.paddingTop = '0';
+    });
+    /* Phase 2: 全 preview を一括計測（読み取り → layout flush 1回） */
+    var data = previews.map(measure);
+    /* Phase 3: 全 preview に結果を適用（書き込み） */
+    data.forEach(applyData);
+  }
+
+  /* ---- スケジューラ: 複数の IO エントリを rAF で1回にまとめる ---- */
+  var pending = new Set();
+  var rafId   = null;
+  function schedule() {
+    if (rafId || !pending.size) return;
+    rafId = requestAnimationFrame(function() {
+      rafId = null;
+      var arr = Array.from(pending); pending.clear();
+      processBatch(arr);
+    });
+  }
+
+  /* ---- IntersectionObserver: viewport 付近のカードのみ処理 ---- */
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (!e.isIntersecting) return;
+      var p = e.target.querySelector('.preview');
+      if (p) { pending.add(p); schedule(); }
+    });
+  }, { rootMargin: '400px' });
+
+  function observeCards(root) {
+    if (!root || !root.querySelectorAll) return;
+    root.querySelectorAll('.card').forEach(function(c) { io.observe(c); });
+  }
+
+  /* ---- gallery へのカード追加を監視 ---- */
+  var gl = document.getElementById('gallery');
+  if (gl) {
+    new MutationObserver(function(ms) {
+      ms.forEach(function(m) { m.addedNodes.forEach(function(n) {
+        if (n.nodeType !== 1) return;
+        if (n.classList && n.classList.contains('card')) io.observe(n);
+        else observeCards(n);
+      }); });
+    }).observe(gl, { childList: true });
+    observeCards(gl);
+  }
+
+  /* ---- リサイズ: max-height を全リセット → IO が再発火して再計算 ---- */
+  var rt;
+  window.addEventListener('resize', function() {
+    clearTimeout(rt);
+    rt = setTimeout(function() {
+      if (!gl) return;
+      /* inline style を削除して CSS の max-height:none に戻す */
+      gl.querySelectorAll('.card .preview').forEach(function(el) {
+        el.style.removeProperty('max-height');
+        el.style.paddingTop = '0';
+      });
+      /* IO を再接続して visible カードを再処理 */
+      io.disconnect();
+      observeCards(gl);
+    }, 200);
+  }, { passive: true });
+
+})();
+
+/* [Fix D] UCM dismiss button + hover reset */
+(function() {
+  var menu = document.getElementById('userContextMenu');
+  if (!menu) return;
+  var DT = { ja: '何もしない', en: 'Do nothing', zh: '无操作', ko: '아무것도 안 함' };
+  function updLabel() { var el=document.getElementById('ucmDismissLabel'); if(!el) return; el.textContent=DT[document.documentElement.lang]||DT['en']; }
+  updLabel();
+  new MutationObserver(updLabel).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+  var db=document.getElementById('ucmDismissBtn');
+  if(db) db.addEventListener('click',function(e){e.stopPropagation();document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));});
+  window._ucmCA=null;
+  document.addEventListener('click',function(e){var el=e.target.closest('[data-screen-name]');if(el)window._ucmCA=el.closest('.card,.text-only-card')||el;},true);
+  new MutationObserver(function(ms){ms.forEach(function(m){
+    if(m.attributeName!=='class')return;
+    if(menu.classList.contains('hidden')&&window._ucmCA){
+      var c=window._ucmCA;window._ucmCA=null;
+      c.style.pointerEvents='none';
+      requestAnimationFrame(function(){requestAnimationFrame(function(){c.style.pointerEvents='';});});
+    }
+  });}).observe(menu,{attributes:true});
+})();
+</script>
 </body>
 </html>
