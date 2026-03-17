@@ -1379,6 +1379,7 @@ body > * {
     align-items: center;
   }
 
+
   .header-bottom .date-range label {
     display: flex;
     align-items: center;
@@ -1466,6 +1467,8 @@ body > * {
   .header-bottom .date-range input[type="date"] {
     max-width: 100px;
     font-size: 11px;
+    height: 26px !important;
+    padding: 1px 3px !important;
   }
 
   .header-bottom .sort-area select {
@@ -2258,7 +2261,351 @@ body.no-effects.amoled {
     .ucm-dismiss { color: var(--muted) !important; opacity: 0.8; }
     .ucm-dismiss:hover { background: var(--bg) !important; opacity: 1; color: var(--text) !important; }
 
-  </style>
+  
+/* ── 年指定モード: 全解像度対応 ── */
+#dateModeCalendar {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  gap: 4px;
+  align-items: center;
+  flex-shrink: 0 !important;
+  width: auto !important;
+  min-width: 0 !important;
+}
+/* .date-range label の flex/min-width ルールを上書き */
+#dateModeCalendar label {
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+  white-space: nowrap;
+  margin-right: 0 !important;
+  gap: 1px !important;
+}
+#dateModeYear {
+  display: none;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  min-width: 0;
+}
+#dateModeTgl {
+  font-size: 14px; cursor: pointer; padding: 3px 5px;
+  border-radius: 6px; border: 1px solid var(--border);
+  background: var(--card); color: var(--text);
+  user-select: none; line-height: 1;
+  transition: background .15s, border-color .15s;
+  flex: 0 0 auto; margin-left: auto;
+}
+#dateModeTgl:hover { background: var(--bg); }
+#dateModeTgl.year-mode-on { background: rgba(29,155,240,.15); border-color: #1d9bf0; }
+.year-btn {
+  width: 54px !important; min-width: unset !important;
+  padding: 3px 4px; font-size: 12px; font-weight: 600;
+  border-radius: 6px; border: 1px solid var(--border);
+  background: var(--card); color: var(--text);
+  cursor: pointer; white-space: nowrap;
+  text-align: center; box-sizing: border-box !important;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.year-btn:hover { background: var(--bg); }
+.year-btn.active { background: #1d9bf0; color: #fff; border-color: #1d9bf0; }
+.year-btn[data-year-all] { font-size: 10px; }
+
+@media (max-width: 320px) {
+  /* iPhone5 等の超狭い画面: 開始/終了テキストを隠す */
+  #dateModeCalendar .date-label-text {
+    display: none;
+  }
+  .date-range input[type="date"] {
+    max-width: 82px !important;
+    font-size: 10px !important;
+    height: 24px !important;
+    padding: 1px 2px !important;
+  }
+  .date-range {
+    padding: 2px 6px !important;
+  }
+  #dateModeTgl {
+    padding: 2px 4px !important;
+    font-size: 12px !important;
+  }
+}
+
+@media (min-width: 401px) and (max-width: 450px) {
+  .date-range input[type="date"] {
+    max-width: 100px !important;
+    font-size: 11px !important;
+    height: 26px !important;
+    padding: 1px 2px !important;
+  }
+  #dateModeCalendar label {
+    gap: 1px !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   ツールパネル モダンUI — ヘッダーと同一デザイン言語
+   ════════════════════════════════════════════════════ */
+
+/* ── パネル本体 ── */
+.json-merge-panel {
+  border-top: none !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(29,155,240,0.2) !important;
+  background: rgba(248,251,255,0.88) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  box-shadow: 0 6px 28px rgba(29,155,240,0.08),
+              0 1px 0 rgba(255,255,255,0.8) inset !important;
+  margin-top: 6px !important;
+  padding: 10px 12px 12px !important;
+}
+body.dark .json-merge-panel,
+body.amoled .json-merge-panel {
+  background: rgba(15,23,42,0.82) !important;
+  border-color: rgba(29,155,240,0.22) !important;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.4),
+              0 1px 0 rgba(255,255,255,0.04) inset !important;
+}
+body.no-effects .json-merge-panel {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: var(--card) !important;
+  border-radius: 0 !important;
+  border: none !important;
+  border-top: 1px solid var(--border) !important;
+  box-shadow: none !important;
+  margin-top: 0 !important;
+}
+
+/* ── アコーディオンセクション ── */
+.json-merge-section {
+  border-radius: 12px !important;
+  border: 1px solid rgba(29,155,240,0.12) !important;
+  background: rgba(255,255,255,0.5) !important;
+  margin: 6px 0 0 !important;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.json-merge-section[open] {
+  border-color: rgba(29,155,240,0.28) !important;
+  box-shadow: 0 3px 16px rgba(29,155,240,0.08) !important;
+}
+body.dark .json-merge-section,
+body.amoled .json-merge-section {
+  background: rgba(255,255,255,0.05) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+body.dark .json-merge-section[open],
+body.amoled .json-merge-section[open] {
+  border-color: rgba(29,155,240,0.3) !important;
+  box-shadow: 0 3px 16px rgba(0,0,0,0.28) !important;
+}
+body.no-effects .json-merge-section {
+  background: none !important;
+  border: none !important;
+  border-top: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* ── summary（アコーディオンヘッダー） ── */
+.json-merge-section summary {
+  padding: 8px 12px !important;
+  border-radius: 11px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.025em !important;
+  transition: background 0.15s !important;
+}
+.json-merge-section summary:hover {
+  background: rgba(29,155,240,0.08) !important;
+}
+.json-merge-section[open] > summary {
+  border-radius: 11px 11px 0 0 !important;
+  border-bottom: 1px solid rgba(29,155,240,0.1) !important;
+  background: linear-gradient(90deg,
+    rgba(29,155,240,0.07) 0%,
+    rgba(120,86,255,0.04) 100%) !important;
+}
+body.no-effects .json-merge-section summary {
+  padding: 7px 2px !important;
+  border-radius: 0 !important;
+  background: none !important;
+}
+body.no-effects .json-merge-section summary:hover { background: none !important; }
+body.no-effects .json-merge-section[open] > summary {
+  background: none !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+/* ── コンテンツ本体 ── */
+.merge-content {
+  margin-top: 0 !important;
+  padding: 10px 12px 12px !important;
+  background: transparent !important;
+  border-radius: 0 0 11px 11px !important;
+}
+body.no-effects .merge-content { padding: 8px 2px !important; }
+
+/* ── プリセットボタン ── */
+.ps-btn {
+  border-radius: 16px !important;
+  font-weight: 500 !important;
+  transition: background 0.15s, border-color 0.15s,
+              color 0.15s, box-shadow 0.15s !important;
+}
+.ps-btn:hover {
+  border-color: #1d9bf0 !important;
+  color: #1d9bf0 !important;
+  background: rgba(29,155,240,0.07) !important;
+}
+.ps-btn.active {
+  background: linear-gradient(135deg, #1d9bf0 0%, #7856ff 100%) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+  box-shadow: 0 2px 10px rgba(29,155,240,0.38) !important;
+  font-weight: 600 !important;
+}
+
+/* ── パネル内ボタン全般 ── */
+.json-merge-panel button,
+.merge-row button {
+  border-radius: 10px !important;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s !important;
+}
+.json-merge-panel button:hover,
+.merge-row button:hover {
+  border-color: #1d9bf0 !important;
+  box-shadow: 0 0 0 2.5px rgba(29,155,240,0.14) !important;
+}
+
+/* ── ステータス表示 ── */
+.merge-status {
+  border-radius: 8px !important;
+  padding: 6px 10px !important;
+  border: 1px solid rgba(29,155,240,0.14) !important;
+  background: rgba(29,155,240,0.04) !important;
+}
+
+/* ── 連番トグル行 ── */
+.xlv-toggle-row {
+  border-radius: 10px !important;
+  padding: 4px 8px !important;
+  transition: background 0.15s !important;
+}
+.xlv-toggle-row:hover {
+  background: rgba(29,155,240,0.07) !important;
+}
+
+/* ── ブックマークリンク ── */
+.bm-drag-link {
+  border-radius: 10px !important;
+  background: linear-gradient(135deg,
+    rgba(29,155,240,0.1) 0%,
+    rgba(120,86,255,0.1) 100%) !important;
+  border: 1px solid rgba(29,155,240,0.22) !important;
+  padding: 6px 14px !important;
+  font-weight: 600 !important;
+  transition: box-shadow 0.15s, background 0.15s !important;
+}
+.bm-drag-link:hover {
+  background: linear-gradient(135deg,
+    rgba(29,155,240,0.18) 0%,
+    rgba(120,86,255,0.18) 100%) !important;
+  box-shadow: 0 2px 12px rgba(29,155,240,0.18) !important;
+}
+
+/* ── パネルスクロール & 枠見切れ修正 ── */
+.json-merge-panel { overflow-y: auto !important; }
+.json-merge-panel.hidden { overflow: hidden !important; }
+
+/* 謎の枠 (empty merge-status / dark merge-content inner box) を削除 */
+.merge-status:empty { display: none !important; }
+body.dark .merge-content,
+body.amoled .merge-content { background: transparent !important; }
+.merge-content { border-radius: 0 !important; }
+
+/* ── パネル: hidden 時は完全非表示 ── */
+.json-merge-panel.hidden {
+  display: none !important;
+  max-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  overflow: hidden !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 0 !important;
+}
+
+/* ── summary の > を CSS chevron に置換 ── */
+.json-merge-section summary {
+  padding-left: 26px !important;
+  position: relative !important;
+}
+.json-merge-section summary::before {
+  content: '▶';
+  position: absolute;
+  left: 8px;
+  font-size: 9px;
+  color: #1d9bf0;
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.15s;
+  display: inline-block;
+  line-height: 1;
+  top: 50%;
+  transform: translateY(-50%) rotate(0deg);
+}
+.json-merge-section[open] > summary::before {
+  transform: translateY(-50%) rotate(90deg);
+  color: #7856ff;
+}
+body.no-effects .json-merge-section summary::before {
+  display: none;
+}
+body.no-effects .json-merge-section summary {
+  padding-left: 2px !important;
+}
+
+/* ── year-mode レイアウト: toggle 押し出し防止 ── */
+/* year container が残りスペースを flex で占有 → toggle 分だけ確保 */
+#dateModeYear {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+}
+/* toggle を右端に固定、shrink 禁止 */
+#dateModeTgl {
+  flex: 0 0 auto !important;
+  flex-shrink: 0 !important;
+  padding: 2px 5px !important;
+}
+/* ボタン幅を 54 → 48px に縮小（横一列に収まりやすくなる） */
+.year-btn {
+  width: 48px !important;
+}
+/* calendar mode でも dateModeTgl が右端になるよう維持 */
+#dateModeCalendar {
+  flex: 0 0 auto !important;
+}
+
+@media (min-width: 321px) and (max-width: 360px) {
+  .date-range input[type="date"] {
+    max-width: 88px !important;
+    font-size: 10px !important;
+    height: 25px !important;
+    padding: 1px 2px !important;
+  }
+  .date-range {
+    padding: 2px 7px !important;
+  }
+  #dateModeTgl {
+    padding: 2px 4px !important;
+    font-size: 12px !important;
+  }
+}
+</style>
 </head>
 <body>
   <button id="headerToggle" type="button" title="ヘッダーを表示">☰</button>
@@ -2285,8 +2632,12 @@ body.no-effects.amoled {
 
     <div class="header-bottom">
       <div class="date-range">
-        <label><span class="date-label-text">開始:</span><input id="startDate" type="date" /></label>
-        <label><span class="date-label-text">終了:</span><input id="endDate" type="date" /></label>
+        <div id="dateModeCalendar">
+          <label><span class="date-label-text">開始:</span><input id="startDate" type="date" /></label>
+          <label><span class="date-label-text">終了:</span><input id="endDate" type="date" /></label>
+        </div>
+        <div id="dateModeYear" role="group" aria-label="年を選択"></div>
+        <button id="dateModeTgl" type="button" title="年指定モードに切替">📅</button>
       </div>
 
       <div class="sort-area">
@@ -2302,9 +2653,9 @@ body.no-effects.amoled {
     </div>
     
     <div id="jsonMergePanel" class="json-merge-panel hidden">
-      <details class="json-merge-section" id="xlvExportSection" style="margin-top:12px;">
+      <details class="json-merge-section" id="xlvExportSection">
         <summary>
-          > <span id="xlvExportSummary">データエクスポート</span>
+          <span id="xlvExportSummary">データエクスポート</span>
         </summary>
         <div class="merge-content">
 
@@ -2342,9 +2693,9 @@ body.no-effects.amoled {
         <div class="export-credit" id="xlvExportCredit"></div>
         </div>
       </details>
-      <details class="json-merge-section" style="margin-top:12px;">
+      <details class="json-merge-section">
         <summary>
-          JSONの結合
+          <span id="xlvJsonMergeTitle">JSONの結合</span>
           <span class="merge-help-icon" title="">?</span>
           <div class="merge-help-tooltip">
             初回のエクスポートからいいねが増えた場合､お手元のJSONを基準とし追加分のみ後から選択することで単一のJSONに結合できます。これにより再度全てのデータを読み込む手間が不要となります。
@@ -2362,9 +2713,9 @@ body.no-effects.amoled {
           <div id="mergeStatus" class="merge-status"></div>
         </div>
       </details>
-      <details class="json-merge-section" style="margin-top:12px;">
+      <details class="json-merge-section">
         <summary>
-          > 投稿の除外
+          投稿の除外
           <span class="merge-help-icon" title="">?</span>
           <div class="merge-help-tooltip" id="xlvExcludeTooltip">指定したいいね数より少ない投稿をコメントアウトまたは削除できます。例: 10を指定すると、favorite_countが10未満の投稿が除外されます。処理後のJSONファイルがダウンロードされます。</div>
         </summary>
@@ -2384,9 +2735,9 @@ body.no-effects.amoled {
         </div>
       </details>
 
-      <details class="json-merge-section" style="margin-top:12px;">
+      <details class="json-merge-section">
         <summary>
-          > 読み込み件数
+          読み込み件数
           <span class="merge-help-icon" title="">?</span>
           <div class="merge-help-tooltip" id="xlvPageSizeTooltip">スクロールごとに読み込む件数。高スペックなら増やすと快適。低スペックや動作が重い場合は減らしてください。</div>
         </summary>
@@ -2811,6 +3162,7 @@ body.no-effects.amoled {
       if (!extracted.length) return;
 
       allTweets = extracted.map(parseTweet);
+      if (window._xlvYearMode) buildYearButtons();
 
       localStorage.setItem(CACHE_CURRENT_KEY, id);
       applyFiltersAndRender();
@@ -2943,6 +3295,7 @@ body.no-effects.amoled {
       if (!extracted.length) { alert('ツイートデータが見つかりませんでした'); return; }
       await saveJsonToCache(parsed, f.name);
       allTweets = extracted.map(parseTweet);
+      if (window._xlvYearMode) buildYearButtons();
       applyFiltersAndRender();
       flashLoadLine();
     }).catch(err => {
@@ -3067,9 +3420,13 @@ body.no-effects.amoled {
 
     viewTweets = allTweets.filter(t => {
       const dt = t.created_at ? new Date(t.created_at) : null;
-      if (start && (!dt || dt < start)) return false;
-      if (end && (!dt || dt > end)) return false;
-      
+      // 年指定モードで複数年選択中はそちらを優先
+      if (window._xlvYearMode && window._xlvSelectedYears && window._xlvSelectedYears.size > 0) {
+        if (!dt || !window._xlvSelectedYears.has(dt.getFullYear())) return false;
+      } else {
+        if (start && (!dt || dt < start)) return false;
+        if (end && (!dt || dt > end)) return false;
+      }
       if (q) {
         const hay = t._hay || ((t.full_text || '') + ' ' + (t.name || '') + ' ' + (t.screen_name || '')).toLowerCase();
         if (!advancedSearch(q, hay, t)) return false;
@@ -3772,6 +4129,99 @@ body.no-effects.amoled {
     });
   })();
 
+
+  // ─── 年指定モード ─────────────────────────────────────────────────
+  window._xlvYearMode = false;
+
+  function buildYearButtons() {
+    const container = document.getElementById('dateModeYear');
+    if (!container) return;
+    if (!window._xlvSelectedYears) window._xlvSelectedYears = new Set();
+
+    window._xlvYearSet = Array.from(new Set(
+      allTweets.map(t => t.created_at ? new Date(t.created_at).getFullYear() : null)
+               .filter(y => y != null && !isNaN(y))
+    )).sort((a, b) => b - a);
+
+    container.innerHTML = '';
+
+    // 全年ボタン
+    const allBtn = document.createElement('button');
+    allBtn.type = 'button'; allBtn.className = 'year-btn'; allBtn.dataset.yearAll = '1';
+    allBtn.textContent = (window.currentLanguage || {}).yearAll || '全年';
+    if (window._xlvSelectedYears.size === 0) allBtn.classList.add('active');
+    allBtn.addEventListener('click', function() {
+      window._xlvSelectedYears.clear();
+      _syncYearBtns(container);
+      startDateEl.value = ''; endDateEl.value = '';
+      applyFiltersAndRender();
+    });
+    container.appendChild(allBtn);
+
+    // 各年ボタン（複数選択可）
+    window._xlvYearSet.forEach(function(year) {
+      const btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'year-btn'; btn.textContent = year;
+      btn.dataset.year = year;
+      if (window._xlvSelectedYears.has(year)) btn.classList.add('active');
+      btn.addEventListener('click', function() {
+        if (window._xlvSelectedYears.has(year)) {
+          window._xlvSelectedYears.delete(year);
+        } else {
+          window._xlvSelectedYears.add(year);
+        }
+        // 全年が選ばれた状態 → 全年ボタンに自動切替
+        if (window._xlvSelectedYears.size >= window._xlvYearSet.length) {
+          window._xlvSelectedYears.clear();
+        }
+        _syncYearBtns(container);
+        startDateEl.value = ''; endDateEl.value = '';
+        applyFiltersAndRender();
+      });
+      container.appendChild(btn);
+    });
+  }
+
+  function _syncYearBtns(container) {
+    container.querySelectorAll('.year-btn[data-year-all]').forEach(b =>
+      b.classList.toggle('active', window._xlvSelectedYears.size === 0));
+    container.querySelectorAll('.year-btn[data-year]').forEach(b => {
+      const y = parseInt(b.dataset.year);
+      b.classList.toggle('active', window._xlvSelectedYears.has(y));
+    });
+  }
+
+  function toggleDateMode() {
+    window._xlvYearMode = !window._xlvYearMode;
+    const cal  = document.getElementById('dateModeCalendar');
+    const year = document.getElementById('dateModeYear');
+    const tgl  = document.getElementById('dateModeTgl');
+    if (!cal || !year || !tgl) return;
+    const lang = window.currentLanguage || {};
+
+    if (window._xlvYearMode) {
+      // inline !important で外部CSSの競合を完全に排除
+      cal.style.setProperty('display', 'none', 'important');
+      year.style.setProperty('display', 'flex', 'important');
+      year.style.setProperty('flex-wrap', 'wrap', 'important');
+      tgl.classList.add('year-mode-on');
+      tgl.title = lang.calMode || 'カレンダーモードに切替';
+      tgl.textContent = '🗓';
+      buildYearButtons();
+    } else {
+      cal.style.removeProperty('display');
+      year.style.removeProperty('display');
+      year.style.removeProperty('flex-wrap');
+      if (window._xlvSelectedYears) window._xlvSelectedYears.clear();
+      tgl.classList.remove('year-mode-on');
+      tgl.title = lang.yearMode || '年指定モードに切替';
+      tgl.textContent = '📅';
+      year.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
+    }
+  }
+
+  document.getElementById('dateModeTgl').addEventListener('click', toggleDateMode);
+
   // UIイベント
   applyBtn.addEventListener('click', applyFiltersAndRender);
   
@@ -3779,6 +4229,11 @@ body.no-effects.amoled {
     searchInput.value = '';
     startDateEl.value = '';
     endDateEl.value = '';
+    if (window._xlvSelectedYears) window._xlvSelectedYears.clear();
+    if (window._xlvSelectedYears) window._xlvSelectedYears.clear();
+    document.querySelectorAll('#dateModeYear .year-btn').forEach(b => b.classList.remove('active'));
+    const _allBtn = document.querySelector('#dateModeYear .year-btn[data-year-all]');
+    if (_allBtn) _allBtn.classList.add('active');
     sortSelect.value = 'newest';
     applyFiltersAndRender();
   });
@@ -3796,6 +4251,10 @@ body.no-effects.amoled {
     jsonMergeToggle.addEventListener('click', () => {
       jsonMergePanel.classList.toggle('hidden');
     });
+    // パネルスクロール中はヘッダー隠し挙動をオフ
+    jsonMergePanel.addEventListener('scroll', () => {
+      if (window._xlvSuppressScroll) window._xlvSuppressScroll();
+    }, { passive: true });
   }
 
   // JSONマージ機能
@@ -4111,6 +4570,15 @@ body.no-effects.amoled {
       const sl = document.getElementById('xlvSeqLabel');
       if (sl && window.currentLanguage && window.currentLanguage.seqLabel)
         sl.textContent = window.currentLanguage.seqLabel;
+      // 年指定ボタンの「全年」ラベルも更新
+      const ab = document.querySelector('#dateModeYear .year-btn[data-year-all]');
+      if (ab && window.currentLanguage) ab.textContent = window.currentLanguage.yearAll || '全年';
+      // トグルのtitleも更新
+      const tgl = document.getElementById('dateModeTgl');
+      if (tgl && window.currentLanguage) {
+        const lang = window.currentLanguage;
+        tgl.title = window._xlvYearMode ? (lang.calMode||'カレンダーモードに切替') : (lang.yearMode||'年指定モードに切替');
+      }
     }, 50);
     localStorage.setItem('xviewer_lang', v);
     
@@ -4173,6 +4641,7 @@ body.no-effects.amoled {
         exportNote: '⚠️ 必ず x.com 上で実行してください。100件/0.8秒 で取得します。',
         exportCopy: 'コピー', exportCopied: '✅ コピー済',
         seqLabel: '連番表示',
+        yearMode: '年指定モードに切替', yearAll: '全年', calMode: 'カレンダーモードに切替',
         exportCredit: 'このエクスポート機能は <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a> を参考にしています。より多くの項目を取得・管理するには本家スクリプトをご利用ください。',
         userSearch: 'このユーザーを検索',
         userExclude: 'このユーザーを除外',
@@ -4230,6 +4699,7 @@ body.no-effects.amoled {
         exportNote: '⚠️ Must run on x.com. Fetches 100 items per 0.8 seconds.',
         exportCopy: 'Copy', exportCopied: '✅ Copied',
         seqLabel: 'Seq#',
+        yearMode: 'Year filter', yearAll: 'All', calMode: 'Calendar mode',
         exportCredit: 'The export feature is inspired by <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a>. For more advanced data capture and management, please use the original script.',
         userSearch: 'Search this user',
         userExclude: 'Exclude this user',
@@ -4287,6 +4757,7 @@ body.no-effects.amoled {
         exportNote: '⚠️ 请在 x.com 上运行。每0.8秒获取100条。',
         exportCopy: '复制', exportCopied: '✅ 已复制',
         seqLabel: '序号显示',
+        yearMode: '按年筛选', yearAll: '全部', calMode: '日历模式',
         exportCredit: '导出功能参考了 <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a>。如需获取更多数据项目，请使用原版脚本。',
         userSearch: '搜索此用户',
         userExclude: '排除此用户',
@@ -4344,6 +4815,7 @@ body.no-effects.amoled {
         exportNote: '⚠️ 반드시 x.com 에서 실행하세요. 0.8초당 100건을 가져옵니다.',
         exportCopy: '복사', exportCopied: '✅ 복사됨',
         seqLabel: '번호 표시',
+        yearMode: '연도 필터', yearAll: '전체', calMode: '달력 모드',
         exportCredit: '이 내보내기 기능은 <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a>를 참고하였습니다. 더 많은 항목을 수집하려면 원본 스크립트를 이용해 주세요.',
         userSearch: '이 유저를 검색',
         userExclude: '이 유저를 제외',
@@ -4424,9 +4896,9 @@ body.no-effects.amoled {
     if (deleteBtn) deleteBtn.title = u.deleteCache;
 
     const summaries = document.querySelectorAll('.json-merge-section summary');
-    if (summaries[1]) summaries[1].childNodes[0].textContent = `> ${u.jsonMerge}`;
-    if (summaries[2]) summaries[2].childNodes[0].textContent = `> ${u.excludePosts}`;
-    if (summaries[3]) summaries[3].childNodes[0].textContent = `> ${u.pageSizeSection || '読み込み件数'}`;
+    if (summaries[1]) { const _t1=document.getElementById('xlvJsonMergeTitle'); if(_t1) _t1.textContent=u.jsonMerge; }
+    if (summaries[2]) summaries[2].childNodes[0].textContent = u.excludePosts;
+    if (summaries[3]) summaries[3].childNodes[0].textContent = u.pageSizeSection || '読み込み件数';
     const _psAuto = document.getElementById('xlvPsAutoLabel');
     const _psCL   = document.getElementById('xlvPsCustomLabel');
     const _psCH   = document.getElementById('xlvPsHintLabel');
@@ -5015,6 +5487,7 @@ body.no-effects.amoled {
       lastScroll = window.scrollY;
     }, 400);
   }
+  window._xlvSuppressScroll = suppressScroll;
 
   header.addEventListener('click',    suppressScroll, { capture: true });
   header.addEventListener('touchend', suppressScroll, { capture: true, passive: true });
