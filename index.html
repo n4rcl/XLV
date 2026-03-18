@@ -2428,6 +2428,12 @@ body.no-effects .json-merge-section {
     rgba(29,155,240,0.07) 0%,
     rgba(120,86,255,0.04) 100%) !important;
 }
+body.amoled .json-merge-section[open] > summary {
+  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+  background: linear-gradient(90deg,
+    rgba(29,155,240,0.04) 0%,
+    rgba(120,86,255,0.02) 100%) !important;
+}
 body.no-effects .json-merge-section summary {
   padding: 7px 2px !important;
   border-radius: 0 !important;
@@ -2670,7 +2676,7 @@ body.no-effects .json-merge-section summary {
             <button id="copyBmBtn" type="button" style="flex-shrink:0">コピー</button>
             <button id="xlvMobileGuideBtn" type="button"
               title="モバイル登録ガイド"
-              style="flex-shrink:0;padding:4px 8px;font-size:14px;">📱</button>
+              style="flex-shrink:0;padding:4px 8px;font-size:14px;display:none;">📱</button>
           </div>
           <!-- Mobile guide modal -->
           <div id="xlvMobileGuideModal"
@@ -5545,18 +5551,10 @@ body.no-effects .json-merge-section summary {
     © 2025-2026 <span property="creator" typeof="Person"><span property="name">n4rcole</span></span> ·
     <span property="name">X Likes Viewer</span> ·
     <a id="license-link" rel="license" property="license"
-       href="https://creativecommons.org/licenses/by-sa/4.0/"
+       href="https://www.gnu.org/licenses/gpl-3.0.html"
        target="_blank" rel="noopener noreferrer"
        style="color:#1d9bf0;text-decoration:none;">
-       CC&nbsp;BY-SA&nbsp;4.0
-    </a>
-    <a href="https://creativecommons.org/licenses/by-sa/4.0/"
-       target="_blank" rel="noopener noreferrer"
-       style="display:inline-block;vertical-align:middle;margin-left:4px;">
-      <img src="https://licensebuttons.net/l/by-sa/4.0/80x15.png"
-           alt="CC BY-SA 4.0"
-           width="80" height="15"
-           style="opacity:.8;vertical-align:middle;transition:opacity .2s;">
+       GNU&nbsp;GPL&nbsp;v3.0
     </a>
   </span>
 </footer>
@@ -5575,7 +5573,7 @@ body.no-effects .json-merge-section summary {
 
   function updateLang(lang) {
     const t = phrases[lang] || phrases.ja;
-    link.title = `${t.work} CC BY-SA 4.0 ${t.under}`;
+    link.title = `${t.work} GNU GPL v3.0 ${t.under}`;
   }
 
   const savedLang = localStorage.getItem('xviewer_lang') || 'ja';
@@ -5599,7 +5597,7 @@ body.no-effects .json-merge-section summary {
     "name": "n4rcole"
   },
   "datePublished": "2025-11-08",
-  "license": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "license": "https://www.gnu.org/licenses/gpl-3.0.html",
   "copyrightYear": "2025"
 }
 </script>
