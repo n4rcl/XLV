@@ -2583,6 +2583,21 @@ body.no-effects .json-merge-section summary {
   padding-left: 2px !important;
 }
 
+/* ── メディアフィルタータイル ── */
+.media-filter-btn {
+  width: auto !important;
+  min-width: 44px !important;
+  padding: 3px 9px;
+  font-size: 12px; font-weight: 600;
+  border-radius: 6px; border: 1px solid var(--border);
+  background: var(--card); color: var(--text);
+  cursor: pointer; white-space: nowrap;
+  text-align: center; box-sizing: border-box !important;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.media-filter-btn:hover { background: var(--bg); }
+.media-filter-btn.active { background: #1d9bf0; color: #fff; border-color: #1d9bf0; }
+
 /* ── 画像送りスライドアニメーション ── */
 @keyframes xlvSlideInRight {
   from { transform: translateX(32px); opacity: 0; }
@@ -2798,6 +2813,16 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
             </span>
             <span id="xlvSeqLabel">連番表示</span>
           </label>
+        </div>
+      </details>
+
+      <details class="json-merge-section" id="xlvMiscSection">
+        <summary><span id="xlvMiscSummary">その他</span></summary>
+        <div class="merge-content">
+          <div style="font-size:11px;color:var(--muted);margin:0 0 5px;" id="xlvMiscTypeLabel">メディアタイプ</div>
+          <div id="xlvMediaTypeBtns" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;"></div>
+          <div style="font-size:11px;color:var(--muted);margin:0 0 5px;" id="xlvMiscCountLabel">枚数</div>
+          <div id="xlvMediaCountBtns" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;"></div>
           <label class="xlv-toggle-row">
             <span class="xlv-sw">
               <input type="checkbox" id="xlvMultiYearToggle">
@@ -2982,6 +3007,14 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
   let modalThumbList = [];
   let modalIndex = 0;
   let modalCurrentText = '';
+
+  // メディアフィルター状態（init()より前に初期化必須）
+  window._xlvMediaTypes  = new Set();
+  window._xlvMediaCounts = new Set();
+
+  // メディアフィルター定数（TDZ回避のため init() より前に宣言）
+  const _MEDIA_TYPE_KEYS  = ['all', 'jpg', 'gif', 'mp4', 'none'];
+  const _MEDIA_COUNT_VALS = [1, 2, 3, 4];
 
   // キャッシュ管理
   const CACHE_LIST_KEY = 'xviewer_json_list';
@@ -3225,21 +3258,26 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
 
   async function saveJsonToCache(data, filename) {
     try {
-      const id = 'cache_' + Date.now();
       const name = filename || `JSON_${new Date().toLocaleString('ja-JP')}`;
+      // 同一ファイル名の既存エントリを検索して上書き（重複防止）
+      const allMeta = await _idbGetAllMeta();
+      const existing = allMeta.find(m => m.name === name);
+      const id = existing ? existing.id : 'cache_' + Date.now();
       await _idbPutCache(id, name, Date.now(), data);
       // 上限10件を超えたら古いものを削除
-      const allMeta = await _idbGetAllMeta();
-      if (allMeta.length > 10) {
-        allMeta.sort((a, b) => a.timestamp - b.timestamp);
-        for (let i = 0; i < allMeta.length - 10; i++) {
-          await _idbDeleteCache(allMeta[i].id);
+      if (!existing) {
+        const freshMeta = await _idbGetAllMeta();
+        if (freshMeta.length > 10) {
+          freshMeta.sort((a, b) => a.timestamp - b.timestamp);
+          for (let i = 0; i < freshMeta.length - 10; i++) {
+            await _idbDeleteCache(freshMeta[i].id);
+          }
         }
       }
       jsonCacheList = await _idbGetAllMeta();
       localStorage.setItem(CACHE_CURRENT_KEY, id);
       updateCacheDropdown();
-      console.log('✅ キャッシュ保存 (IndexedDB):', name);
+      console.log(existing ? '🔄 キャッシュ上書き (IndexedDB):' : '✅ キャッシュ保存 (IndexedDB):', name);
     } catch (err) {
       console.warn('キャッシュ保存エラー:', err);
     }
@@ -3463,6 +3501,18 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
     return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
   }
   const debouncedRender = debounce(applyFiltersAndRender, 200);
+  // メディアタイプ判定ヘルパー
+  function _getTweetMediaKind(t) {
+    if (!t.media || t.media.length === 0) return new Set(['none']);
+    const s = new Set();
+    t.media.forEach(m => {
+      const isGif = m.type === 'animated_gif' || /gif/i.test(m.type || '') || /\/tweet_video\//i.test(m.full || m.thumb || '');
+      const isVid = !isGif && (m.type === 'video' || /mp4|webm|mov/i.test(m.full || m.thumb || ''));
+      s.add(isGif ? 'gif' : isVid ? 'mp4' : 'jpg');
+    });
+    return s;
+  }
+
   function applyFiltersAndRender() {
     const q = searchInput.value.trim();
     const start = startDateEl.value ? new Date(startDateEl.value) : null;
@@ -3481,7 +3531,19 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
         const hay = t._hay || ((t.full_text || '') + ' ' + (t.name || '') + ' ' + (t.screen_name || '')).toLowerCase();
         if (!advancedSearch(q, hay, t)) return false;
       }
-      
+      // メディアタイプフィルター（OR方式: 選択タイプのいずれかを含む投稿を表示）
+      if (window._xlvMediaTypes && window._xlvMediaTypes.size > 0) {
+        const kinds = _getTweetMediaKind(t);
+        if (![...window._xlvMediaTypes].some(sel => kinds.has(sel))) return false;
+      }
+      // 枚数フィルター（noneのみ選択中は枚数フィルター無効）
+      if (window._xlvMediaCounts && window._xlvMediaCounts.size > 0) {
+        const noneOnly = window._xlvMediaTypes && window._xlvMediaTypes.size === 1 && window._xlvMediaTypes.has('none');
+        if (!noneOnly) {
+          const cnt = (t.media && t.media.length) || 0;
+          if (!window._xlvMediaCounts.has(cnt)) return false;
+        }
+      }
       return true;
     });
 
@@ -4355,6 +4417,7 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
 
   function toggleDateMode() {
     window._xlvYearMode = !window._xlvYearMode;
+    localStorage.setItem('xlv_year_mode', window._xlvYearMode ? '1' : '0');
     const cal  = document.getElementById('dateModeCalendar');
     const year = document.getElementById('dateModeYear');
     const tgl  = document.getElementById('dateModeTgl');
@@ -4384,6 +4447,11 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
 
   document.getElementById('dateModeTgl').addEventListener('click', toggleDateMode);
 
+  // 日時指定モードの初期復元
+  if (localStorage.getItem('xlv_year_mode') === '1') {
+    toggleDateMode();
+  }
+
   // UIイベント
   applyBtn.addEventListener('click', applyFiltersAndRender);
   
@@ -4396,6 +4464,8 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
     document.querySelectorAll('#dateModeYear .year-btn').forEach(b => b.classList.remove('active'));
     const _allBtn = document.querySelector('#dateModeYear .year-btn[data-year-all]');
     if (_allBtn) _allBtn.classList.add('active');
+    if (window._xlvMediaTypes)  { window._xlvMediaTypes.clear();  _syncMediaBtns('type'); }
+    if (window._xlvMediaCounts) { window._xlvMediaCounts.clear(); _syncMediaBtns('count'); }
     sortSelect.value = 'newest';
     applyFiltersAndRender();
   });
@@ -4738,6 +4808,9 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
       const sal = document.getElementById('xlvSlideAnimLabel');
       if (sal && window.currentLanguage && window.currentLanguage.slideAnimLabel)
         sal.firstChild.textContent = window.currentLanguage.slideAnimLabel + ' ';
+      const miscSum = document.getElementById('xlvMiscSummary');
+      if (miscSum && window.currentLanguage && window.currentLanguage.miscSection)
+        miscSum.textContent = window.currentLanguage.miscSection;
       // 年指定ボタンの「全年」ラベルも更新
       const ab = document.querySelector('#dateModeYear .year-btn[data-year-all]');
       if (ab && window.currentLanguage) ab.textContent = window.currentLanguage.yearAll || '全年';
@@ -4823,7 +4896,11 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
         pageSizeNotSaved: '保存対象外（低スペック端末）',
         pageSizeApplied: '件に変更しました',
         pageSizeTooltip: 'スクロールごとに読み込む件数。高スペックなら増やすと快適。低スペックや動作が重い場合は減らしてください。',
-        slideAnimLabel: '画像送りアニメーション'
+        slideAnimLabel: '画像送りアニメーション',
+        miscSection: 'その他',
+        mediaTypeLabel: 'メディアタイプ', mediaCountLabel: '枚数',
+        mediaTypeAll: '全て', mediaTypeNone: 'メディアなし',
+        countUnit: '枚'
       },
       en: { 
         title: '𝕏 Likes Viewer',
@@ -4883,7 +4960,11 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
         pageSizeNotSaved: 'Not saved (low-spec device)',
         pageSizeApplied: ' items/page applied',
         pageSizeTooltip: 'Items loaded per scroll. Increase for faster devices; reduce if performance is poor.',
-        slideAnimLabel: 'Image slide animation'
+        slideAnimLabel: 'Image slide animation',
+        miscSection: 'Other',
+        mediaTypeLabel: 'Media type', mediaCountLabel: 'Count',
+        mediaTypeAll: 'All', mediaTypeNone: 'No media',
+        countUnit: ''
       },
       zh: { 
         title: '𝕏 Likes Viewer',
@@ -4943,7 +5024,11 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
         pageSizeNotSaved: '未保存（低配设备）',
         pageSizeApplied: '条/次已应用',
         pageSizeTooltip: '每次滚动加载的条数。高配设备可增加，低配或卡顿时请减少。',
-        slideAnimLabel: '图片切换动画'
+        slideAnimLabel: '图片切换动画',
+        miscSection: '其他',
+        mediaTypeLabel: '媒体类型', mediaCountLabel: '数量',
+        mediaTypeAll: '全部', mediaTypeNone: '无媒体',
+        countUnit: '张'
       },
       ko: { 
         title: '𝕏 Likes Viewer',
@@ -5003,7 +5088,11 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
         pageSizeNotSaved: '저장 안 됨 (저사양 기기)',
         pageSizeApplied: '건으로 변경되었습니다',
         pageSizeTooltip: '스크롤마다 읽어오는 건수입니다. 고사양이면 늘리고, 저사양이거나 버벅일 때는 줄여주세요.',
-        slideAnimLabel: '이미지 슬라이드 애니메이션'
+        slideAnimLabel: '이미지 슬라이드 애니메이션',
+        miscSection: '기타',
+        mediaTypeLabel: '미디어 타입', mediaCountLabel: '개수',
+        mediaTypeAll: '전체', mediaTypeNone: '미디어 없음',
+        countUnit: '개'
       }
     };
 
@@ -5075,6 +5164,8 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
     if (summaries[1]) { const _t1=document.getElementById('xlvJsonMergeTitle'); if(_t1) _t1.textContent=u.jsonMerge; }
     if (summaries[2]) summaries[2].childNodes[0].textContent = u.excludePosts;
     if (summaries[3]) summaries[3].childNodes[0].textContent = u.pageSizeSection || '読み込み件数';
+    const _miscSum = document.getElementById('xlvMiscSummary');
+    if (_miscSum && u.miscSection) _miscSum.textContent = u.miscSection;
     const _psAuto = document.getElementById('xlvPsAutoLabel');
     const _psCL   = document.getElementById('xlvPsCustomLabel');
     const _psCH   = document.getElementById('xlvPsHintLabel');
@@ -5093,6 +5184,21 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
     if (_myL && u.multiYearLabel) _myL.textContent = u.multiYearLabel;
     const _saL = document.getElementById('xlvSlideAnimLabel');
     if (_saL && u.slideAnimLabel) _saL.firstChild.textContent = u.slideAnimLabel + ' ';
+
+    // メディアフィルタータイル ラベル更新（ボタン再構築）
+    const _tlbl = document.getElementById('xlvMiscTypeLabel');
+    const _clbl = document.getElementById('xlvMiscCountLabel');
+    if (_tlbl && u.mediaTypeLabel) _tlbl.textContent = u.mediaTypeLabel;
+    if (_clbl && u.mediaCountLabel) _clbl.textContent = u.mediaCountLabel;
+    u._key = v || 'ja';
+    window.currentLanguage = u;
+
+    // 言語変更時にラベルが変わるボタン（全て・メディアなし・枚数）を再生成
+    const _typeC  = document.getElementById('xlvMediaTypeBtns');
+    const _countC = document.getElementById('xlvMediaCountBtns');
+    if (_typeC)  { delete _typeC.dataset.built;  _typeC.innerHTML  = ''; }
+    if (_countC) { delete _countC.dataset.built; _countC.innerHTML = ''; }
+    buildMediaFilterBtns();
 
     const helpTooltips = document.querySelectorAll('.merge-help-tooltip');
     if (helpTooltips[0]) helpTooltips[0].textContent = mergeHelpTexts[v] || mergeHelpTexts.ja;
@@ -5121,9 +5227,6 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
 
     const mergeHelp = document.querySelector('.merge-help-tooltip');
     if (mergeHelp && mergeHelpTexts[v]) mergeHelp.textContent = mergeHelpTexts[v];
-
-    u._key = v || 'ja';
-    window.currentLanguage = u;
 
     // 言語切替時にツイート数表示を更新
     if (typeof updateTweetCount === 'function') {
@@ -5254,9 +5357,127 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
     });
   }
 
+  // ─── メディアフィルタータイル ────────────────────────────────────
+
+  function _syncMediaBtns(kind) {
+    const sel = kind === 'type' ? window._xlvMediaTypes : window._xlvMediaCounts;
+    const container = document.getElementById(kind === 'type' ? 'xlvMediaTypeBtns' : 'xlvMediaCountBtns');
+    if (!container) return;
+    container.querySelectorAll('.media-filter-btn[data-media-all]').forEach(b =>
+      b.classList.toggle('active', sel.size === 0));
+    container.querySelectorAll('.media-filter-btn[data-val]').forEach(b => {
+      const v = kind === 'count' ? parseInt(b.dataset.val) : b.dataset.val;
+      b.classList.toggle('active', sel.has(v));
+    });
+    // タイプ変更時: none含む選択なら枚数タイルをグレーアウト
+    if (kind === 'type') {
+      const hasNone = window._xlvMediaTypes.has('none');
+      const countC = document.getElementById('xlvMediaCountBtns');
+      if (countC) {
+        countC.style.opacity = hasNone ? '0.35' : '';
+        countC.style.pointerEvents = hasNone ? 'none' : '';
+      }
+      const countLbl = document.getElementById('xlvMiscCountLabel');
+      if (countLbl) countLbl.style.opacity = hasNone ? '0.35' : '';
+    }
+  }
+
+  function buildMediaFilterBtns() {
+    const lang = window.currentLanguage || {};
+    const countUnit = lang.countUnit || '';
+
+    // ── タイプボタン ──
+    const typeContainer = document.getElementById('xlvMediaTypeBtns');
+    if (typeContainer && !typeContainer.dataset.built) {
+      typeContainer.dataset.built = '1';
+      const typeLabels = {
+        all:  lang.mediaTypeAll  || '全て',
+        jpg:  'JPG',
+        gif:  'GIF',
+        mp4:  'MP4',
+        none: lang.mediaTypeNone || 'メディアなし'
+      };
+      _MEDIA_TYPE_KEYS.forEach(key => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'media-filter-btn';
+        btn.textContent = typeLabels[key];
+        if (key === 'all') {
+          btn.dataset.mediaAll = '1';
+          if (window._xlvMediaTypes.size === 0) btn.classList.add('active');
+          btn.addEventListener('click', () => {
+            window._xlvMediaTypes.clear();
+            _syncMediaBtns('type');
+            applyFiltersAndRender();
+          });
+        } else {
+          btn.dataset.val = key;
+          btn.addEventListener('click', () => {
+            if (window._xlvMediaTypes.has(key)) {
+              window._xlvMediaTypes.delete(key);
+            } else {
+              window._xlvMediaTypes.add(key);
+            }
+            // 全種選択 → 全てに自動切替
+            const concrete = _MEDIA_TYPE_KEYS.filter(k => k !== 'all');
+            if (window._xlvMediaTypes.size >= concrete.length) window._xlvMediaTypes.clear();
+            _syncMediaBtns('type');
+            applyFiltersAndRender();
+          });
+        }
+        typeContainer.appendChild(btn);
+      });
+      _syncMediaBtns('type');
+    }
+
+    // ── 枚数ボタン ──
+    const countContainer = document.getElementById('xlvMediaCountBtns');
+    if (countContainer && !countContainer.dataset.built) {
+      countContainer.dataset.built = '1';
+      // 全てボタン
+      const allBtn = document.createElement('button');
+      allBtn.type = 'button'; allBtn.className = 'media-filter-btn'; allBtn.dataset.mediaAll = '1';
+      allBtn.textContent = lang.mediaTypeAll || '全て';
+      if (window._xlvMediaCounts.size === 0) allBtn.classList.add('active');
+      allBtn.addEventListener('click', () => {
+        window._xlvMediaCounts.clear();
+        _syncMediaBtns('count');
+        applyFiltersAndRender();
+      });
+      countContainer.appendChild(allBtn);
+
+      _MEDIA_COUNT_VALS.forEach(n => {
+        const btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'media-filter-btn'; btn.dataset.val = n;
+        btn.textContent = countUnit ? n + countUnit : '×' + n;
+        if (window._xlvMediaCounts.has(n)) btn.classList.add('active');
+        btn.addEventListener('click', () => {
+          if (window._xlvMediaCounts.has(n)) {
+            window._xlvMediaCounts.delete(n);
+          } else {
+            window._xlvMediaCounts.add(n);
+          }
+          if (window._xlvMediaCounts.size >= _MEDIA_COUNT_VALS.length) window._xlvMediaCounts.clear();
+          _syncMediaBtns('count');
+          applyFiltersAndRender();
+        });
+        countContainer.appendChild(btn);
+      });
+      _syncMediaBtns('count');
+    }
+
+    // ラベル更新
+    const _tlbl = document.getElementById('xlvMiscTypeLabel');
+    const _clbl = document.getElementById('xlvMiscCountLabel');
+    if (_tlbl && lang.mediaTypeLabel) _tlbl.textContent = lang.mediaTypeLabel;
+    if (_clbl && lang.mediaCountLabel) _clbl.textContent = lang.mediaCountLabel;
+  }
+
 
   // グローバル公開
   window.applyFiltersAndRender = applyFiltersAndRender;
+  window.buildMediaFilterBtns  = buildMediaFilterBtns;
+  window._syncMediaBtns        = _syncMediaBtns;
   window.modalList = [];
   window.modalIndex = 0;
 })();
