@@ -2368,12 +2368,17 @@ body.no-effects.amoled {
   margin-top: 6px !important;
   padding: 10px 12px 12px !important;
 }
-body.dark .json-merge-panel,
-body.amoled .json-merge-panel {
+body.dark .json-merge-panel {
   background: rgba(15,23,42,0.82) !important;
   border-color: rgba(29,155,240,0.22) !important;
   box-shadow: 0 6px 32px rgba(0,0,0,0.4),
               0 1px 0 rgba(255,255,255,0.04) inset !important;
+}
+body.amoled .json-merge-panel {
+  background: rgba(10,10,10,0.94) !important;
+  border-color: rgba(29,155,240,0.35) !important;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.7),
+              0 1px 0 rgba(255,255,255,0.03) inset !important;
 }
 body.no-effects .json-merge-panel {
   backdrop-filter: none !important;
@@ -2399,10 +2404,13 @@ body.no-effects .json-merge-panel {
   border-color: rgba(29,155,240,0.28) !important;
   box-shadow: 0 3px 16px rgba(29,155,240,0.08) !important;
 }
-body.dark .json-merge-section,
-body.amoled .json-merge-section {
+body.dark .json-merge-section {
   background: rgba(255,255,255,0.05) !important;
   border-color: rgba(255,255,255,0.08) !important;
+}
+body.amoled .json-merge-section {
+  background: rgba(255,255,255,0.03) !important;
+  border-color: rgba(29,155,240,0.18) !important;
 }
 body.dark .json-merge-section[open],
 body.amoled .json-merge-section[open] {
@@ -2437,10 +2445,10 @@ body.no-effects .json-merge-section {
     rgba(120,86,255,0.04) 100%) !important;
 }
 body.amoled .json-merge-section[open] > summary {
-  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+  border-bottom: 1px solid rgba(29,155,240,0.15) !important;
   background: linear-gradient(90deg,
-    rgba(29,155,240,0.04) 0%,
-    rgba(120,86,255,0.02) 100%) !important;
+    rgba(29,155,240,0.08) 0%,
+    rgba(120,86,255,0.04) 100%) !important;
 }
 body.no-effects .json-merge-section summary {
   padding: 7px 2px !important;
@@ -2538,6 +2546,7 @@ body.no-effects .merge-content { padding: 8px 2px !important; }
 .merge-status:empty { display: none !important; }
 body.dark .merge-content,
 body.amoled .merge-content { background: transparent !important; }
+body.amoled .merge-content { background: rgba(0,0,0,0.2) !important; }
 .merge-content { border-radius: 0 !important; }
 
 /* ── パネル: hidden 時は完全非表示 ── */
@@ -2839,6 +2848,20 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
             </span>
             <span id="xlvSlideAnimLabel">画像送りアニメーション <span style="font-size:10px;opacity:0.6;">試験</span></span>
           </label>
+
+          <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <div>
+                <div style="font-size:11px;color:var(--muted);margin-bottom:2px;" id="xlvStorageLabel">保存容量</div>
+                <div id="xlvStorageInfo" style="font-size:12px;color:var(--text);font-family:monospace;">—</div>
+              </div>
+              <button id="xlvClearAllBtn" type="button"
+                style="font-size:11px;padding:4px 10px;border-radius:8px;color:#ef4444;border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.07);white-space:nowrap;">
+                <span id="xlvClearAllLabel">全データ消去</span>
+              </button>
+            </div>
+            <div id="xlvClearStatus" style="font-size:11px;margin-top:6px;min-height:14px;color:var(--muted);"></div>
+          </div>
         </div>
       </details>
 
@@ -3080,6 +3103,7 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
     initPageSizeUI();
     initSeqToggle();
     initSlideAnimToggle();
+    initStorageUI();
     await loadCacheList();
     const currentId = localStorage.getItem(CACHE_CURRENT_KEY);
     if (currentId) await loadCachedJsonById(currentId);
@@ -4900,7 +4924,12 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
         miscSection: 'その他',
         mediaTypeLabel: 'メディアタイプ', mediaCountLabel: '枚数',
         mediaTypeAll: '全て', mediaTypeNone: 'メディアなし',
-        countUnit: '枚'
+        countUnit: '枚',
+        storageIdb: 'JSON履歴', storageLS: '設定',
+        clearAllLabel: '全データ消去',
+        clearAllConfirm: '全てのデータ（JSON履歴・設定）を消去しますか？\nこの操作は元に戻せません。',
+        clearAllDone: '消去しました。ページを再読み込みします…',
+        storageLabel: '保存容量'
       },
       en: { 
         title: '𝕏 Likes Viewer',
@@ -4964,7 +4993,12 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
         miscSection: 'Other',
         mediaTypeLabel: 'Media type', mediaCountLabel: 'Count',
         mediaTypeAll: 'All', mediaTypeNone: 'No media',
-        countUnit: ''
+        countUnit: '',
+        storageIdb: 'JSON history', storageLS: 'Settings',
+        clearAllLabel: 'Clear all data',
+        clearAllConfirm: 'Clear all data (JSON history & settings)?\nThis cannot be undone.',
+        clearAllDone: 'Cleared. Reloading…',
+        storageLabel: 'Storage'
       },
       zh: { 
         title: '𝕏 Likes Viewer',
@@ -5028,7 +5062,12 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
         miscSection: '其他',
         mediaTypeLabel: '媒体类型', mediaCountLabel: '数量',
         mediaTypeAll: '全部', mediaTypeNone: '无媒体',
-        countUnit: '张'
+        countUnit: '张',
+        storageIdb: 'JSON历史', storageLS: '设置',
+        clearAllLabel: '清除全部数据',
+        clearAllConfirm: '清除全部数据（JSON历史及设置）？\n此操作无法撤销。',
+        clearAllDone: '已清除。正在重新加载…',
+        storageLabel: '存储容量'
       },
       ko: { 
         title: '𝕏 Likes Viewer',
@@ -5092,7 +5131,12 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
         miscSection: '기타',
         mediaTypeLabel: '미디어 타입', mediaCountLabel: '개수',
         mediaTypeAll: '전체', mediaTypeNone: '미디어 없음',
-        countUnit: '개'
+        countUnit: '개',
+        storageIdb: 'JSON 기록', storageLS: '설정',
+        clearAllLabel: '전체 데이터 삭제',
+        clearAllConfirm: '모든 데이터(JSON 기록 및 설정)를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.',
+        clearAllDone: '삭제되었습니다. 페이지를 새로고침합니다…',
+        storageLabel: '저장 용량'
       }
     };
 
@@ -5184,6 +5228,10 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
     if (_myL && u.multiYearLabel) _myL.textContent = u.multiYearLabel;
     const _saL = document.getElementById('xlvSlideAnimLabel');
     if (_saL && u.slideAnimLabel) _saL.firstChild.textContent = u.slideAnimLabel + ' ';
+    const _stL = document.getElementById('xlvStorageLabel');
+    if (_stL && u.storageLabel) _stL.textContent = u.storageLabel;
+    const _caL = document.getElementById('xlvClearAllLabel');
+    if (_caL && u.clearAllLabel) _caL.textContent = u.clearAllLabel;
 
     // メディアフィルタータイル ラベル更新（ボタン再構築）
     const _tlbl = document.getElementById('xlvMiscTypeLabel');
@@ -5355,6 +5403,93 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
       window._xlvSlideAnim = this.checked;
       localStorage.setItem('xlv_slide_anim', this.checked ? '1' : '0');
     });
+  }
+
+  // ─── ストレージカウンター & 全消去 ───────────────────────────────
+  function _fmtBytes(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+    return (b / (1024 * 1024)).toFixed(2) + ' MB';
+  }
+
+  async function updateStorageInfo() {
+    const el = document.getElementById('xlvStorageInfo');
+    if (!el) return;
+
+    // IndexedDB 使用量
+    let idbBytes = 0;
+    try {
+      const allMeta = await _idbGetAllMeta();
+      for (const m of allMeta) {
+        const d = await _idbGetData(m.id);
+        if (d) idbBytes += new Blob([JSON.stringify(d)]).size;
+      }
+    } catch(e) {}
+
+    // localStorage 使用量（このドメイン全体）
+    let lsBytes = 0;
+    try {
+      for (const k of Object.keys(localStorage)) {
+        lsBytes += (localStorage.getItem(k) || '').length * 2; // UTF-16
+      }
+    } catch(e) {}
+
+    // StorageManager quota（あれば表示）
+    let quotaStr = '';
+    try {
+      if (navigator.storage && navigator.storage.estimate) {
+        const est = await navigator.storage.estimate();
+        if (est.quota) quotaStr = ' / ' + _fmtBytes(est.quota);
+      }
+    } catch(e) {}
+
+    const lang = window.currentLanguage || {};
+    const idbLabel = lang.storageIdb || 'JSON履歴';
+    const lsLabel  = lang.storageLS  || '設定';
+    el.textContent = `${idbLabel}: ${_fmtBytes(idbBytes)}　${lsLabel}: ${_fmtBytes(lsBytes)}${quotaStr}`;
+  }
+
+  async function clearAllData() {
+    const btn = document.getElementById('xlvClearAllBtn');
+    const statusEl = document.getElementById('xlvClearStatus');
+    const lang = window.currentLanguage || {};
+    if (!confirm(lang.clearAllConfirm || '全てのデータ（JSON履歴・設定）を消去しますか？この操作は元に戻せません。')) return;
+
+    if (btn) btn.disabled = true;
+    try {
+      // IndexedDB 全削除
+      const allMeta = await _idbGetAllMeta();
+      for (const m of allMeta) await _idbDeleteCache(m.id);
+
+      // localStorage 全削除
+      localStorage.clear();
+
+      jsonCacheList = [];
+      allTweets = []; viewTweets = [];
+      renderGallery();
+      updateCacheDropdown();
+      await updateStorageInfo();
+      if (statusEl) {
+        statusEl.textContent = lang.clearAllDone || '消去しました。ページを再読み込みします…';
+        statusEl.style.color = '#10b981';
+      }
+      setTimeout(() => location.reload(), 1200);
+    } catch(e) {
+      if (statusEl) { statusEl.textContent = 'エラー: ' + e.message; statusEl.style.color = '#ef4444'; }
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  function initStorageUI() {
+    const btn = document.getElementById('xlvClearAllBtn');
+    if (btn) btn.addEventListener('click', clearAllData);
+    // パネルを開いた時に容量を更新
+    const miscSection = document.getElementById('xlvMiscSection');
+    if (miscSection) {
+      miscSection.addEventListener('toggle', () => {
+        if (miscSection.open) updateStorageInfo();
+      });
+    }
   }
 
   // ─── メディアフィルタータイル ────────────────────────────────────
