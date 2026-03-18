@@ -436,6 +436,14 @@ body.amoled .merge-help-icon {
   transform: translateY(0);
 }
 
+/* スマホ: タップで表示 */
+.merge-help-icon.touch-active + .merge-help-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
 .merge-help-tooltip {
   position: absolute;
   top: 100%;
@@ -2575,6 +2583,24 @@ body.no-effects .json-merge-section summary {
   padding-left: 2px !important;
 }
 
+/* ── 画像送りスライドアニメーション ── */
+@keyframes xlvSlideInRight {
+  from { transform: translateX(32px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes xlvSlideInLeft {
+  from { transform: translateX(-32px); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+#modalImg.xlv-slide-right {
+  animation: xlvSlideInRight 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+#modalImg.xlv-slide-left {
+  animation: xlvSlideInLeft 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+body.no-effects #modalImg.xlv-slide-right,
+body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
+
 /* ── year-mode レイアウト: toggle 押し出し防止 ── */
 /* year container が残りスペースを flex で占有 → toggle 分だけ確保 */
 #dateModeYear {
@@ -2772,6 +2798,22 @@ body.no-effects .json-merge-section summary {
             </span>
             <span id="xlvSeqLabel">連番表示</span>
           </label>
+          <label class="xlv-toggle-row">
+            <span class="xlv-sw">
+              <input type="checkbox" id="xlvMultiYearToggle">
+              <span class="xlv-sw-track"></span>
+              <span class="xlv-sw-knob"></span>
+            </span>
+            <span id="xlvMultiYearLabel">年の複数選択</span>
+          </label>
+          <label class="xlv-toggle-row">
+            <span class="xlv-sw">
+              <input type="checkbox" id="xlvSlideAnimToggle">
+              <span class="xlv-sw-track"></span>
+              <span class="xlv-sw-knob"></span>
+            </span>
+            <span id="xlvSlideAnimLabel">画像送りアニメーション <span style="font-size:10px;opacity:0.6;">試験</span></span>
+          </label>
         </div>
       </details>
 
@@ -2937,6 +2979,7 @@ body.no-effects .json-merge-section summary {
   let allTweets = [];
   let viewTweets = [];
   let modalList = [];
+  let modalThumbList = [];
   let modalIndex = 0;
   let modalCurrentText = '';
 
@@ -3003,6 +3046,7 @@ body.no-effects .json-merge-section summary {
     
     initPageSizeUI();
     initSeqToggle();
+    initSlideAnimToggle();
     await loadCacheList();
     const currentId = localStorage.getItem(CACHE_CURRENT_KEY);
     if (currentId) await loadCachedJsonById(currentId);
@@ -3663,8 +3707,7 @@ body.no-effects .json-merge-section summary {
 
       thumb.addEventListener('click', (e) => {
         e.stopPropagation();
-        const arr = t.media.map(m => (m.full || m.thumb || '').trim()).filter(Boolean);
-        openModalWithMedia(arr, t.full_text || '');
+        openModalWithMedia(t.media, t.full_text || '');
       });
 
       const info = document.createElement('div');
@@ -3738,9 +3781,12 @@ body.no-effects .json-merge-section summary {
       card.append(thumb, info);
 
       card.addEventListener('click', () => {
-        const arr = t.media.map(m => (m.full || m.thumb || '').trim()).filter(Boolean);
-        openModalWithMedia(arr);
+        openModalWithMedia(t.media);
       });
+      // PC: ホバー時に画像を先読みしてクリック後の表示を高速化
+      card.addEventListener('mouseenter', () => {
+        t.media.forEach(m => { _preloadImg(m.full || m.thumb || ''); _preloadImg(m.thumb || ''); });
+      }, { passive: true });
       return card;
   }
 
@@ -3793,17 +3839,79 @@ body.no-effects .json-merge-section summary {
     }
   }
 
-  // モーダル
-  function openModalWithMedia(list, tweetText) {
+  // ─── 画像プリロードキャッシュ ────────────────────────────────────
+  const _imgCache = new Map();   // url → HTMLImageElement
+  const _IMG_CACHE_MAX = 40;
+
+  function _preloadImg(url) {
+    if (!url || isVideo(url) || _imgCache.has(url)) return;
+    const img = new Image();
+    img.referrerPolicy = 'no-referrer';
+    img.src = url;
+    _imgCache.set(url, img);
+    if (_imgCache.size > _IMG_CACHE_MAX) {
+      _imgCache.delete(_imgCache.keys().next().value);
+    }
+  }
+
+  function _isCached(url) {
+    const c = _imgCache.get(url);
+    return c && c.complete && c.naturalWidth > 0;
+  }
+
+  function _prefetchAround(fullList, thumbList, idx, radius) {
+    if (!fullList || !fullList.length) return;
+    for (let d = 1; d <= radius; d++) {
+      _preloadImg(fullList[(idx + d) % fullList.length]);
+      _preloadImg(fullList[(idx - d + fullList.length) % fullList.length]);
+      if (thumbList) {
+        _preloadImg(thumbList[(idx + d) % fullList.length]);
+        _preloadImg(thumbList[(idx - d + fullList.length) % fullList.length]);
+      }
+    }
+  }
+
+  // ─── モーダル ────────────────────────────────────────────────────
+  // modalList    : full解像度URLの配列
+  // modalThumbList: サムネURL配列（即時表示用、modalListと同インデックス）
+
+  // mediaItems = t.media 配列、またはURL文字列配列（後方互換）
+  function openModalWithMedia(mediaItems, tweetText) {
+    // 前の画像・動画を即クリア
+    modalImg.src = '';
+    modalImg.style.opacity = '0';
+    modalImg.style.transition = 'none';
+    modalVideo.pause();
+    modalVideo.removeAttribute('src');
+    modalVideo.load();
+
     modalText.style.display = 'none';
     modalImg.style.display = 'none';
     modalVideo.style.display = 'none';
     modalTextOverlay.classList.add('hidden');
     modalCurrentText = tweetText || '';
-    modalList = list;
-    window.modalList = list;
+
+    // mediaItems が文字列配列の場合も受け付ける（後方互換）
+    let fullArr, thumbArr;
+    if (mediaItems.length && typeof mediaItems[0] === 'object' && mediaItems[0] !== null) {
+      fullArr  = mediaItems.map(m => (m.full  || m.thumb || '').trim()).filter(Boolean);
+      thumbArr = mediaItems.map(m => (m.thumb || m.full  || '').trim()).filter(Boolean);
+    } else {
+      fullArr  = mediaItems.map(s => (s || '').trim()).filter(Boolean);
+      thumbArr = fullArr.slice(); // 文字列配列の場合はサムネ情報なし
+    }
+
+    modalList = fullArr;
+    modalThumbList = thumbArr;
+    window.modalList = modalList;
+    window.modalThumbList = modalThumbList;
     modalIndex = 0;
     window.modalIndex = 0;
+
+    // 全画像（full + thumb）を一括プリロード
+    fullArr.forEach(url  => _preloadImg(url));
+    thumbArr.forEach(url => _preloadImg(url));
+
     showModalAt(modalIndex);
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -3821,9 +3929,17 @@ body.no-effects .json-merge-section summary {
 
   function openModalWithText(text) {
     modalList = [];
+    modalThumbList = [];
     window.modalList = [];
+    window.modalThumbList = [];
     modalIndex = 0;
     window.modalIndex = 0;
+    modalImg.src = '';
+    modalImg.style.opacity = '0';
+    modalImg.style.transition = 'none';
+    modalVideo.pause();
+    modalVideo.removeAttribute('src');
+    modalVideo.load();
     modalImg.style.display = 'none';
     modalVideo.style.display = 'none';
     modalText.style.display = 'block';
@@ -3834,43 +3950,138 @@ body.no-effects .json-merge-section summary {
     updateModalNavVisibility();
   }
 
+  // 進行中のフル解像度ロードをキャンセルするためのトークン
+  let _loadToken = 0;
+
+  // スライドアニメーション適用ヘルパー
+  function _applySlideAnim(dir) {
+    if (!window._xlvSlideAnim || !dir || document.body.classList.contains('no-effects')) return;
+    const cls = dir === 'right' ? 'xlv-slide-right' : 'xlv-slide-left';
+    modalImg.classList.remove('xlv-slide-right', 'xlv-slide-left');
+    void modalImg.offsetWidth; // reflow でアニメーション再起動
+    modalImg.classList.add(cls);
+    // 200ms 後にクラスを除去（アニメーション終了後も transform が残らないよう）
+    setTimeout(() => modalImg.classList.remove(cls), 220);
+  }
+
   function showModalAt(i) {
     if (!modalList.length) return;
+
+    // 方向を確定する前に旧インデックスを保存
+    const prevIdx = modalIndex;
     modalIndex = (i + modalList.length) % modalList.length;
     window.modalIndex = modalIndex;
-    const url = modalList[modalIndex];
-    if (isVideo(url)) {
-  modalImg.style.display = 'none';
-  modalVideo.style.display = 'block';
-  modalVideo.referrerPolicy = 'no-referrer';
-  modalVideo.src = url;
-  
-  // GIFの場合のみループ再生
-  const isGif = modalList.some((m, i) => {
-    if (i === modalIndex) {
-      const tweet = viewTweets.find(t => 
-        t.media && t.media.some(media => 
-          (media.full === url || media.thumb === url) && 
-          (media.type === 'animated_gif' || /gif/i.test(media.type))
-        )
-      );
-      return !!tweet;
+    const fullUrl  = modalList[modalIndex];
+    const thumbUrl = (modalThumbList && modalThumbList[modalIndex]) || fullUrl;
+
+    // カウンターを先に更新（early return があっても必ず反映）
+    modalCounter.textContent = `${modalIndex + 1} / ${modalList.length}`;
+
+    // スライド方向: 前進→右から、後退→左から（初回・動画は null）
+    let slideDir = null;
+    if (prevIdx !== modalIndex && !isVideo(fullUrl)) {
+      // i が prevIdx より大きい、またはラストから0に折り返した → 前進
+      const goForward = (i > prevIdx) ||
+                        (modalIndex === 0 && prevIdx === modalList.length - 1);
+      slideDir = goForward ? 'right' : 'left';
     }
-    return false;
-  });
-  
-  modalVideo.loop = isGif;
-  modalVideo.play().catch(() => {});
+
+    // 前後をプリフェッチ
+    _prefetchAround(modalList, modalThumbList, modalIndex, 2);
+
+    if (isVideo(fullUrl)) {
+      modalImg.style.display = 'none';
+      modalImg.src = '';
+      modalVideo.style.display = 'block';
+      modalVideo.referrerPolicy = 'no-referrer';
+      modalVideo.src = fullUrl;
+
+      const isGif = (() => {
+        const tweet = viewTweets.find(t =>
+          t.media && t.media.some(m =>
+            (m.full === fullUrl || m.thumb === fullUrl) &&
+            (m.type === 'animated_gif' || /gif/i.test(m.type || ''))
+          )
+        );
+        return !!tweet;
+      })();
+
+      modalVideo.loop = isGif;
+      modalVideo.play().catch(() => {});
+
     } else {
       modalVideo.pause();
-      modalVideo.src = '';
+      modalVideo.removeAttribute('src');
+      modalVideo.load();
       modalVideo.style.display = 'none';
+
       modalImg.style.display = 'block';
       modalImg.referrerPolicy = 'no-referrer';
-      modalImg.src = url;
       modalImg.style.transform = 'translate(0,0) scale(1)';
+
+      // ── フル解像度がキャッシュ済み → 即座に表示 + スライド
+      if (_isCached(fullUrl)) {
+        modalImg.style.transition = 'none';
+        modalImg.style.opacity = '1';
+        modalImg.src = fullUrl;
+        _applySlideAnim(slideDir);
+        return;
+      }
+
+      // ── 未キャッシュ: まずサムネを即表示、フル解像度ロード後にスムーズ差し替え
+      const token = ++_loadToken;
+
+      // Step1: サムネを即座に表示 + スライド
+      if (thumbUrl && thumbUrl !== fullUrl && _isCached(thumbUrl)) {
+        modalImg.style.transition = 'none';
+        modalImg.src = thumbUrl;
+        modalImg.style.opacity = '1';
+        _applySlideAnim(slideDir);
+      } else if (thumbUrl) {
+        modalImg.style.transition = 'none';
+        modalImg.style.opacity = '0';
+        modalImg.src = thumbUrl;
+        _applySlideAnim(slideDir); // opacity 0 のまま先にスライド開始
+        const _t = thumbUrl;
+        const onThumbLoad = function() {
+          if (token !== _loadToken) return;
+          if (modalImg.src === _t || modalImg.src.endsWith(_t)) {
+            modalImg.style.transition = 'opacity 0.1s ease';
+            modalImg.style.opacity = '1';
+          }
+        };
+        if (_imgCache.has(thumbUrl)) {
+          _imgCache.get(thumbUrl).onload = onThumbLoad;
+        } else {
+          const tmpThumb = new Image();
+          tmpThumb.referrerPolicy = 'no-referrer';
+          tmpThumb.onload = onThumbLoad;
+          tmpThumb.src = thumbUrl;
+          _imgCache.set(thumbUrl, tmpThumb);
+        }
+      }
+
+      // Step2: フル解像度をバックグラウンドでロード（スライドなし・差し替えのみ）
+      const hiImg = new Image();
+      hiImg.referrerPolicy = 'no-referrer';
+      hiImg.onload = function() {
+        if (token !== _loadToken) return;
+        modalImg.style.transition = 'opacity 0.15s ease';
+        modalImg.style.opacity = '0.85';
+        requestAnimationFrame(() => {
+          if (token !== _loadToken) return;
+          modalImg.src = fullUrl;
+          _imgCache.set(fullUrl, hiImg);
+          modalImg.style.transition = 'opacity 0.15s ease';
+          modalImg.style.opacity = '1';
+        });
+      };
+      hiImg.onerror = function() {
+        if (token !== _loadToken) return;
+        modalImg.style.opacity = '1';
+      };
+      hiImg.src = fullUrl;
     }
-    modalCounter.textContent = `${modalIndex + 1} / ${modalList.length}`;
   }
   
   window.showModalAt = showModalAt;
@@ -3881,22 +4092,30 @@ body.no-effects .json-merge-section summary {
     nextBtn.style.display = visible ? 'inline-block' : 'none';
   }
 
-  closeModal.addEventListener('click', () => {
+  // モーダルを閉じる共通処理
+  function _doCloseModal() {
+    if (modal.classList.contains('hidden')) return;
+    ++_loadToken; // 進行中のロードをキャンセル
     modal.classList.add('hidden');
     modalVideo.pause();
-    modalVideo.src = '';
+    modalVideo.removeAttribute('src');
+    modalVideo.load();
+    modalImg.src = '';
+    modalImg.style.opacity = '0';
     document.body.style.overflow = '';
     modalImg.style.transform = 'translate(0,0) scale(1)';
     modalText.textContent = '';
-  });
+  }
 
+  closeModal.addEventListener('click', _doCloseModal);
+
+  // PC: 背景クリックで閉じる（click イベントはPCのみ）
   modal.addEventListener('click', (e) => {
-    // 画像/動画/テキスト表示中は閉じない、ボタン・オーバーレイ・カウンターも除外
     if (e.target === modalImg || e.target === modalVideo || e.target === modalText ||
         e.target.closest('#modalTextOverlay') ||
         e.target.closest('#modalCounter') ||
         e.target.closest('.modal-btn')) return;
-    closeModal.click();
+    _doCloseModal();
   });
 
   prevBtn.addEventListener('click', () => showModalAt(modalIndex - 1));
@@ -3906,158 +4125,117 @@ body.no-effects .json-merge-section summary {
     if (modal.classList.contains('hidden')) return;
     if (e.key === 'ArrowLeft') showModalAt(modalIndex - 1);
     if (e.key === 'ArrowRight') showModalAt(modalIndex + 1);
-    if (e.key === 'Escape') closeModal.click();
+    if (e.key === 'Escape') _doCloseModal();
   });
 
-  // タッチスワイプ
+  // タッチスワイプ＆タップ閉じ
   (function() {
-    let startX = null;
+    let startX = null, startY = null, _swipeMoved = false;
+
     modal.addEventListener('touchstart', e => {
-      if (e.touches?.[0]) startX = e.touches[0].clientX;
+      if (e.touches.length !== 1) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      _swipeMoved = false;
     }, { passive: true });
-    
+
+    modal.addEventListener('touchmove', e => {
+      if (startX === null) return;
+      const dx = Math.abs(e.touches[0].clientX - startX);
+      const dy = Math.abs(e.touches[0].clientY - startY);
+      if (dx > 8 || dy > 8) _swipeMoved = true;
+    }, { passive: true });
+
     modal.addEventListener('touchend', e => {
       if (startX === null) return;
-      const endX = e.changedTouches?.[0]?.clientX;
-      if (!endX) { startX = null; return; }
-      const dx = endX - startX;
-      if (dx > 40) showModalAt(modalIndex - 1);
-      else if (dx < -40) showModalAt(modalIndex + 1);
-      startX = null;
-    }, { passive: true });
+      const touch = e.changedTouches?.[0];
+      if (!touch) { startX = startY = null; return; }
 
-    // ピンチズーム
-    let mz_scale = 1, mz_originX = 0, mz_originY = 0, lastTouchDist = 0;
-    let mz_isDragging = false, mz_lastX = 0, mz_lastY = 0;
+      const dx = touch.clientX - startX;
+      const dy = touch.clientY - startY;
+      startX = startY = null;
 
-    function getDistance(touches) {
-      const [a, b] = touches;
-      return Math.hypot(a.pageX - b.pageX, a.pageY - b.pageY);
-    }
-
-    modalImg.addEventListener('touchstart', e => {
-      if (e.touches.length === 2) {
-        lastTouchDist = getDistance(e.touches);
-      } else if (e.touches.length === 1 && mz_scale > 1) {
-        mz_isDragging = true;
-        mz_lastX = e.touches[0].pageX - mz_originX;
-        mz_lastY = e.touches[0].pageY - mz_originY;
+      // スワイプ判定: 横移動が縦の1.5倍以上かつ40px超
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        if (dx > 0) showModalAt(modalIndex - 1);
+        else        showModalAt(modalIndex + 1);
+        return;
       }
-    }, { passive: true });
 
-    modalImg.addEventListener('touchmove', e => {
-      if (e.touches.length === 2) {
-        const newDist = getDistance(e.touches);
-        if (lastTouchDist > 0) {
-          const delta = newDist / lastTouchDist;
-          mz_scale = Math.min(Math.max(mz_scale * delta, 1), 4);
-          modalImg.style.transform = `translate(${mz_originX}px, ${mz_originY}px) scale(${mz_scale})`;
+      // タップ判定: ほぼ動いていない
+      if (!_swipeMoved) {
+        const tx = touch.clientX, ty = touch.clientY;
+        // 表示中の画像・動画の範囲内タップは閉じない（テキスト表示等に委ねる）
+        const imgVisible = modalImg.style.display !== 'none';
+        const vidVisible = modalVideo.style.display !== 'none';
+        if (imgVisible) {
+          const r = modalImg.getBoundingClientRect();
+          if (tx >= r.left && tx <= r.right && ty >= r.top && ty <= r.bottom) return;
         }
-        lastTouchDist = newDist;
-      } else if (e.touches.length === 1 && mz_isDragging) {
-        mz_originX = e.touches[0].pageX - mz_lastX;
-        mz_originY = e.touches[0].pageY - mz_lastY;
-        modalImg.style.transform = `translate(${mz_originX}px, ${mz_originY}px) scale(${mz_scale})`;
-        e.preventDefault();
+        if (vidVisible) {
+          const r = modalVideo.getBoundingClientRect();
+          if (tx >= r.left && tx <= r.right && ty >= r.top && ty <= r.bottom) return;
+        }
+        // ボタン・オーバーレイ・カウンター上も閉じない
+        const target = document.elementFromPoint(tx, ty);
+        if (target && (
+          target.closest('.modal-btn') ||
+          target.closest('#modalTextOverlay') ||
+          target.closest('#modalCounter')
+        )) return;
+        // 上記以外（背景）→ 即閉じ
+        _doCloseModal();
       }
-    }, { passive: false });
-
-    modalImg.addEventListener('touchend', () => {
-      if (mz_scale <= 1.01) {
-        mz_scale = 1; 
-        mz_originX = 0; 
-        mz_originY = 0;
-        modalImg.style.transform = 'translate(0,0) scale(1)';
-      }
-      mz_isDragging = false;
     }, { passive: true });
+
+    modalTextOverlay.addEventListener('click', () => {
+      modalTextOverlay.classList.add('hidden');
+    });
+
   })();
 
-  // ズーム&パン
+  // 画像/動画タップ→本文テキスト表示
+  modalImg.addEventListener('click', (e) => {
+    if (modalCurrentText) {
+      e.stopPropagation();
+      modalTextOverlay.innerHTML = `
+        <div class="modal-text-overlay-content">${modalCurrentText}</div>
+        <div class="modal-text-overlay-hint">${(window.currentLanguage||{}).tapToClose||'タップで閉じる'}</div>
+      `;
+      modalTextOverlay.classList.remove('hidden');
+    }
+  });
+
+  modalVideo.addEventListener('click', (e) => {
+    if (modalCurrentText) {
+      e.stopPropagation();
+      modalTextOverlay.innerHTML = `
+        <div class="modal-text-overlay-content">${modalCurrentText}</div>
+        <div class="modal-text-overlay-hint">${(window.currentLanguage||{}).tapToClose||'タップで閉じる'}</div>
+      `;
+      modalTextOverlay.classList.remove('hidden');
+    }
+  });
+
+  // PC: ダブルクリックズーム＆マウスドラッグ
   (function() {
-    let scale = 1, originX = 0, originY = 0, lastTapTime = 0, tapTimeout = null;
-    let panStartX = 0, panStartY = 0, initialTouchX = 0, initialTouchY = 0;
-    let touchStartTime = 0, hasMoved = false, isPanning = false;
+    let scale = 1, originX = 0, originY = 0;
+    let mouseDown = false, mouseStartX = 0, mouseStartY = 0;
 
     modalImg.style.transition = 'transform 0.25s ease';
 
-    modalImg.addEventListener('touchstart', e => {
-      if (e.touches.length !== 1) return;
-      const now = Date.now();
-      const touch = e.touches[0];
-      initialTouchX = touch.clientX;
-      initialTouchY = touch.clientY;
-      touchStartTime = now;
-      hasMoved = false;
-      isPanning = false;
-
-      const rect = modalImg.getBoundingClientRect();
-      const tapX = touch.clientX - rect.left - rect.width / 2;
-      const tapY = touch.clientY - rect.top - rect.height / 2;
-
-      if (now - lastTapTime < 500) {
-        clearTimeout(tapTimeout);
-        if (scale === 1) {
-          scale = 2;
-          originX = -tapX * (scale - 1);
-          originY = -tapY * (scale - 1);
-        } else {
-          scale = 1;
-          originX = 0;
-          originY = 0;
-        }
-        modalImg.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
-        lastTapTime = 0;
+    modalImg.addEventListener('dblclick', (e) => {
+      if (scale === 1) {
+        scale = 2;
+        const rect = modalImg.getBoundingClientRect();
+        originX = -(e.clientX - rect.left - rect.width  / 2) * (scale - 1);
+        originY = -(e.clientY - rect.top  - rect.height / 2) * (scale - 1);
       } else {
-        lastTapTime = now;
-        panStartX = touch.clientX - originX;
-        panStartY = touch.clientY - originY;
-        
-        if (scale > 1) {
-          tapTimeout = setTimeout(() => {
-            const touchDuration = Date.now() - touchStartTime;
-            if (!hasMoved && !isPanning && touchDuration < 300 && scale > 1) {
-              scale = 1;
-              originX = 0;
-              originY = 0;
-              modalImg.style.transform = 'translate(0, 0) scale(1)';
-            }
-          }, 500);
-        }
+        scale = 1; originX = 0; originY = 0;
       }
-    }, { passive: true });
+      modalImg.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+    });
 
-    modalImg.addEventListener('touchmove', e => {
-      if (e.touches.length !== 1) return;
-      const touch = e.touches[0];
-      const moveDistX = Math.abs(touch.clientX - initialTouchX);
-      const moveDistY = Math.abs(touch.clientY - initialTouchY);
-      
-      if (moveDistX > 5 || moveDistY > 5) {
-        hasMoved = true;
-        clearTimeout(tapTimeout);
-      }
-      
-      if (scale > 1 && hasMoved) {
-        isPanning = true;
-        originX = touch.clientX - panStartX;
-        originY = touch.clientY - panStartY;
-        modalImg.style.transition = 'none';
-        modalImg.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    }, { passive: false });
-
-    modalImg.addEventListener('touchend', () => {
-      const touchDuration = Date.now() - touchStartTime;
-      if (touchDuration >= 300 || hasMoved || isPanning) clearTimeout(tapTimeout);
-      modalImg.style.transition = 'transform 0.25s ease';
-      setTimeout(() => isPanning = false, 100);
-    }, { passive: true });
-
-    // PC: マウスドラッグ
-    let mouseDown = false, mouseStartX = 0, mouseStartY = 0;
     modalImg.addEventListener('mousedown', e => {
       if (scale <= 1) return;
       mouseDown = true;
@@ -4066,78 +4244,45 @@ body.no-effects .json-merge-section summary {
       modalImg.style.transition = 'none';
       e.preventDefault();
     });
-    
     window.addEventListener('mousemove', e => {
       if (!mouseDown) return;
       originX = e.clientX - mouseStartX;
       originY = e.clientY - mouseStartY;
       modalImg.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
     });
-    
     window.addEventListener('mouseup', () => {
       mouseDown = false;
       modalImg.style.transition = 'transform 0.25s ease';
     });
 
-    // PC: ダブルクリック
-    modalImg.addEventListener('dblclick', (e) => {
-      if (scale === 1) {
-        scale = 2;
-        const rect = modalImg.getBoundingClientRect();
-        const clickX = e.clientX - rect.left - rect.width / 2;
-        const clickY = e.clientY - rect.top - rect.height / 2;
-        originX = -clickX * (scale - 1);
-        originY = -clickY * (scale - 1);
-      } else {
-        scale = 1;
-        originX = 0;
-        originY = 0;
-      }
-      modalImg.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
-    });
-
-    // 画像/動画クリックでテキスト表示
-    modalImg.addEventListener('click', (e) => {
-      if (modalCurrentText && scale === 1 && !mouseDown) {
-        e.stopPropagation();
-        modalTextOverlay.innerHTML = `
-          <div class="modal-text-overlay-content">${modalCurrentText}</div>
-          <div class="modal-text-overlay-hint">${(window.currentLanguage||{}).tapToClose||"タップで閉じる"}</div>
-        `;
-        modalTextOverlay.classList.remove('hidden');
-      }
-    });
-
-    modalVideo.addEventListener('click', (e) => {
-      if (modalCurrentText) {
-        e.stopPropagation();
-        modalTextOverlay.innerHTML = `
-          <div class="modal-text-overlay-content">${modalCurrentText}</div>
-          <div class="modal-text-overlay-hint">タップして閉じる</div>
-        `;
-        modalTextOverlay.classList.remove('hidden');
-      }
-    });
-
-    modalTextOverlay.addEventListener('click', () => {
-      modalTextOverlay.classList.add('hidden');
-    });
-
-
     closeModal.addEventListener('click', () => {
-      scale = 1;
-      originX = 0;
-      originY = 0;
-      modalImg.style.transform = 'translate(0, 0) scale(1)';
-      clearTimeout(tapTimeout);
-      lastTapTime = 0;
-      isPanning = false;
+      scale = 1; originX = 0; originY = 0;
+      modalImg.style.transform = 'translate(0,0) scale(1)';
     });
   })();
 
 
   // ─── 年指定モード ─────────────────────────────────────────────────
   window._xlvYearMode = false;
+  window._xlvMultiYear = false; // デフォルト: 単一選択
+
+  // 複数選択トグル
+  const multiYearToggle = document.getElementById('xlvMultiYearToggle');
+  if (multiYearToggle) {
+    multiYearToggle.checked = false;
+    multiYearToggle.addEventListener('change', function() {
+      window._xlvMultiYear = this.checked;
+      // 複数選択→単一選択に切り替えた時、複数選択されていたら最初の1件だけ残す
+      if (!window._xlvMultiYear && window._xlvSelectedYears && window._xlvSelectedYears.size > 1) {
+        const first = Array.from(window._xlvSelectedYears)[0];
+        window._xlvSelectedYears.clear();
+        window._xlvSelectedYears.add(first);
+        const container = document.getElementById('dateModeYear');
+        if (container) _syncYearBtns(container);
+        applyFiltersAndRender();
+      }
+    });
+  }
 
   function buildYearButtons() {
     const container = document.getElementById('dateModeYear');
@@ -4171,14 +4316,25 @@ body.no-effects .json-merge-section summary {
       btn.dataset.year = year;
       if (window._xlvSelectedYears.has(year)) btn.classList.add('active');
       btn.addEventListener('click', function() {
-        if (window._xlvSelectedYears.has(year)) {
-          window._xlvSelectedYears.delete(year);
+        if (window._xlvMultiYear) {
+          // 複数選択モード（従来の動作）
+          if (window._xlvSelectedYears.has(year)) {
+            window._xlvSelectedYears.delete(year);
+          } else {
+            window._xlvSelectedYears.add(year);
+          }
+          // 全年が選ばれた状態 → 全年ボタンに自動切替
+          if (window._xlvSelectedYears.size >= window._xlvYearSet.length) {
+            window._xlvSelectedYears.clear();
+          }
         } else {
-          window._xlvSelectedYears.add(year);
-        }
-        // 全年が選ばれた状態 → 全年ボタンに自動切替
-        if (window._xlvSelectedYears.size >= window._xlvYearSet.length) {
-          window._xlvSelectedYears.clear();
+          // 単一選択モード: 既に選択中ならクリアして全年に、違う年ならその年のみ
+          if (window._xlvSelectedYears.size === 1 && window._xlvSelectedYears.has(year)) {
+            window._xlvSelectedYears.clear();
+          } else {
+            window._xlvSelectedYears.clear();
+            window._xlvSelectedYears.add(year);
+          }
         }
         _syncYearBtns(container);
         startDateEl.value = ''; endDateEl.value = '';
@@ -4576,6 +4732,12 @@ body.no-effects .json-merge-section summary {
       const sl = document.getElementById('xlvSeqLabel');
       if (sl && window.currentLanguage && window.currentLanguage.seqLabel)
         sl.textContent = window.currentLanguage.seqLabel;
+      const myl = document.getElementById('xlvMultiYearLabel');
+      if (myl && window.currentLanguage && window.currentLanguage.multiYearLabel)
+        myl.textContent = window.currentLanguage.multiYearLabel;
+      const sal = document.getElementById('xlvSlideAnimLabel');
+      if (sal && window.currentLanguage && window.currentLanguage.slideAnimLabel)
+        sal.firstChild.textContent = window.currentLanguage.slideAnimLabel + ' ';
       // 年指定ボタンの「全年」ラベルも更新
       const ab = document.querySelector('#dateModeYear .year-btn[data-year-all]');
       if (ab && window.currentLanguage) ab.textContent = window.currentLanguage.yearAll || '全年';
@@ -4647,6 +4809,7 @@ body.no-effects .json-merge-section summary {
         exportNote: '⚠️ 必ず x.com 上で実行してください。100件/0.8秒 で取得します。',
         exportCopy: 'コピー', exportCopied: '✅ コピー済',
         seqLabel: '連番表示',
+        multiYearLabel: '年の複数選択',
         yearMode: '年指定モードに切替', yearAll: '全年', calMode: 'カレンダーモードに切替',
         exportCredit: 'このエクスポート機能は <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a> を参考にしています。より多くの項目を取得・管理するには本家スクリプトをご利用ください。',
         userSearch: 'このユーザーを検索',
@@ -4659,7 +4822,8 @@ body.no-effects .json-merge-section summary {
         pageSizeSaved: '設定を保存しました',
         pageSizeNotSaved: '保存対象外（低スペック端末）',
         pageSizeApplied: '件に変更しました',
-        pageSizeTooltip: 'スクロールごとに読み込む件数。高スペックなら増やすと快適。低スペックや動作が重い場合は減らしてください。'
+        pageSizeTooltip: 'スクロールごとに読み込む件数。高スペックなら増やすと快適。低スペックや動作が重い場合は減らしてください。',
+        slideAnimLabel: '画像送りアニメーション'
       },
       en: { 
         title: '𝕏 Likes Viewer',
@@ -4705,6 +4869,7 @@ body.no-effects .json-merge-section summary {
         exportNote: '⚠️ Must run on x.com. Fetches 100 items per 0.8 seconds.',
         exportCopy: 'Copy', exportCopied: '✅ Copied',
         seqLabel: 'Seq#',
+        multiYearLabel: 'Multi-year select',
         yearMode: 'Year filter', yearAll: 'All', calMode: 'Calendar mode',
         exportCredit: 'The export feature is inspired by <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a>. For more advanced data capture and management, please use the original script.',
         userSearch: 'Search this user',
@@ -4717,7 +4882,8 @@ body.no-effects .json-merge-section summary {
         pageSizeSaved: 'Setting saved',
         pageSizeNotSaved: 'Not saved (low-spec device)',
         pageSizeApplied: ' items/page applied',
-        pageSizeTooltip: 'Items loaded per scroll. Increase for faster devices; reduce if performance is poor.'
+        pageSizeTooltip: 'Items loaded per scroll. Increase for faster devices; reduce if performance is poor.',
+        slideAnimLabel: 'Image slide animation'
       },
       zh: { 
         title: '𝕏 Likes Viewer',
@@ -4763,6 +4929,7 @@ body.no-effects .json-merge-section summary {
         exportNote: '⚠️ 请在 x.com 上运行。每0.8秒获取100条。',
         exportCopy: '复制', exportCopied: '✅ 已复制',
         seqLabel: '序号显示',
+        multiYearLabel: '多年选择',
         yearMode: '按年筛选', yearAll: '全部', calMode: '日历模式',
         exportCredit: '导出功能参考了 <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a>。如需获取更多数据项目，请使用原版脚本。',
         userSearch: '搜索此用户',
@@ -4775,7 +4942,8 @@ body.no-effects .json-merge-section summary {
         pageSizeSaved: '设置已保存',
         pageSizeNotSaved: '未保存（低配设备）',
         pageSizeApplied: '条/次已应用',
-        pageSizeTooltip: '每次滚动加载的条数。高配设备可增加，低配或卡顿时请减少。'
+        pageSizeTooltip: '每次滚动加载的条数。高配设备可增加，低配或卡顿时请减少。',
+        slideAnimLabel: '图片切换动画'
       },
       ko: { 
         title: '𝕏 Likes Viewer',
@@ -4821,6 +4989,7 @@ body.no-effects .json-merge-section summary {
         exportNote: '⚠️ 반드시 x.com 에서 실행하세요. 0.8초당 100건을 가져옵니다.',
         exportCopy: '복사', exportCopied: '✅ 복사됨',
         seqLabel: '번호 표시',
+        multiYearLabel: '연도 다중 선택',
         yearMode: '연도 필터', yearAll: '전체', calMode: '달력 모드',
         exportCredit: '이 내보내기 기능은 <a href="https://github.com/prinsss/twitter-web-exporter/tree/main" target="_blank" rel="noopener noreferrer">twitter-web-exporter</a>를 참고하였습니다. 더 많은 항목을 수집하려면 원본 스크립트를 이용해 주세요.',
         userSearch: '이 유저를 검색',
@@ -4833,7 +5002,8 @@ body.no-effects .json-merge-section summary {
         pageSizeSaved: '설정이 저장되었습니다',
         pageSizeNotSaved: '저장 안 됨 (저사양 기기)',
         pageSizeApplied: '건으로 변경되었습니다',
-        pageSizeTooltip: '스크롤마다 읽어오는 건수입니다. 고사양이면 늘리고, 저사양이거나 버벅일 때는 줄여주세요.'
+        pageSizeTooltip: '스크롤마다 읽어오는 건수입니다. 고사양이면 늘리고, 저사양이거나 버벅일 때는 줄여주세요.',
+        slideAnimLabel: '이미지 슬라이드 애니메이션'
       }
     };
 
@@ -4915,6 +5085,14 @@ body.no-effects .json-merge-section summary {
     if (_psCH   && u.pageSizeHint)        _psCH.textContent   = u.pageSizeHint;
     if (_psAp   && u.pageSizeApplyBtn)    _psAp.textContent   = u.pageSizeApplyBtn;
     if (_psTip  && u.pageSizeTooltip)     _psTip.textContent  = u.pageSizeTooltip;
+
+    // 連番ラベル・複数選択ラベル
+    const _seqL = document.getElementById('xlvSeqLabel');
+    if (_seqL && u.seqLabel) _seqL.textContent = u.seqLabel;
+    const _myL = document.getElementById('xlvMultiYearLabel');
+    if (_myL && u.multiYearLabel) _myL.textContent = u.multiYearLabel;
+    const _saL = document.getElementById('xlvSlideAnimLabel');
+    if (_saL && u.slideAnimLabel) _saL.firstChild.textContent = u.slideAnimLabel + ' ';
 
     const helpTooltips = document.querySelectorAll('.merge-help-tooltip');
     if (helpTooltips[0]) helpTooltips[0].textContent = mergeHelpTexts[v] || mergeHelpTexts.ja;
@@ -5061,6 +5239,18 @@ body.no-effects .json-merge-section summary {
     c.addEventListener('change', function() {
       document.body.classList.toggle('xlv-show-seq', this.checked);
       localStorage.setItem('xlv_show_seq', this.checked ? '1' : '0');
+    });
+  }
+
+  function initSlideAnimToggle() {
+    var c = document.getElementById('xlvSlideAnimToggle');
+    if (!c) return;
+    var saved = localStorage.getItem('xlv_slide_anim') === '1';
+    c.checked = saved;
+    window._xlvSlideAnim = saved;
+    c.addEventListener('change', function() {
+      window._xlvSlideAnim = this.checked;
+      localStorage.setItem('xlv_slide_anim', this.checked ? '1' : '0');
     });
   }
 
@@ -5717,6 +5907,55 @@ body.no-effects .json-merge-section summary {
     }, 200);
   }, { passive: true });
 
+})();
+
+/* [Fix E] merge-help-icon: stopPropagation + touch toggle */
+(function() {
+  // すべての ? アイコンに対して処理
+  function setupHelpIcons() {
+    document.querySelectorAll('.merge-help-icon').forEach(function(icon) {
+      if (icon._xlvHintReady) return;
+      icon._xlvHintReady = true;
+
+      // クリック/タップで <details> 開閉を止める
+      icon.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        // タッチデバイスではタップでツールチップをトグル
+        if (window.matchMedia('(hover: none)').matches || ('ontouchstart' in window)) {
+          var isActive = icon.classList.contains('touch-active');
+          // 他のアイコンの touch-active を全て解除
+          document.querySelectorAll('.merge-help-icon.touch-active').forEach(function(o) {
+            if (o !== icon) o.classList.remove('touch-active');
+          });
+          icon.classList.toggle('touch-active', !isActive);
+        }
+      });
+
+      icon.addEventListener('touchstart', function(e) {
+        e.stopPropagation();
+      }, { passive: true });
+    });
+  }
+
+  // 初回セットアップ
+  document.addEventListener('DOMContentLoaded', setupHelpIcons);
+  setupHelpIcons();
+
+  // パネルが動的に表示された後にも対応（MutationObserver）
+  var panel = document.getElementById('jsonMergePanel');
+  if (panel) {
+    new MutationObserver(setupHelpIcons).observe(panel, { childList: true, subtree: true });
+  }
+
+  // ツールチップ外タップで閉じる
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.merge-help-icon') && !e.target.closest('.merge-help-tooltip')) {
+      document.querySelectorAll('.merge-help-icon.touch-active').forEach(function(o) {
+        o.classList.remove('touch-active');
+      });
+    }
+  }, true);
 })();
 
 /* [Fix D] UCM dismiss button + hover reset */
