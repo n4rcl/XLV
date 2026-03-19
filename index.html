@@ -3961,8 +3961,13 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
   // modalList    : full解像度URLの配列
   // modalThumbList: サムネURL配列（即時表示用、modalListと同インデックス）
 
+  // 進行中のフル解像度ロードをキャンセルするためのトークン（openModalWithMedia より前に宣言）
+  let _loadToken = 0;
+
   // mediaItems = t.media 配列、またはURL文字列配列（後方互換）
   function openModalWithMedia(mediaItems, tweetText) {
+    // 進行中のロードをキャンセル（別カードに切り替えた場合も含む）
+    ++_loadToken;
     // 前の画像・動画を即クリア
     modalImg.src = '';
     modalImg.style.opacity = '0';
@@ -4035,9 +4040,6 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
     modalCounter.textContent = '';
     updateModalNavVisibility();
   }
-
-  // 進行中のフル解像度ロードをキャンセルするためのトークン
-  let _loadToken = 0;
 
   // スライドアニメーション適用ヘルパー
   function _applySlideAnim(dir) {
