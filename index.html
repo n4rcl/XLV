@@ -35,6 +35,37 @@ body.amoled {
   --muted: #93a4b5;
   --border: rgba(255,255,255,0.15);
 }
+
+/* ── extended dark theme palette ── */
+body.dark-green {
+  --bg: #081712;
+  --card: #132a22;
+  --text: #d8efe4;
+  --muted: #6e9e8a;
+  --border: rgba(72,199,142,0.12);
+}
+body.dark-pink {
+  --bg: #1a0e16;
+  --card: #2a1724;
+  --text: #f0dce8;
+  --muted: #9e7694;
+  --border: rgba(215,72,148,0.12);
+}
+body.dark-purple {
+  --bg: #12101e;
+  --card: #1e182b;
+  --text: #e6def0;
+  --muted: #8e7aa0;
+  --border: rgba(139,92,246,0.12);
+}
+body.dark-cyan {
+  --bg: #08171c;
+  --card: #13262b;
+  --text: #d0ecf5;
+  --muted: #6a96a8;
+  --border: rgba(6,182,212,0.12);
+}
+
 /* テキストモードボタン */
 #textModeToggle {
   padding: 6px 10px;
@@ -229,6 +260,34 @@ body.dark .controls input[type="file"],
 body.dark .controls select,
 body.dark #langSelect,
 body.dark #sortSelect,
+body.dark-green .controls input[type="search"],
+body.dark-green .controls input[type="text"],
+body.dark-green .controls input[type="date"],
+body.dark-green .controls input[type="file"],
+body.dark-green .controls select,
+body.dark-green #langSelect,
+body.dark-green #sortSelect,
+body.dark-pink .controls input[type="search"],
+body.dark-pink .controls input[type="text"],
+body.dark-pink .controls input[type="date"],
+body.dark-pink .controls input[type="file"],
+body.dark-pink .controls select,
+body.dark-pink #langSelect,
+body.dark-pink #sortSelect,
+body.dark-purple .controls input[type="search"],
+body.dark-purple .controls input[type="text"],
+body.dark-purple .controls input[type="date"],
+body.dark-purple .controls input[type="file"],
+body.dark-purple .controls select,
+body.dark-purple #langSelect,
+body.dark-purple #sortSelect,
+body.dark-cyan .controls input[type="search"],
+body.dark-cyan .controls input[type="text"],
+body.dark-cyan .controls input[type="date"],
+body.dark-cyan .controls input[type="file"],
+body.dark-cyan .controls select,
+body.dark-cyan #langSelect,
+body.dark-cyan #sortSelect,
 body.amoled .controls input[type="search"],
 body.amoled .controls input[type="text"],
 body.amoled .controls input[type="date"],
@@ -243,6 +302,14 @@ body.amoled #sortSelect {
 
 body.dark #langSelect option,
 body.dark #sortSelect option,
+body.dark-green #langSelect option,
+body.dark-green #sortSelect option,
+body.dark-pink #langSelect option,
+body.dark-pink #sortSelect option,
+body.dark-purple #langSelect option,
+body.dark-purple #sortSelect option,
+body.dark-cyan #langSelect option,
+body.dark-cyan #sortSelect option,
 body.amoled #langSelect option,
 body.amoled #sortSelect option {
   background: var(--card);
@@ -250,8 +317,68 @@ body.amoled #sortSelect option {
 }
 
 body.dark .date-range input[type="date"],
+body.dark-green .date-range input[type="date"],
+body.dark-pink .date-range input[type="date"],
+body.dark-purple .date-range input[type="date"],
+body.dark-cyan .date-range input[type="date"],
 body.amoled .date-range input[type="date"] {
   color-scheme: dark;
+}
+
+/* ── 拡張テーマ: セレクト枠をテーマアクセント色に ── */
+body.dark #langSelect,
+body.dark #sortSelect {
+  background: rgba(29,155,240,0.12);
+  border-color: rgba(29,155,240,0.25);
+}
+body.dark #langSelect:hover,
+body.dark #sortSelect:hover {
+  background: rgba(29,155,240,0.22);
+}
+body.dark-green #langSelect,
+body.dark-green #sortSelect {
+  background: rgba(72,199,142,0.12);
+  border-color: rgba(72,199,142,0.25);
+}
+body.dark-green #langSelect:hover,
+body.dark-green #sortSelect:hover {
+  background: rgba(72,199,142,0.22);
+}
+body.dark-pink #langSelect,
+body.dark-pink #sortSelect {
+  background: rgba(215,72,148,0.12);
+  border-color: rgba(215,72,148,0.25);
+}
+body.dark-pink #langSelect:hover,
+body.dark-pink #sortSelect:hover {
+  background: rgba(215,72,148,0.22);
+}
+body.dark-purple #langSelect,
+body.dark-purple #sortSelect {
+  background: rgba(139,92,246,0.12);
+  border-color: rgba(139,92,246,0.25);
+}
+body.dark-purple #langSelect:hover,
+body.dark-purple #sortSelect:hover {
+  background: rgba(139,92,246,0.22);
+}
+body.dark-cyan #langSelect,
+body.dark-cyan #sortSelect {
+  background: rgba(6,182,212,0.12);
+  border-color: rgba(6,182,212,0.25);
+}
+body.dark-cyan #langSelect:hover,
+body.dark-cyan #sortSelect:hover {
+  background: rgba(6,182,212,0.22);
+}
+body.amoled #langSelect,
+body.amoled #sortSelect {
+  background: rgba(29,155,240,0.08);
+  border-color: rgba(29,155,240,0.18);
+}
+body.amoled #langSelect:hover,
+body.amoled #sortSelect:hover {
+  background: rgba(29,155,240,0.16);
 }
 
 /* 英語選択時の言語セレクトボックス幅調整 */
@@ -429,6 +556,22 @@ body.amoled .merge-help-icon {
   background: rgba(100,150,200,0.3);
   color: #7ba8d8;
 }
+body.dark-green .merge-help-icon {
+  background: rgba(72,199,142,0.2);
+  color: #48c78e;
+}
+body.dark-pink .merge-help-icon {
+  background: rgba(215,72,148,0.2);
+  color: #d74894;
+}
+body.dark-purple .merge-help-icon {
+  background: rgba(139,92,246,0.2);
+  color: #8b5cf6;
+}
+body.dark-cyan .merge-help-icon {
+  background: rgba(6,182,212,0.2);
+  color: #06b6d4;
+}
 
 .merge-help-icon:hover + .merge-help-tooltip {
   opacity: 1;
@@ -531,7 +674,7 @@ body.amoled .merge-content {
 /* Card */
 .card {
   background: var(--card);
-  border-radius: 10px;
+  border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   display: flex;
@@ -616,8 +759,8 @@ body.xlv-show-seq .thumb .seq-num { display: block; }
 }
 
 /* ライトモード時のアイコン視認性改善 */
-body:not(.dark):not(.amoled) .thumb .count,
-body:not(.dark):not(.amoled) .thumb .video-icon {
+body.light .thumb .count,
+body.light .thumb .video-icon {
   background: rgba(0,0,0,0.5);
   color: #fff !important;
   font-weight: 500;
@@ -697,28 +840,33 @@ body:not(.dark):not(.amoled) .thumb .video-icon {
 }
 
 /* ライトモード時のテキストカラー */
-body:not(.dark):not(.amoled) .card,
-body:not(.dark):not(.amoled) .card * {
+body.light .card,
+body.light .card * {
   color: #0f1720 !important;
 }
+body.light .thumb .seq-num,
+body.light .thumb .count,
+body.light .thumb .video-icon {
+  color: #fff !important;
+}
 
-body:not(.dark):not(.amoled) .card a,
-body:not(.dark):not(.amoled) .text-card-link,
-body:not(.dark):not(.amoled) .card-date a {
+body.light .card a,
+body.light .text-card-link,
+body.light .card-date a {
   color: #1d9bf0 !important;
 }
 
-body:not(.dark):not(.amoled) .text-card-user {
+body.light .text-card-user {
   color: #0f1720;
 }
 
-body:not(.dark):not(.amoled) .text-card-stats,
-body:not(.dark):not(.amoled) .text-card-footer,
-body:not(.dark):not(.amoled) .card-date {
+body.light .text-card-stats,
+body.light .text-card-footer,
+body.light .card-date {
   color: #6b7280;
 }
 
-body:not(.dark):not(.amoled) .text-card-content {
+body.light .text-card-content {
   color: #0f1720;
 }
 
@@ -779,7 +927,7 @@ body.amoled .text-card-footer {
 .text-only-card {
   aspect-ratio: 1/1.6;
   background: var(--card);
-  border-radius: 10px;
+  border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   cursor: pointer;
@@ -1353,7 +1501,8 @@ body > * {
     min-width: 32px;
   }
 
-  .header-top .controls #themeToggle {
+  .header-top .controls #themeToggle,
+  .header-top .controls #themeSelect {
     order: 6;
     flex: 0 0 auto;
     padding: 3px 6px !important;
@@ -1371,6 +1520,14 @@ body > * {
     flex: 1 1 auto;
     font-size: 11px !important;
     text-align: right;
+  }
+  .header-top .controls #headerCloseBtn {
+    order: 8;
+    flex: 0 0 auto;
+  }
+  .header-top .controls #effectsToggle {
+    order: 9;
+    flex: 0 0 auto;
   }
 
   /* header-bottomのコンパクト化 */
@@ -1537,6 +1694,26 @@ body.header-hidden header {
   transform: translateY(-100%);
 }
 
+/* ── Glass header: transition-delay trick to eliminate stutter ──
+   backdrop-filter blur forces per-frame GPU re-compositing during
+   translateY animation (especially bad on Adreno/Snapdragon 8E).
+   Solution: hide → backdrop-filter off AT 0s (instant), animate transform.
+             show → animate transform first, backdrop-filter appears AT 0.3s (delayed).
+   Net effect: backdrop-filter is never active during the 300ms slide. */
+body.liquid-glass header {
+  will-change: transform;
+  transition: transform 0.3s ease,
+              backdrop-filter 0s 0.3s,
+              -webkit-backdrop-filter 0s 0.3s;
+}
+body.header-hidden.liquid-glass header {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transition: transform 0.3s ease,
+              backdrop-filter 0s 0s,
+              -webkit-backdrop-filter 0s 0s;
+}
+
 #headerCloseBtn {
   padding: 6px 10px;
   border-radius: 8px;
@@ -1629,6 +1806,32 @@ body.dark header, body.amoled header {
 #headerCloseBtn:hover {
   transform: scale(1.12) !important;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+}
+
+/* テーマ選択プルダウン */
+#themeSelect {
+  width: auto !important;
+  min-width: 38px !important;
+  height: 32px !important;
+  padding: 0 2px !important;
+  font-size: 14px !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--border) !important;
+  background: var(--card) !important;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  text-align: center;
+  line-height: 32px;
+  flex: 0 0 auto;
+}
+#themeSelect::-webkit-scrollbar { width: 6px; }
+#themeSelect option {
+  font-size: 16px;
+  padding: 4px 8px;
+  text-align: center;
+  background: var(--card);
+  color: var(--text);
 }
 
 /* 適用/解除ボタン */
@@ -1811,7 +2014,6 @@ body.no-effects .thumb .seq-num {
 
 /* ✨ エフェクトボタン */
 #effectsToggle {
-  order: 7;
   flex: 0 0 auto;
   padding: 3px 6px !important;
   font-size: 16px !important;
@@ -2000,7 +2202,28 @@ body.amoled {
     radial-gradient(ellipse at 20% 50%, rgba(29,155,240,0.04) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 20%, rgba(120,86,255,0.04) 0%, transparent 50%);
 }
-body:not(.dark):not(.amoled) {
+/* extended theme backgrounds */
+body.dark-green {
+  background-image:
+    radial-gradient(ellipse at 15% 45%, rgba(72,199,142,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 15%, rgba(16,185,129,0.04) 0%, transparent 55%);
+}
+body.dark-pink {
+  background-image:
+    radial-gradient(ellipse at 15% 45%, rgba(215,72,148,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 15%, rgba(236,72,153,0.04) 0%, transparent 55%);
+}
+body.dark-purple {
+  background-image:
+    radial-gradient(ellipse at 15% 45%, rgba(139,92,246,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 15%, rgba(168,85,247,0.04) 0%, transparent 55%);
+}
+body.dark-cyan {
+  background-image:
+    radial-gradient(ellipse at 15% 45%, rgba(6,182,212,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 15%, rgba(34,211,238,0.04) 0%, transparent 55%);
+}
+body.light {
   background-image:
     radial-gradient(ellipse at 10% 50%, rgba(29,155,240,0.04) 0%, transparent 50%),
     radial-gradient(ellipse at 90% 10%, rgba(120,86,255,0.04) 0%, transparent 50%);
@@ -2083,7 +2306,7 @@ body.amoled .text-only-card:hover {
   pointer-events: none;
   z-index: 3;
 }
-body:not(.dark):not(.amoled) .thumb::after {
+body.light .thumb::after {
   background: linear-gradient(to top, rgba(0,0,0,0.10) 0%, transparent 100%);
 }
 
@@ -2266,8 +2489,8 @@ body.no-effects.amoled {
     }
 
     /* [Fix D/CSS] UCM dismiss button */
-    .ucm-dismiss { color: var(--muted) !important; opacity: 0.8; }
-    .ucm-dismiss:hover { background: var(--bg) !important; opacity: 1; color: var(--text) !important; }
+    .ucm-dismiss { color: #fff !important; opacity: 0.7; }
+    .ucm-dismiss:hover { background: rgba(255,255,255,0.08) !important; opacity: 1; color: #fff !important; }
 
   
 /* ── 年指定モード: 全解像度対応 ── */
@@ -2374,6 +2597,30 @@ body.dark .json-merge-panel {
   box-shadow: 0 6px 32px rgba(0,0,0,0.4),
               0 1px 0 rgba(255,255,255,0.04) inset !important;
 }
+body.dark-green .json-merge-panel {
+  background: rgba(8,22,16,0.88) !important;
+  border-color: rgba(72,199,142,0.22) !important;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.4),
+              0 1px 0 rgba(72,199,142,0.05) inset !important;
+}
+body.dark-pink .json-merge-panel {
+  background: rgba(22,12,20,0.88) !important;
+  border-color: rgba(215,72,148,0.22) !important;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.4),
+              0 1px 0 rgba(215,72,148,0.05) inset !important;
+}
+body.dark-purple .json-merge-panel {
+  background: rgba(16,14,26,0.88) !important;
+  border-color: rgba(139,92,246,0.22) !important;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.4),
+              0 1px 0 rgba(139,92,246,0.05) inset !important;
+}
+body.dark-cyan .json-merge-panel {
+  background: rgba(8,22,26,0.88) !important;
+  border-color: rgba(6,182,212,0.22) !important;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.4),
+              0 1px 0 rgba(6,182,212,0.05) inset !important;
+}
 body.amoled .json-merge-panel {
   background: rgba(10,10,10,0.94) !important;
   border-color: rgba(29,155,240,0.35) !important;
@@ -2408,11 +2655,31 @@ body.dark .json-merge-section {
   background: rgba(255,255,255,0.05) !important;
   border-color: rgba(255,255,255,0.08) !important;
 }
+body.dark-green .json-merge-section {
+  background: rgba(72,199,142,0.06) !important;
+  border-color: rgba(72,199,142,0.14) !important;
+}
+body.dark-pink .json-merge-section {
+  background: rgba(215,72,148,0.06) !important;
+  border-color: rgba(215,72,148,0.14) !important;
+}
+body.dark-purple .json-merge-section {
+  background: rgba(139,92,246,0.06) !important;
+  border-color: rgba(139,92,246,0.14) !important;
+}
+body.dark-cyan .json-merge-section {
+  background: rgba(6,182,212,0.06) !important;
+  border-color: rgba(6,182,212,0.14) !important;
+}
 body.amoled .json-merge-section {
   background: rgba(255,255,255,0.03) !important;
   border-color: rgba(29,155,240,0.18) !important;
 }
 body.dark .json-merge-section[open],
+body.dark-green .json-merge-section[open],
+body.dark-pink .json-merge-section[open],
+body.dark-purple .json-merge-section[open],
+body.dark-cyan .json-merge-section[open],
 body.amoled .json-merge-section[open] {
   border-color: rgba(29,155,240,0.3) !important;
   box-shadow: 0 3px 16px rgba(0,0,0,0.28) !important;
@@ -2444,6 +2711,11 @@ body.no-effects .json-merge-section {
     rgba(29,155,240,0.07) 0%,
     rgba(120,86,255,0.04) 100%) !important;
 }
+body.dark .json-merge-section[open] > summary,
+body.dark-green .json-merge-section[open] > summary,
+body.dark-pink .json-merge-section[open] > summary,
+body.dark-purple .json-merge-section[open] > summary,
+body.dark-cyan .json-merge-section[open] > summary,
 body.amoled .json-merge-section[open] > summary {
   border-bottom: 1px solid rgba(29,155,240,0.15) !important;
   background: linear-gradient(90deg,
@@ -2518,6 +2790,49 @@ body.no-effects .merge-content { padding: 8px 2px !important; }
 }
 .xlv-toggle-row:hover {
   background: rgba(29,155,240,0.07) !important;
+}
+
+/* dark themes: deeper hover for tools panel readability */
+body.dark .json-merge-section summary:hover,
+body.dark-green .json-merge-section summary:hover,
+body.dark-pink .json-merge-section summary:hover,
+body.dark-purple .json-merge-section summary:hover,
+body.dark-cyan .json-merge-section summary:hover,
+body.amoled .json-merge-section summary:hover{
+  background: rgba(29,155,240,0.18) !important;
+}
+body.dark .ps-btn:hover,
+body.dark-green .ps-btn:hover,
+body.dark-pink .ps-btn:hover,
+body.dark-purple .ps-btn:hover,
+body.dark-cyan .ps-btn:hover,
+body.amoled .ps-btn:hover{
+  background: rgba(29,155,240,0.16) !important;
+  border-color: rgba(29,155,240,0.5) !important;
+}
+body.dark .xlv-toggle-row:hover,
+body.dark-green .xlv-toggle-row:hover,
+body.dark-pink .xlv-toggle-row:hover,
+body.dark-purple .xlv-toggle-row:hover,
+body.dark-cyan .xlv-toggle-row:hover,
+body.amoled .xlv-toggle-row:hover{
+  background: rgba(29,155,240,0.18) !important;
+}
+body.dark .cache-select-item:hover,
+body.dark-green .cache-select-item:hover,
+body.dark-pink .cache-select-item:hover,
+body.dark-purple .cache-select-item:hover,
+body.dark-cyan .cache-select-item:hover,
+body.amoled .cache-select-item:hover{
+  background: rgba(29,155,240,0.18) !important;
+}
+body.dark .ucm-item:hover,
+body.dark-green .ucm-item:hover,
+body.dark-pink .ucm-item:hover,
+body.dark-purple .ucm-item:hover,
+body.dark-cyan .ucm-item:hover,
+body.amoled .ucm-item:hover{
+  background: rgba(29,155,240,0.16) !important;
 }
 
 /* ── ブックマークリンク ── */
@@ -2661,6 +2976,758 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
     font-size: 12px !important;
   }
 }
+
+
+
+/* ===== Liquid Glass Theme Patch ===== */
+:root{
+  --glass-blur: 8px;
+  --glass-sat: 115%;
+  --glass-radius-lg: 20px;
+  --glass-radius-md: 16px;
+  --glass-radius-sm: 12px;
+  --glass-bg: rgba(255,255,255,0.38);
+  --glass-bg-strong: rgba(255,255,255,0.52);
+  --glass-border: rgba(255,255,255,0.42);
+  --glass-highlight: rgba(255,255,255,0.72);
+  --glass-shadow: 0 10px 30px rgba(15,23,42,0.12), 0 2px 10px rgba(15,23,42,0.08);
+  --glass-shadow-hover: 0 18px 42px rgba(15,23,42,0.18), 0 6px 18px rgba(15,23,42,0.12);
+  --glass-tint-a: rgba(29,155,240,0.10);
+  --glass-tint-b: rgba(120,86,255,0.10);
+  --glass-btn-off-bg: linear-gradient(180deg, rgba(255,255,255,0.68), rgba(255,255,255,0.42));
+  --glass-btn-on-bg: linear-gradient(135deg, rgba(29,155,240,0.96), rgba(120,86,255,0.92));
+  --glass-btn-off-fg: #465569;
+  --glass-btn-on-fg: #ffffff;
+  --glass-readable-muted: #4f5f73;
+  --glass-readable-soft: #3a4b62;
+  --glass-hover-border: rgba(29,155,240,0.30);
+}
+
+body.dark{
+  --glass-bg: rgba(17,25,40,0.42);
+  --glass-bg-strong: rgba(17,25,40,0.58);
+  --glass-border: rgba(255,255,255,0.16);
+  --glass-highlight: rgba(255,255,255,0.10);
+  --glass-shadow: 0 16px 38px rgba(0,0,0,0.34), 0 4px 16px rgba(0,0,0,0.24);
+  --glass-shadow-hover: 0 24px 54px rgba(0,0,0,0.42), 0 8px 24px rgba(0,0,0,0.32);
+  --glass-tint-a: rgba(29,155,240,0.14);
+  --glass-tint-b: rgba(120,86,255,0.12);
+  --glass-readable-muted: rgba(226,236,248,0.86);
+  --glass-readable-soft: rgba(236,243,255,0.92);
+  --glass-hover-border: rgba(29,155,240,0.30);
+}
+body.amoled{
+  --glass-bg: rgba(8,8,12,0.58);
+  --glass-bg-strong: rgba(8,8,12,0.70);
+  --glass-border: rgba(255,255,255,0.10);
+  --glass-highlight: rgba(255,255,255,0.06);
+  --glass-shadow: 0 16px 38px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.4);
+  --glass-shadow-hover: 0 24px 54px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.5);
+  --glass-tint-a: rgba(255,255,255,0.04);
+  --glass-tint-b: rgba(230,230,240,0.03);
+  --glass-readable-muted: rgba(200,210,228,0.62);
+  --glass-readable-soft: rgba(210,220,240,0.68);
+  --glass-hover-border: rgba(255,255,255,0.12);
+}
+
+/* per-theme glass accent tints */
+body.dark-green{
+  --glass-bg: rgba(8,22,16,0.42);
+  --glass-bg-strong: rgba(8,22,16,0.58);
+  --glass-border: rgba(72,199,142,0.16);
+  --glass-highlight: rgba(72,199,142,0.06);
+  --glass-shadow: 0 16px 38px rgba(0,0,0,0.34), 0 4px 16px rgba(0,0,0,0.24);
+  --glass-shadow-hover: 0 24px 54px rgba(0,0,0,0.42), 0 8px 24px rgba(0,0,0,0.32);
+  --glass-tint-a: rgba(72,199,142,0.12);
+  --glass-tint-b: rgba(16,185,129,0.10);
+  --glass-readable-muted: rgba(200,240,220,0.84);
+  --glass-readable-soft: rgba(210,245,230,0.90);
+  --glass-hover-border: rgba(72,199,142,0.30);
+}
+body.dark-pink{
+  --glass-bg: rgba(24,12,20,0.42);
+  --glass-bg-strong: rgba(24,12,20,0.58);
+  --glass-border: rgba(215,72,148,0.16);
+  --glass-highlight: rgba(215,72,148,0.06);
+  --glass-shadow: 0 16px 38px rgba(0,0,0,0.34), 0 4px 16px rgba(0,0,0,0.24);
+  --glass-shadow-hover: 0 24px 54px rgba(0,0,0,0.42), 0 8px 24px rgba(0,0,0,0.32);
+  --glass-tint-a: rgba(215,72,148,0.12);
+  --glass-tint-b: rgba(236,72,153,0.10);
+  --glass-readable-muted: rgba(245,215,235,0.84);
+  --glass-readable-soft: rgba(248,225,240,0.90);
+  --glass-hover-border: rgba(215,72,148,0.30);
+}
+body.dark-purple{
+  --glass-bg: rgba(16,14,30,0.42);
+  --glass-bg-strong: rgba(16,14,30,0.58);
+  --glass-border: rgba(139,92,246,0.16);
+  --glass-highlight: rgba(139,92,246,0.06);
+  --glass-shadow: 0 16px 38px rgba(0,0,0,0.34), 0 4px 16px rgba(0,0,0,0.24);
+  --glass-shadow-hover: 0 24px 54px rgba(0,0,0,0.42), 0 8px 24px rgba(0,0,0,0.32);
+  --glass-tint-a: rgba(139,92,246,0.12);
+  --glass-tint-b: rgba(168,85,247,0.10);
+  --glass-readable-muted: rgba(220,210,248,0.84);
+  --glass-readable-soft: rgba(230,220,252,0.90);
+  --glass-hover-border: rgba(139,92,246,0.30);
+}
+body.dark-cyan{
+  --glass-bg: rgba(6,18,24,0.42);
+  --glass-bg-strong: rgba(6,18,24,0.58);
+  --glass-border: rgba(6,182,212,0.16);
+  --glass-highlight: rgba(6,182,212,0.06);
+  --glass-shadow: 0 16px 38px rgba(0,0,0,0.34), 0 4px 16px rgba(0,0,0,0.24);
+  --glass-shadow-hover: 0 24px 54px rgba(0,0,0,0.42), 0 8px 24px rgba(0,0,0,0.32);
+  --glass-tint-a: rgba(6,182,212,0.12);
+  --glass-tint-b: rgba(34,211,238,0.10);
+  --glass-readable-muted: rgba(195,235,248,0.84);
+  --glass-readable-soft: rgba(205,240,252,0.90);
+  --glass-hover-border: rgba(6,182,212,0.30);
+}
+
+body.liquid-glass{
+  background-attachment: fixed;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(29,155,240,0.14), transparent 28%),
+    radial-gradient(circle at 84% 10%, rgba(120,86,255,0.14), transparent 24%),
+    radial-gradient(circle at 70% 78%, rgba(16,185,129,0.10), transparent 20%);
+}
+
+body.liquid-glass .json-merge-panel,
+body.liquid-glass .json-merge-section,
+body.liquid-glass .user-context-menu,
+body.liquid-glass .merge-help-tooltip,
+body.liquid-glass .modal-text-overlay-content{
+  background:
+    linear-gradient(135deg, var(--glass-tint-a), transparent 42%),
+    linear-gradient(225deg, var(--glass-tint-b), transparent 46%),
+    var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+}
+
+/* cards: glass look without expensive backdrop-filter */
+body.liquid-glass .card,
+body.liquid-glass .text-only-card{
+  position: relative;
+  border-radius: var(--glass-radius-lg) !important;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight) !important;
+}
+
+/* floating elements: subtle backdrop-filter */
+body.liquid-glass .cache-select-trigger,
+body.liquid-glass .cache-select-list,
+body.liquid-glass #headerToggle,
+body.liquid-glass #tweetCount,
+body.liquid-glass #jsonMergeToggle,
+body.liquid-glass .sort-area,
+body.liquid-glass .date-range{
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255,255,255,0.08) !important;
+  backdrop-filter: blur(4px) saturate(110%);
+  -webkit-backdrop-filter: blur(4px) saturate(110%);
+}
+
+body.liquid-glass header{
+  position: sticky;
+  overflow: clip;
+  backface-visibility: hidden;
+  border-radius: 0 0 22px 22px;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04)),
+    linear-gradient(135deg, var(--glass-tint-a), transparent 42%),
+    linear-gradient(225deg, var(--glass-tint-b), transparent 46%),
+    var(--glass-bg-strong) !important;
+}
+
+body.liquid-glass .card{
+  background:
+    radial-gradient(120% 90% at 0% 55%, rgba(255,255,255,0.28), transparent 40%),
+    radial-gradient(110% 85% at 100% 55%, rgba(120,86,255,0.14), transparent 38%),
+    linear-gradient(160deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.04) 40%, rgba(29,155,240,0.06) 70%, rgba(120,86,255,0.10) 100%),
+    var(--glass-bg) !important;
+}
+
+/* text-only: keep highlights at top since full card is visible */
+body.liquid-glass .text-only-card{
+  background:
+    radial-gradient(130% 90% at 0% 0%, rgba(255,255,255,0.34), transparent 42%),
+    radial-gradient(120% 85% at 100% 0%, rgba(120,86,255,0.16), transparent 40%),
+    linear-gradient(160deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.06) 26%, rgba(29,155,240,0.08) 68%, rgba(120,86,255,0.12) 100%),
+    var(--glass-bg) !important;
+}
+
+/* dark & extended-dark: blue-tinted card glass */
+body.dark.liquid-glass .card,
+body.dark-green.liquid-glass .card,
+body.dark-pink.liquid-glass .card,
+body.dark-purple.liquid-glass .card,
+body.dark-cyan.liquid-glass .card{
+  background:
+    radial-gradient(120% 90% at 0% 55%, rgba(255,255,255,0.06), transparent 38%),
+    radial-gradient(110% 90% at 100% 55%, var(--glass-tint-b), transparent 40%),
+    linear-gradient(160deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 40%, var(--glass-tint-a) 68%, var(--glass-tint-b) 100%),
+    var(--glass-bg) !important;
+}
+
+body.dark.liquid-glass .text-only-card,
+body.dark-green.liquid-glass .text-only-card,
+body.dark-pink.liquid-glass .text-only-card,
+body.dark-purple.liquid-glass .text-only-card,
+body.dark-cyan.liquid-glass .text-only-card{
+  background:
+    radial-gradient(130% 90% at 0% 0%, rgba(255,255,255,0.08), transparent 40%),
+    radial-gradient(120% 90% at 100% 0%, var(--glass-tint-b), transparent 42%),
+    linear-gradient(160deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 26%, var(--glass-tint-a) 66%, var(--glass-tint-b) 100%),
+    var(--glass-bg) !important;
+}
+
+/* amoled: deepest, barely-there gradients */
+body.amoled.liquid-glass .card{
+  background:
+    radial-gradient(120% 90% at 0% 55%, rgba(255,255,255,0.03), transparent 28%),
+    radial-gradient(110% 90% at 100% 55%, var(--glass-tint-b), transparent 28%),
+    linear-gradient(160deg, rgba(255,255,255,0.04) 0%, transparent 35%, var(--glass-tint-a) 60%, var(--glass-tint-b) 100%),
+    var(--glass-bg) !important;
+}
+
+body.amoled.liquid-glass .text-only-card{
+  background:
+    radial-gradient(130% 90% at 0% 0%, rgba(255,255,255,0.05), transparent 32%),
+    radial-gradient(120% 90% at 100% 0%, var(--glass-tint-b), transparent 32%),
+    linear-gradient(160deg, rgba(255,255,255,0.05) 0%, transparent 28%, var(--glass-tint-a) 60%, var(--glass-tint-b) 100%),
+    var(--glass-bg) !important;
+}
+
+/* panel-only ::before highlight (cards skip this for perf) */
+body.liquid-glass .json-merge-panel::before,
+body.liquid-glass .json-merge-section::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(180deg, var(--glass-highlight), transparent 22%),
+    radial-gradient(circle at top left, rgba(255,255,255,0.35), transparent 32%);
+  opacity: .65;
+}
+
+body.liquid-glass .json-merge-panel > *,
+body.liquid-glass .json-merge-section > *{
+  position: relative;
+  z-index: 1;
+}
+
+body.liquid-glass .card:hover,
+body.liquid-glass .text-only-card:hover,
+body.liquid-glass .json-merge-section[open],
+body.liquid-glass .cache-select-trigger:hover,
+body.liquid-glass .cache-select-item:hover{
+  box-shadow: var(--glass-shadow-hover) !important;
+  border-color: var(--glass-hover-border) !important;
+}
+
+body.liquid-glass .thumb{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 30%, rgba(8,12,20,0.10) 100%),
+    rgba(8,12,20,0.34) !important;
+}
+
+body.liquid-glass .thumb::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 20%, transparent 40%);
+  z-index: 2;
+}
+
+body.light.liquid-glass .thumb::after{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.04) 22%, transparent 42%);
+}
+
+body.dark.liquid-glass .thumb::after,
+body.amoled.liquid-glass .thumb::after{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 20%, transparent 40%);
+}
+
+body.liquid-glass .thumb img,
+body.liquid-glass .thumb video{
+  position: relative;
+  z-index: 1;
+}
+
+body.liquid-glass .thumb .count,
+body.liquid-glass .thumb .video-icon,
+body.liquid-glass .thumb .seq-num{
+  background: rgba(15,23,42,0.30) !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  backdrop-filter: blur(8px) saturate(170%);
+  -webkit-backdrop-filter: blur(8px) saturate(170%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
+}
+
+body.liquid-glass .controls input[type="search"],
+body.liquid-glass .controls input[type="text"],
+body.liquid-glass .controls input[type="date"],
+body.liquid-glass .controls input[type="file"],
+body.liquid-glass .controls select,
+body.liquid-glass button,
+body.liquid-glass .sort-area button,
+body.liquid-glass .merge-row button,
+body.liquid-glass #langSelect,
+body.liquid-glass #sortSelect{
+  background: rgba(255,255,255,0.40) !important;
+  border: 1px solid rgba(255,255,255,0.32) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), 0 4px 14px rgba(15,23,42,0.08) !important;
+}
+
+body.dark.liquid-glass .controls input[type="search"],
+body.dark.liquid-glass .controls input[type="text"],
+body.dark.liquid-glass .controls input[type="date"],
+body.dark.liquid-glass .controls input[type="file"],
+body.dark.liquid-glass .controls select,
+body.dark.liquid-glass button,
+body.dark.liquid-glass #langSelect,
+body.dark.liquid-glass #sortSelect,
+body.dark-green.liquid-glass .controls input[type="search"],
+body.dark-green.liquid-glass .controls input[type="text"],
+body.dark-green.liquid-glass .controls input[type="date"],
+body.dark-green.liquid-glass .controls input[type="file"],
+body.dark-green.liquid-glass .controls select,
+body.dark-green.liquid-glass button,
+body.dark-green.liquid-glass #langSelect,
+body.dark-green.liquid-glass #sortSelect,
+body.dark-pink.liquid-glass .controls input[type="search"],
+body.dark-pink.liquid-glass .controls input[type="text"],
+body.dark-pink.liquid-glass .controls input[type="date"],
+body.dark-pink.liquid-glass .controls input[type="file"],
+body.dark-pink.liquid-glass .controls select,
+body.dark-pink.liquid-glass button,
+body.dark-pink.liquid-glass #langSelect,
+body.dark-pink.liquid-glass #sortSelect,
+body.dark-purple.liquid-glass .controls input[type="search"],
+body.dark-purple.liquid-glass .controls input[type="text"],
+body.dark-purple.liquid-glass .controls input[type="date"],
+body.dark-purple.liquid-glass .controls input[type="file"],
+body.dark-purple.liquid-glass .controls select,
+body.dark-purple.liquid-glass button,
+body.dark-purple.liquid-glass #langSelect,
+body.dark-purple.liquid-glass #sortSelect,
+body.dark-cyan.liquid-glass .controls input[type="search"],
+body.dark-cyan.liquid-glass .controls input[type="text"],
+body.dark-cyan.liquid-glass .controls input[type="date"],
+body.dark-cyan.liquid-glass .controls input[type="file"],
+body.dark-cyan.liquid-glass .controls select,
+body.dark-cyan.liquid-glass button,
+body.dark-cyan.liquid-glass #langSelect,
+body.dark-cyan.liquid-glass #sortSelect,
+body.amoled.liquid-glass .controls input[type="search"],
+body.amoled.liquid-glass .controls input[type="text"],
+body.amoled.liquid-glass .controls input[type="date"],
+body.amoled.liquid-glass .controls input[type="file"],
+body.amoled.liquid-glass .controls select,
+body.amoled.liquid-glass button,
+body.amoled.liquid-glass #langSelect,
+body.amoled.liquid-glass #sortSelect{
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 6px 18px rgba(0,0,0,0.26) !important;
+}
+
+/* ── グラス時: セレクト枠をテーマアクセント色に ── */
+body.dark.liquid-glass #langSelect,
+body.dark.liquid-glass #sortSelect{
+  background: rgba(29,155,240,0.15) !important;
+  border-color: rgba(29,155,240,0.30) !important;
+}
+body.dark.liquid-glass #langSelect:hover,
+body.dark.liquid-glass #sortSelect:hover{
+  background: rgba(29,155,240,0.25) !important;
+}
+body.dark-green.liquid-glass #langSelect,
+body.dark-green.liquid-glass #sortSelect{
+  background: rgba(72,199,142,0.15) !important;
+  border-color: rgba(72,199,142,0.30) !important;
+}
+body.dark-green.liquid-glass #langSelect:hover,
+body.dark-green.liquid-glass #sortSelect:hover{
+  background: rgba(72,199,142,0.25) !important;
+}
+body.dark-pink.liquid-glass #langSelect,
+body.dark-pink.liquid-glass #sortSelect{
+  background: rgba(215,72,148,0.15) !important;
+  border-color: rgba(215,72,148,0.30) !important;
+}
+body.dark-pink.liquid-glass #langSelect:hover,
+body.dark-pink.liquid-glass #sortSelect:hover{
+  background: rgba(215,72,148,0.25) !important;
+}
+body.dark-purple.liquid-glass #langSelect,
+body.dark-purple.liquid-glass #sortSelect{
+  background: rgba(139,92,246,0.15) !important;
+  border-color: rgba(139,92,246,0.30) !important;
+}
+body.dark-purple.liquid-glass #langSelect:hover,
+body.dark-purple.liquid-glass #sortSelect:hover{
+  background: rgba(139,92,246,0.25) !important;
+}
+body.dark-cyan.liquid-glass #langSelect,
+body.dark-cyan.liquid-glass #sortSelect{
+  background: rgba(6,182,212,0.15) !important;
+  border-color: rgba(6,182,212,0.30) !important;
+}
+body.dark-cyan.liquid-glass #langSelect:hover,
+body.dark-cyan.liquid-glass #sortSelect:hover{
+  background: rgba(6,182,212,0.25) !important;
+}
+body.amoled.liquid-glass #langSelect,
+body.amoled.liquid-glass #sortSelect{
+  background: rgba(29,155,240,0.10) !important;
+  border-color: rgba(29,155,240,0.22) !important;
+}
+body.amoled.liquid-glass #langSelect:hover,
+body.amoled.liquid-glass #sortSelect:hover{
+  background: rgba(29,155,240,0.18) !important;
+}
+
+body.liquid-glass #applyFilter{
+  background: linear-gradient(135deg, rgba(29,155,240,0.92), rgba(120,86,255,0.92)) !important;
+  border-color: rgba(120,86,255,0.20) !important;
+  color: #fff !important;
+  background-clip: padding-box !important;
+}
+
+body.liquid-glass #clearFilter,
+body.liquid-glass #themeToggle,
+body.liquid-glass #themeSelect,
+body.liquid-glass #textModeToggle,
+body.liquid-glass #effectsToggle,
+body.liquid-glass #headerCloseBtn{
+  border-radius: 999px !important;
+}
+
+body.liquid-glass #themeSelect{
+  border-color: var(--glass-border) !important;
+  background: var(--glass-btn-off-bg) !important;
+  background-clip: padding-box !important;
+  color: var(--glass-btn-off-fg) !important;
+  backdrop-filter: blur(4px) saturate(110%);
+  -webkit-backdrop-filter: blur(4px) saturate(110%);
+}
+
+body.liquid-glass .meta,
+body.liquid-glass .text-card-stats,
+body.liquid-glass .card-date,
+body.liquid-glass .text-card-footer,
+body.liquid-glass .export-note,
+body.liquid-glass .export-credit,
+body.liquid-glass .export-steps-inline li,
+body.liquid-glass .ps-btn .ps-hint,
+body.liquid-glass .merge-help-tooltip,
+body.liquid-glass .cache-select-arrow,
+body.liquid-glass .media-type-label,
+body.liquid-glass .no-media-label{
+  color: var(--glass-readable-muted) !important;
+}
+
+body.liquid-glass .preview,
+body.liquid-glass .tweet-text,
+body.liquid-glass .text-card-content{
+  text-shadow: 0 1px 0 rgba(255,255,255,0.04);
+}
+
+body.liquid-glass .json-merge-panel{
+  border-radius: 20px !important;
+}
+
+body.liquid-glass .json-merge-section{
+  position: relative;
+  border-radius: 16px !important;
+  background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent 48%), rgba(255,255,255,0.16) !important;
+}
+
+body.dark.liquid-glass .json-merge-section,
+body.amoled.liquid-glass .json-merge-section{
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), transparent 48%), rgba(255,255,255,0.03) !important;
+}
+
+body.liquid-glass .export-note,
+body.liquid-glass .export-credit,
+body.liquid-glass .bm-link-wrap{
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.42), rgba(255,255,255,0.16)),
+    linear-gradient(135deg, rgba(29,155,240,0.07), rgba(120,86,255,0.06)) !important;
+  border: 1px solid rgba(255,255,255,0.28) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.36), 0 6px 18px rgba(15,23,42,0.08) !important;
+}
+
+body.dark.liquid-glass .export-note,
+body.dark.liquid-glass .export-credit,
+body.dark.liquid-glass .bm-link-wrap,
+body.amoled.liquid-glass .export-note,
+body.amoled.liquid-glass .export-credit,
+body.amoled.liquid-glass .bm-link-wrap{
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)),
+    linear-gradient(135deg, rgba(29,155,240,0.10), rgba(120,86,255,0.08)) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 20px rgba(0,0,0,0.18) !important;
+}
+
+body.liquid-glass .export-note,
+body.liquid-glass .export-credit{
+  color: var(--glass-readable-soft) !important;
+}
+
+body.liquid-glass .export-credit a,
+body.liquid-glass .bm-drag-link,
+body.liquid-glass .card-date a,
+body.liquid-glass .text-card-link{
+  color: #1177d7 !important;
+}
+
+body.dark.liquid-glass .export-credit a,
+body.dark.liquid-glass .bm-drag-link,
+body.dark.liquid-glass .card-date a,
+body.dark.liquid-glass .text-card-link,
+body.amoled.liquid-glass .export-credit a,
+body.amoled.liquid-glass .bm-drag-link,
+body.amoled.liquid-glass .card-date a,
+body.amoled.liquid-glass .text-card-link{
+  color: #7dc4ff !important;
+}
+
+/* Light + liquid-glass: ツール内テキスト・年ボタン 視認性確保 */
+body.light.liquid-glass .year-btn {
+  color: #1a202c !important;
+}
+body.light.liquid-glass .json-merge-section summary {
+  color: var(--text) !important;
+}
+body.light.liquid-glass .xlv-toggle-row {
+  color: var(--text) !important;
+}
+body.light.liquid-glass .merge-content {
+  color: var(--text) !important;
+}
+/* ライト+グラス: ボタン枠線を視認可能に */
+body.light.liquid-glass button,
+body.light.liquid-glass .controls button,
+body.light.liquid-glass .sort-area button,
+body.light.liquid-glass .merge-row button,
+body.light.liquid-glass #langSelect,
+body.light.liquid-glass #sortSelect,
+body.light.liquid-glass #themeSelect,
+body.light.liquid-glass #themeToggle,
+body.light.liquid-glass #textModeToggle,
+body.light.liquid-glass #effectsToggle,
+body.light.liquid-glass #headerCloseBtn {
+  border-color: rgba(0,0,0,0.14) !important;
+}
+body.light.liquid-glass button:hover,
+body.light.liquid-glass .controls button:hover,
+body.light.liquid-glass .sort-area button:hover {
+  border-color: rgba(0,0,0,0.22) !important;
+}
+
+/* グラス時のツールチップ潜り込み修正 */
+body.liquid-glass .json-merge-section {
+  overflow: visible !important;
+}
+body.liquid-glass .json-merge-section summary {
+  z-index: 3 !important;
+}
+body.liquid-glass .json-merge-section::before {
+  border-radius: inherit;
+}
+body.liquid-glass .merge-help-tooltip {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: var(--card) !important;
+  z-index: 200 !important;
+}
+body.liquid-glass .user-context-menu {
+  background: var(--glass-bg-strong) !important;
+  backdrop-filter: blur(6px) saturate(110%);
+  -webkit-backdrop-filter: blur(6px) saturate(110%);
+}
+
+/* ── モバイル: ぼかし維持＋軽量化 ── */
+@media (max-width: 768px) {
+  body.liquid-glass {
+    --glass-blur: 3px;
+    --glass-sat: 105%;
+    background-attachment: scroll;
+  }
+  body.liquid-glass header {
+    will-change: auto;
+  }
+  body.liquid-glass .controls input[type="search"],
+  body.liquid-glass .controls input[type="text"],
+  body.liquid-glass .controls input[type="date"],
+  body.liquid-glass .controls input[type="file"],
+  body.liquid-glass .controls select,
+  body.liquid-glass button,
+  body.liquid-glass .sort-area button,
+  body.liquid-glass .merge-row button,
+  body.liquid-glass #langSelect,
+  body.liquid-glass #sortSelect {
+    background: rgba(255,255,255,0.48) !important;
+    border: 1px solid rgba(255,255,255,0.36) !important;
+    box-shadow: none !important;
+  }
+  body.dark.liquid-glass .controls input[type="search"],
+  body.dark.liquid-glass .controls input[type="text"],
+  body.dark.liquid-glass .controls input[type="date"],
+  body.dark.liquid-glass .controls input[type="file"],
+  body.dark.liquid-glass .controls select,
+  body.dark.liquid-glass button,
+  body.dark.liquid-glass #langSelect,
+  body.dark.liquid-glass #sortSelect,
+  body.dark-green.liquid-glass .controls input[type="search"],
+  body.dark-green.liquid-glass .controls input[type="text"],
+  body.dark-green.liquid-glass .controls input[type="date"],
+  body.dark-green.liquid-glass .controls input[type="file"],
+  body.dark-green.liquid-glass .controls select,
+  body.dark-green.liquid-glass button,
+  body.dark-green.liquid-glass #langSelect,
+  body.dark-green.liquid-glass #sortSelect,
+  body.dark-pink.liquid-glass .controls input[type="search"],
+  body.dark-pink.liquid-glass .controls input[type="text"],
+  body.dark-pink.liquid-glass .controls input[type="date"],
+  body.dark-pink.liquid-glass .controls input[type="file"],
+  body.dark-pink.liquid-glass .controls select,
+  body.dark-pink.liquid-glass button,
+  body.dark-pink.liquid-glass #langSelect,
+  body.dark-pink.liquid-glass #sortSelect,
+  body.dark-purple.liquid-glass .controls input[type="search"],
+  body.dark-purple.liquid-glass .controls input[type="text"],
+  body.dark-purple.liquid-glass .controls input[type="date"],
+  body.dark-purple.liquid-glass .controls input[type="file"],
+  body.dark-purple.liquid-glass .controls select,
+  body.dark-purple.liquid-glass button,
+  body.dark-purple.liquid-glass #langSelect,
+  body.dark-purple.liquid-glass #sortSelect,
+  body.dark-cyan.liquid-glass .controls input[type="search"],
+  body.dark-cyan.liquid-glass .controls input[type="text"],
+  body.dark-cyan.liquid-glass .controls input[type="date"],
+  body.dark-cyan.liquid-glass .controls input[type="file"],
+  body.dark-cyan.liquid-glass .controls select,
+  body.dark-cyan.liquid-glass button,
+  body.dark-cyan.liquid-glass #langSelect,
+  body.dark-cyan.liquid-glass #sortSelect,
+  body.amoled.liquid-glass .controls input[type="search"],
+  body.amoled.liquid-glass .controls input[type="text"],
+  body.amoled.liquid-glass .controls input[type="date"],
+  body.amoled.liquid-glass .controls input[type="file"],
+  body.amoled.liquid-glass .controls select,
+  body.amoled.liquid-glass button,
+  body.amoled.liquid-glass #langSelect,
+  body.amoled.liquid-glass #sortSelect {
+    background: rgba(255,255,255,0.18) !important;
+    border: 1px solid rgba(255,255,255,0.26) !important;
+    box-shadow: none !important;
+  }
+  body.liquid-glass .json-merge-panel,
+  body.liquid-glass .json-merge-section,
+  body.liquid-glass .date-range,
+  body.liquid-glass .sort-area,
+  body.liquid-glass #tweetCount,
+  body.liquid-glass #jsonMergeToggle,
+  body.liquid-glass .cache-select-trigger,
+  body.liquid-glass .cache-select-list,
+  body.liquid-glass #headerToggle,
+  body.liquid-glass .user-context-menu,
+  body.liquid-glass .modal-text-overlay-content {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  body.liquid-glass #themeSelect {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  body.liquid-glass .thumb .count,
+  body.liquid-glass .thumb .video-icon,
+  body.liquid-glass .thumb .seq-num {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* ── デスクトップ: すりガラス風ノイズ ── */
+@media (min-width: 769px) {
+  body.liquid-glass .json-merge-panel::after,
+  body.liquid-glass .json-merge-section::after,
+  body.liquid-glass .user-context-menu::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    border-radius: inherit;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+  }
+  body.liquid-glass header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    border-radius: inherit;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    opacity: 0.025;
+    mix-blend-mode: overlay;
+  }
+}
+
+body.no-effects.liquid-glass header,
+body.no-effects.liquid-glass .card,
+body.no-effects.liquid-glass .text-only-card,
+body.no-effects.liquid-glass .json-merge-panel,
+body.no-effects.liquid-glass .json-merge-section,
+body.no-effects.liquid-glass .cache-select-trigger,
+body.no-effects.liquid-glass .cache-select-list,
+body.no-effects.liquid-glass .user-context-menu,
+body.no-effects.liquid-glass .sort-area,
+body.no-effects.liquid-glass .date-range,
+body.no-effects.liquid-glass #tweetCount,
+body.no-effects.liquid-glass #jsonMergeToggle{
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: var(--card) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10) !important;
+}
+
+body.no-effects.liquid-glass .json-merge-panel::before,
+body.no-effects.liquid-glass .json-merge-section::before{
+  display: none !important;
+}
+
+body.no-effects.liquid-glass .thumb::after{
+  background: linear-gradient(0deg, rgba(0,0,0,0.16), rgba(0,0,0,0.00) 28%) !important;
+}
+
 </style>
 </head>
 <body>
@@ -2680,9 +3747,18 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
         </select>
         <button id="textModeToggle" type="button" title="テキストのみ表示">📄</button>
         <button id="themeToggle" type="button" title="テーマ切替">🌗</button>
-        <button id="effectsToggle" type="button" title="エフェクト切替">✨</button>
+        <select id="themeSelect" title="テーマ選択">
+          <option value="light">🤍</option>
+          <option value="dark">💙</option>
+          <option value="dark-green">💚</option>
+          <option value="dark-pink">🩷</option>
+          <option value="dark-purple">💜</option>
+          <option value="dark-cyan">🩵</option>
+          <option value="amoled">🖤</option>
+        </select>
         <span id="tweetCount" style="font-size:13px;color:var(--muted);white-space:nowrap;margin-left:4px"></span>
         <button id="headerCloseBtn" type="button" title="ヘッダーを閉じる">▲</button>
+        <button id="effectsToggle" type="button" title="エフェクト切替">✨</button>
       </div>
     </div>
 
@@ -2847,6 +3923,14 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
               <span class="xlv-sw-knob"></span>
             </span>
             <span id="xlvSlideAnimLabel">画像送りアニメーション <span style="font-size:10px;opacity:0.6;">試験</span></span>
+          </label>
+          <label class="xlv-toggle-row">
+            <span class="xlv-sw">
+              <input type="checkbox" id="xlvGlassToggle">
+              <span class="xlv-sw-track"></span>
+              <span class="xlv-sw-knob"></span>
+            </span>
+            <span id="xlvGlassLabel">グラス質感</span>
           </label>
 
           <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;">
@@ -3052,8 +4136,12 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
   // 初期化
   (async function init() {
     const theme = localStorage.getItem('xviewer_theme') || 'light';
-    if (theme === 'dark') document.body.classList.add('dark');
-    else if (theme === 'amoled') document.body.classList.add('amoled');
+    const darkThemes = ['dark','amoled','dark-green','dark-pink','dark-purple','dark-cyan'];
+    if (darkThemes.includes(theme)) {
+      document.body.classList.add(theme);
+    } else {
+      document.body.classList.add('light');
+    }
     
     const savedLang = localStorage.getItem('xviewer_lang') || 'ja';
     langSelect.value = savedLang;
@@ -3961,13 +5049,8 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
   // modalList    : full解像度URLの配列
   // modalThumbList: サムネURL配列（即時表示用、modalListと同インデックス）
 
-  // 進行中のフル解像度ロードをキャンセルするためのトークン（openModalWithMedia より前に宣言）
-  let _loadToken = 0;
-
   // mediaItems = t.media 配列、またはURL文字列配列（後方互換）
   function openModalWithMedia(mediaItems, tweetText) {
-    // 進行中のロードをキャンセル（別カードに切り替えた場合も含む）
-    ++_loadToken;
     // 前の画像・動画を即クリア
     modalImg.src = '';
     modalImg.style.opacity = '0';
@@ -4040,6 +5123,9 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
     modalCounter.textContent = '';
     updateModalNavVisibility();
   }
+
+  // 進行中のフル解像度ロードをキャンセルするためのトークン
+  let _loadToken = 0;
 
   // スライドアニメーション適用ヘルパー
   function _applySlideAnim(dir) {
@@ -4750,37 +5836,60 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
   }
 
   // テーマ切り替え
+  const themeSelect = document.getElementById('themeSelect');
+  const themeCycle = ['light','dark','dark-green','dark-pink','dark-purple','dark-cyan','amoled'];
+  const syncSelect = () => {
+    if (!themeSelect) return;
+    const current = themeCycle.find(c => document.body.classList.contains(c)) || 'light';
+    themeSelect.value = current;
+  };
+  syncSelect();
+
   themeToggle.addEventListener('click', () => {
-    const current = document.body.classList.contains('amoled') ? 'amoled' 
-                  : document.body.classList.contains('dark') ? 'dark' 
-                  : 'light';
-    
-    document.body.classList.remove('dark', 'amoled');
-    
-    let next;
-    if (current === 'light') {
-      next = 'dark';
-      document.body.classList.add('dark');
-    } else if (current === 'dark') {
-      next = 'amoled';
-      document.body.classList.add('amoled');
-    } else {
-      next = 'light';
-    }
-    
+    const current = themeCycle.find(c => document.body.classList.contains(c)) || 'light';
+    document.body.classList.remove('light','dark','amoled','dark-green','dark-pink','dark-purple','dark-cyan');
+
+    const idx = themeCycle.indexOf(current);
+    const next = themeCycle[(idx + 1) % themeCycle.length];
+    document.body.classList.add(next);
+
     localStorage.setItem('xviewer_theme', next);
+    syncSelect();
   });
+
+  if (themeSelect) {
+    themeSelect.addEventListener('change', () => {
+      const val = themeSelect.value;
+      document.body.classList.remove('light','dark','amoled','dark-green','dark-pink','dark-purple','dark-cyan');
+      document.body.classList.add(val);
+      localStorage.setItem('xviewer_theme', val);
+    });
+  }
 
   // ✨ エフェクト切替
   const effectsToggle = document.getElementById('effectsToggle');
+  const GLASS_KEY = 'xlvglass';
   if (effectsToggle) {
     const EFFECTS_KEY = 'xlv_no_effects';
     if (localStorage.getItem(EFFECTS_KEY) === 'true') {
       document.body.classList.add('no-effects');
+      document.body.classList.remove('liquid-glass');
     }
     effectsToggle.addEventListener('click', () => {
       const off = document.body.classList.toggle('no-effects');
       localStorage.setItem(EFFECTS_KEY, off ? 'true' : 'false');
+      if (off) {
+        // effects off: force glass off too
+        document.body.classList.remove('liquid-glass');
+      } else {
+        // effects on: restore saved glass pref
+        if (localStorage.getItem(GLASS_KEY) !== '0') {
+          document.body.classList.add('liquid-glass');
+        }
+      }
+      // sync the glass toggle checkbox
+      const gc = document.getElementById('xlvGlassToggle');
+      if (gc) gc.checked = document.body.classList.contains('liquid-glass');
     });
   }
 
@@ -4834,6 +5943,9 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
       const sal = document.getElementById('xlvSlideAnimLabel');
       if (sal && window.currentLanguage && window.currentLanguage.slideAnimLabel)
         sal.firstChild.textContent = window.currentLanguage.slideAnimLabel + ' ';
+      const gl = document.getElementById('xlvGlassLabel');
+      if (gl && window.currentLanguage && window.currentLanguage.glassLabel)
+        gl.textContent = window.currentLanguage.glassLabel;
       const miscSum = document.getElementById('xlvMiscSummary');
       if (miscSum && window.currentLanguage && window.currentLanguage.miscSection)
         miscSum.textContent = window.currentLanguage.miscSection;
@@ -4923,6 +6035,7 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
         pageSizeApplied: '件に変更しました',
         pageSizeTooltip: 'スクロールごとに読み込む件数。高スペックなら増やすと快適。低スペックや動作が重い場合は減らしてください。',
         slideAnimLabel: '画像送りアニメーション',
+        glassLabel: 'グラス質感',
         miscSection: 'その他',
         mediaTypeLabel: 'メディアタイプ', mediaCountLabel: '枚数',
         mediaTypeAll: '全て', mediaTypeNone: 'メディアなし',
@@ -4992,6 +6105,7 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
         pageSizeApplied: ' items/page applied',
         pageSizeTooltip: 'Items loaded per scroll. Increase for faster devices; reduce if performance is poor.',
         slideAnimLabel: 'Image slide animation',
+        glassLabel: 'Glass Effect',
         miscSection: 'Other',
         mediaTypeLabel: 'Media type', mediaCountLabel: 'Count',
         mediaTypeAll: 'All', mediaTypeNone: 'No media',
@@ -5061,6 +6175,7 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
         pageSizeApplied: '条/次已应用',
         pageSizeTooltip: '每次滚动加载的条数。高配设备可增加，低配或卡顿时请减少。',
         slideAnimLabel: '图片切换动画',
+        glassLabel: '玻璃质感',
         miscSection: '其他',
         mediaTypeLabel: '媒体类型', mediaCountLabel: '数量',
         mediaTypeAll: '全部', mediaTypeNone: '无媒体',
@@ -5130,6 +6245,7 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
         pageSizeApplied: '건으로 변경되었습니다',
         pageSizeTooltip: '스크롤마다 읽어오는 건수입니다. 고사양이면 늘리고, 저사양이거나 버벅일 때는 줄여주세요.',
         slideAnimLabel: '이미지 슬라이드 애니메이션',
+        glassLabel: '유리 질감',
         miscSection: '기타',
         mediaTypeLabel: '미디어 타입', mediaCountLabel: '개수',
         mediaTypeAll: '전체', mediaTypeNone: '미디어 없음',
@@ -5157,6 +6273,7 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
     };
 
     const u = dict[v] || dict.ja;
+    document.documentElement.lang = v;
 
     document.getElementById('title').textContent = u.title;
     searchInput.placeholder = u.search;
@@ -5230,6 +6347,8 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
     if (_myL && u.multiYearLabel) _myL.textContent = u.multiYearLabel;
     const _saL = document.getElementById('xlvSlideAnimLabel');
     if (_saL && u.slideAnimLabel) _saL.firstChild.textContent = u.slideAnimLabel + ' ';
+    const _glL = document.getElementById('xlvGlassLabel');
+    if (_glL && u.glassLabel) _glL.textContent = u.glassLabel;
     const _stL = document.getElementById('xlvStorageLabel');
     if (_stL && u.storageLabel) _stL.textContent = u.storageLabel;
     const _caL = document.getElementById('xlvClearAllLabel');
@@ -6337,6 +7456,38 @@ body.no-effects #modalImg.xlv-slide-left { animation: none !important; }
     }
   });}).observe(menu,{attributes:true});
 })();
+
+
+
+(() => {
+  const GLASS_KEY = 'xlvglass';
+  const glassToggle = document.getElementById('xlvGlassToggle');
+  if (!glassToggle) return;
+
+  // initial state: activate glass unless saved=0 or effects off
+  if (localStorage.getItem(GLASS_KEY) !== '0' && localStorage.getItem('xlv_no_effects') !== 'true') {
+    document.body.classList.add('liquid-glass');
+  }
+  glassToggle.checked = document.body.classList.contains('liquid-glass');
+
+  glassToggle.addEventListener('change', () => {
+    const next = glassToggle.checked;
+    if (next) {
+      // turning glass ON: ensure effects are on too
+      document.body.classList.remove('no-effects');
+      localStorage.setItem('xlv_no_effects', 'false');
+    }
+    localStorage.setItem(GLASS_KEY, next ? '1' : '0');
+    document.body.classList.toggle('liquid-glass', next);
+  });
+
+  // keep checkbox in sync when body class changes externally
+  const obs = new MutationObserver(() => {
+    glassToggle.checked = document.body.classList.contains('liquid-glass');
+  });
+  obs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+})();
+
 </script>
 </body>
 </html>
