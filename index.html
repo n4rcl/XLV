@@ -1160,6 +1160,11 @@ body.amoled .text-card-footer {
 .cache-select-item:hover .cache-item-delete { opacity: 1; }
 .cache-item-delete:hover { background: rgba(239,68,68,0.15); color: #ef4444; }
 
+/* タッチ端末: hoverが無いため削除✗を常時表示し、タップ領域を拡大 */
+@media (hover: none) {
+  .cache-item-delete { opacity: 1; width: 26px; height: 26px; font-size: 16px; }
+}
+
 /* PC */
 @media (min-width:769px) {
   #modal img,
@@ -3120,7 +3125,6 @@ body.liquid-glass .text-only-card{
 
 /* floating elements: subtle backdrop-filter */
 body.liquid-glass .cache-select-trigger,
-body.liquid-glass .cache-select-list,
 body.liquid-glass #headerToggle,
 body.liquid-glass #tweetCount,
 body.liquid-glass #jsonMergeToggle,
@@ -3133,9 +3137,18 @@ body.liquid-glass .date-range{
   -webkit-backdrop-filter: blur(4px) saturate(110%);
 }
 
+/* キャッシュ一覧はヘッダー項目と重なるため、一覧専用に不透明度を上げて視認性確保 */
+body.liquid-glass .cache-select-list{
+  background: var(--glass-bg-strong) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255,255,255,0.08) !important;
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+}
+
 body.liquid-glass header{
   position: sticky;
-  overflow: clip;
+  overflow: visible; /* キャッシュ一覧ドロップダウンがヘッダー下端でクリップされるのを防ぐ（背景はborder-radiusが処理するのでclip不要） */
   backface-visibility: hidden;
   border-radius: 0 0 22px 22px;
   border-top: none !important;
@@ -3701,6 +3714,24 @@ body.liquid-glass .user-context-menu {
   }
 }
 
+/* ── ガラス時: 読み込みライン(アクセントライン)が角丸を貫通するのを防ぐ ──
+   header はドロップダウン対策で overflow:visible のため、ラインを角丸半径分だけ内側に引っ込める */
+body.liquid-glass header::after{
+  left: 22px;
+  right: 22px;
+  border-radius: 2px;
+}
+
+/* ── ガラス時: 読み込みフラッシュライン(緑)は orig 仕様どおり角丸でクリップ ──
+   orig では header{overflow:clip} で自動的に切れていた。ドロップダウン対策で
+   overflow:visible にしたため、ライン単体に clip-path で同じ形状を復元する。
+   （静的プロパティなので描画コストはほぼゼロ） */
+body.liquid-glass #xlvLoadLine{
+  left: 22px;
+  right: 22px;
+  border-radius: 2px;
+}
+
 body.no-effects.liquid-glass header,
 body.no-effects.liquid-glass .card,
 body.no-effects.liquid-glass .text-only-card,
@@ -3726,6 +3757,34 @@ body.no-effects.liquid-glass .json-merge-section::before{
 
 body.no-effects.liquid-glass .thumb::after{
   background: linear-gradient(0deg, rgba(0,0,0,0.16), rgba(0,0,0,0.00) 28%) !important;
+}
+
+/* ── liquid-glass時: キャッシュ削除✗の視認性確保 ──
+   body.liquid-glass button の !important 背景に負けるため、こちらも !important で上書き */
+body.liquid-glass .cache-item-delete{
+  color: var(--text) !important;
+  background: rgba(127,127,127,0.30) !important;
+  border: 1px solid var(--glass-border, rgba(128,128,128,0.35)) !important;
+  box-shadow: none !important;
+}
+body.liquid-glass .cache-item-delete:hover{
+  color: #ef4444 !important;
+  background: rgba(239,68,68,0.30) !important;
+  border-color: rgba(239,68,68,0.45) !important;
+}
+/* ガラス＋タッチ端末は特に見えにくいので、下地を不透明寄りに強化 */
+@media (hover: none) {
+  body.liquid-glass .cache-item-delete{
+    background: rgba(127,127,127,0.45) !important;
+  }
+  body.dark.liquid-glass .cache-item-delete,
+  body.dark-green.liquid-glass .cache-item-delete,
+  body.dark-pink.liquid-glass .cache-item-delete,
+  body.dark-purple.liquid-glass .cache-item-delete,
+  body.dark-cyan.liquid-glass .cache-item-delete,
+  body.amoled.liquid-glass .cache-item-delete{
+    background: rgba(255,255,255,0.22) !important;
+  }
 }
 
 </style>
@@ -3859,6 +3918,14 @@ body.no-effects.liquid-glass .thumb::after{
             <label><span id="xlvExcludeThresholdLabel">いいね数の最小値</span>: <input id="excludeThreshold" type="number" min="0" value="0" style="width:100px;" /></label>
           </div>
           
+          <label class="xlv-toggle-row" style="margin:6px 0 8px;">
+            <span class="xlv-sw">
+              <input type="checkbox" id="excludeRtToggle" checked>
+              <span class="xlv-sw-track"></span>
+              <span class="xlv-sw-knob"></span>
+            </span>
+            <span>RTを除外</span>
+          </label>
           <div class="merge-row" style="margin-top:8px;">
             <label><span id="xlvExcludeFileNameLabel">ファイル名</span>: <input id="excludeFileName" type="text" placeholder="filtered" style="width:150px;" /></label>
             <button id="executeExclude" type="button">除外実行</button>
@@ -5731,11 +5798,19 @@ body.no-effects.liquid-glass .thumb::after{
 
       if (mode === 'delete') {
         // 削除モード: 条件を満たす投稿のみを残す
+        const _excludeRT = document.getElementById('excludeRtToggle').checked;
         const filteredArray = tweetsArray.filter(tweet => {
           const favCount = parseInt(tweet.favorite_count) || 0;
           if (favCount < threshold) {
             excludedCount++;
             return false;
+          }
+          if (_excludeRT) {
+            const text = tweet.full_text || tweet.text || '';
+            if (/^RT @/i.test(text.trim())) {
+              excludedCount++;
+              return false;
+            }
           }
           return true;
         });
@@ -5797,10 +5872,12 @@ body.no-effects.liquid-glass .thumb::after{
 
       // ファイル名を生成
       const customName = excludeFileNameInput.value.trim();
+      const _excludeRT = document.getElementById('excludeRtToggle').checked;
       const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const rtSuffix = _excludeRT ? '_nort' : '';
       const fileName = customName 
-        ? `${customName}.json` 
-        : `filtered_${threshold}_${mode}_${timestamp}.json`;
+        ? `${customName}${rtSuffix}.json` 
+        : `filtered${rtSuffix}_${threshold}_${timestamp}.json`;
 
       // ダウンロード
       const jsonStr = typeof resultData === 'string' ? resultData : JSON.stringify(resultData, null, 2);
@@ -5814,8 +5891,9 @@ body.no-effects.liquid-glass .thumb::after{
 
       const totalCount = tweetsArray.length;
       const remainingCount = totalCount - excludedCount;
+      const rtNote = _excludeRT ? ' (RT除外あり)' : '';
       updateExcludeStatus(
-        `✔ 処理完了: ${excludedCount}件を${mode === 'delete' ? '削除' : 'コメントアウト'} (残り:${remainingCount}件)`,
+        `✔ 処理完了: ${excludedCount}件を削除${rtNote} (残り:${remainingCount}件)`,
         'success'
       );
 
